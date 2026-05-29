@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; EIP-2780 Repricing{% endblock %}
+
+{#- ---- formatting helpers ---- -#}
+{%- macro num(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "{:,}".format(v|int) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro r3(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%.3f"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro r4(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%.4f"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro g3(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%.3g"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro pct(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%+.1f"|format(v) }}%{%- endif -%}
+{%- endmacro -%}
+
+{# change is stored as a ratio (e.g. 19.67 == +1967%); render it as a true percent #}
+{%- macro rpct(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%+.1f"|format(v * 100) }}%{%- endif -%}
+{%- endmacro -%}
+
+{%- macro sci(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{% block content %}
+{% set tx = summary.tx_base or {} %}
+{% set vg = summary.value_gas or {} %}
+{% set caveats = summary.caveats or [] %}
+
+<section class="hero">
+  <h1>EIP-2780 repricing: <code>TX_BASE</code> &amp; <code>VALUE_GAS</code></h1>
+  <p class="lede">
+    Per-client, per-case runtime of
+    <code>{{ meta.test_name or "test_ether_transfers_onchain_receivers" }}</code>
+    fit with non-negative least squares and converted to proposed gas values at the
+    {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor. Each
+    parameter's worst case is the most expensive driver across all clients and cases.
+  </p>
+</section>
+
+{#- ---- 1. Headline summary (prose assembled here) ---- -#}
+<section class="summary">
+  <h2>Summary</h2>
+  <ul class="summary-list">
+    <li>
+      <strong>Worst-case <code>TX_BASE</code>:</strong>
+      {{ num(tx.new_gas) }} gas, driven by <strong>{{ tx.client_name or "&mdash;" }}</strong>
+      on case <code>{{ tx.case_id or "&mdash;" }}</code>
+      (R&sup2; = {{ r3(tx.rsquared) }}, p-value = {{ g3(tx.pvalue) }}).
+    </li>
+    <li>
+      <strong>Worst-case <code>VALUE_GAS</code>:</strong>
+      {{ num(vg.new_gas) }} gas, driven by <strong>{{ vg.client_name or "&mdash;" }}</strong>
+      on case <code>{{ vg.case_id or "&mdash;" }}</code>
+      (R&sup2; = {{ r3(vg.rsquared) }}, p-value = {{ g3(vg.pvalue) }}).
+    </li>
+    <li>
+      <strong><code>TX_BASE</code></strong> is {{ pct(tx.change_pct) }} vs. the current
+      {{ num(tx.current_gas) }} gas ({{ tx.direction or "&mdash;" }}).
+    </li>
+    <li>
+      <strong><code>VALUE_GAS</code></strong> is {{ pct(vg.change_pct) }} vs. the current
+      {{ num(vg.current_gas) }} gas ({{ vg.direction or "&mdash;" }}).
+    </li>
+  </ul>
+
+  {#- over/under-priced takeaway -#}
+  {% set txp = tx.change_pct %}
+  {% set vgp = vg.change_pct %}
+  <p class="takeaway">
+    {% if txp is not none and vgp is not none and txp > 0 and vgp > 0 %}
+      Both <code>TX_BASE</code> and <code>VALUE_GAS</code> appear
+      <strong>under-priced</strong> relative to the
+      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
+    {% elif txp is not none and vgp is not none and txp < 0 and vgp < 0 %}
+      Both <code>TX_BASE</code> and <code>VALUE_GAS</code> appear
+      <strong>over-priced</strong> relative to the
+      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
+    {% else %}
+      <code>TX_BASE</code> appears
+      <strong>{{ "under-priced" if (txp is not none and txp > 0) else "over-priced" }}</strong>
+      while <code>VALUE_GAS</code> appears
+      <strong>{{ "under-priced" if (vgp is not none and vgp > 0) else "over-priced" }}</strong>
+      relative to the
+      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
+    {% endif %}
+  </p>
+
+  {#- R-squared caveats -#}
+  {% if caveats %}
+  <div class="caveats">
+    <p><strong>R&sup2; caveats:</strong></p>
+    <ul>
+      {% for c in caveats %}
+      <li>
+        <code>{{ c.param }}</code> driven by <strong>{{ c.client_name }}</strong> /
+        case <code>{{ c.case_id }}</code> has R&sup2; = {{ r3(c.rsquared) }}
+        (needs follow-up).
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p class="caveats-ok">
+    <strong>R&sup2; caveats:</strong> none &mdash; all worst-case drivers have
+    R&sup2; &gt; 0.5.
+  </p>
+  {% endif %}
+</section>
+
+{#- ---- 2. Worst-case proposal table ---- -#}
+<section class="proposal">
+  <h2>Worst-case proposal</h2>
+  <table class="data-table proposal-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th class="num">Proposed gas</th>
+        <th class="num">Current gas</th>
+        <th class="num">Change</th>
+        <th>Driver</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in worst_case_overall %}
+      <tr class="worst-case">
+        <td><code>{{ row.param }}</code></td>
+        <td class="num">{{ num(row.new_gas_rounded) }}</td>
+        <td class="num">{{ num(row.current_gas) }}</td>
+        <td class="num">{{ rpct(row.change) }}</td>
+        <td>{{ row.client_name }} / <code>{{ row.case_id }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{#- ---- 3. Charts ---- -#}
+<section class="charts">
+  <h2>Charts</h2>
+
+  <div class="chart-block">
+    <h3><code>TX_BASE</code> &mdash; proposed gas per case (95% CI)</h3>
+    <div id="chart-tx-base" class="chart"></div>
+  </div>
+
+  <div class="chart-block">
+    <h3><code>VALUE_GAS</code> &mdash; proposed gas per case (95% CI)</h3>
+    <div id="chart-value-gas" class="chart"></div>
+  </div>
+
+  <div class="chart-block">
+    <h3>Model fit quality (R&sup2;) per (client, case)</h3>
+    <div id="chart-rsquared" class="chart"></div>
+  </div>
+</section>
+
+{#- ---- 4a. Detail: new_gas table ---- -#}
+{% set worst_keys = [] %}
+{% for w in worst_case_overall %}
+  {% set _ = worst_keys.append((w.param, w.client_name, w.case_id)) %}
+{% endfor %}
+<section class="detail">
+  <h2>Proposed gas detail</h2>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th>Param</th>
+          <th class="num">Runtime (ms)</th>
+          <th class="num">Proposed</th>
+          <th class="num">CI low</th>
+          <th class="num">CI high</th>
+          <th class="num">Current</th>
+          <th class="num">Change</th>
+          <th class="num">R&sup2;</th>
+          <th class="num">p-value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in new_gas %}
+        {% set is_worst = (row.param, row.client_name, row.case_id) in worst_keys %}
+        <tr{% if is_worst %} class="worst-case"{% endif %}>
+          <td>{{ row.client_name }}</td>
+          <td><code>{{ row.case_id }}</code></td>
+          <td><code>{{ row.param }}</code></td>
+          <td class="num">{{ r4(row.runtime_ms) }}</td>
+          <td class="num">{{ num(row.new_gas_rounded) }}</td>
+          <td class="num">{{ num(row.new_gas_conf_int_low) }}</td>
+          <td class="num">{{ num(row.new_gas_conf_int_high) }}</td>
+          <td class="num">{{ num(row.current_gas) }}</td>
+          <td class="num">{{ rpct(row.change) }}</td>
+          <td class="num">{{ r3(row.rsquared) }}</td>
+          <td class="num">{{ g3(row.pvalue) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{#- ---- 4b. Detail: results (model fit) table ---- -#}
+<section class="detail">
+  <h2>Model fit detail</h2>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th class="num">nobs</th>
+          <th class="num">R&sup2;</th>
+          <th class="num">R&sup2; adj</th>
+          <th class="num">slope</th>
+          <th class="num">slope CI</th>
+          <th class="num">slope p</th>
+          <th class="num">transfer coef</th>
+          <th class="num">transfer CI</th>
+          <th class="num">transfer p</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in results %}
+        <tr>
+          <td>{{ row.client_name }}</td>
+          <td><code>{{ row.case_id }}</code></td>
+          <td class="num">{{ num(row.nobs) }}</td>
+          <td class="num">{{ r3(row.rsquared) }}</td>
+          <td class="num">{{ r3(row.rsquared_adj) }}</td>
+          <td class="num">{{ sci(row.slope) }}</td>
+          <td class="num">{{ sci(row.slope_conf_int_low) }} &ndash; {{ sci(row.slope_conf_int_high) }}</td>
+          <td class="num">{{ g3(row.slope_pvalue) }}</td>
+          <td class="num">{{ sci(row.transfer_amount) }}</td>
+          <td class="num">{{ sci(row.transfer_amount_conf_int_low) }} &ndash; {{ sci(row.transfer_amount_conf_int_high) }}</td>
+          <td class="num">{{ g3(row.transfer_amount_pvalue) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="data.js"></script>
+<script src="charts.js"></script>
+{% endblock %}

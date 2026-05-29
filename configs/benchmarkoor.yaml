@@ -1,0 +1,13 @@
+query:
+  fork: amsterdam
+  suites:
+    - a11611f320a39015   # jochennet stateful (the run the notebook analysed)
+http:
+  page_size: 10000
+  max_workers: 5
+output:
+  estimator_inputs: true
+  merged_parquet: true
+  trace_parquet: true
+cache:
+  enabled: true

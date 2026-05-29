@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EIP-2780 Repricing{% endblock %}</title>
+  <script
+    src="https://cdn.plot.ly/plotly-2.35.2.min.js"
+    integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
+    crossorigin="anonymous"
+    charset="utf-8"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="index.html">EIP-2780 Repricing</a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="methodology.html">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="repro">
+        {% set window = meta.window or {} %}
+        Data window:
+        <strong>{{ window.start or "?" }}</strong> &rarr; <strong>{{ window.end or "?" }}</strong>
+        &middot;
+        benchmarkoor-fetch <code>{{ meta.benchmarkoor_fetch_version or "unknown" }}</code>
+        &middot;
+        suite <code>{{ meta.suite or "unknown" }}</code>
+        &middot;
+        commit <code>{{ commit or "unknown" }}</code>
+      </p>
+      <p class="repro-note">
+        Generated from <code>{{ meta.generated_from or "meta.json" }}</code> at a
+        {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }} Mgas/s anchor.
+        Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
+      </p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

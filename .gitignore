@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.cache/
+secrets.json
+# raw fetch artifacts — not committed (re-fetched via `make fetch`)
+data/raw/*
+.DS_Store
+.venv/
+
+!data/raw/.gitkeep

@@ -1,0 +1,17 @@
+[project]
+name = "eip-2780-repricing"
+version = "0.1.0"
+description = "Static dashboard for the EIP-2780 (TX_BASE / VALUE_GAS) repricing analysis."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "pyarrow",
+    "jinja2",
+    "pyyaml",
+    "benchmarkoor-fetch",
+]
+
+[tool.uv.sources]
+benchmarkoor-fetch = { path = "../benchmarkoor-fetch", editable = true }
