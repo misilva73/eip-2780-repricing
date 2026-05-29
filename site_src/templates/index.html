@@ -27,6 +27,24 @@
 {%- if v is none -%}&mdash;{%- else -%}{{ "%+.1f"|format(v * 100) }}%{%- endif -%}
 {%- endmacro -%}
 
+{# colored, arrowed change cell. v is the ratio (19.67 == +1967%). #}
+{%- macro chg(v) -%}
+{%- if v is none -%}<span class="chg chg-flat">&mdash;</span>
+{%- elif v > 0 -%}<span class="chg chg-up">&#9650; {{ "%+.1f"|format(v * 100) }}%</span>
+{%- elif v < 0 -%}<span class="chg chg-down">&#9660; {{ "%+.1f"|format(v * 100) }}%</span>
+{%- else -%}<span class="chg chg-flat">0%</span>
+{%- endif -%}
+{%- endmacro -%}
+
+{# direction pill from a true-percent change. positive => under-priced (up). #}
+{%- macro chg_pill(pct) -%}
+{%- if pct is none -%}<span class="pill pill-flat">&mdash;</span>
+{%- elif pct > 0 -%}<span class="pill pill-up">&#9650; {{ "%+.0f"|format(pct) }}% &middot; under-priced</span>
+{%- elif pct < 0 -%}<span class="pill pill-down">&#9660; {{ "%+.0f"|format(pct) }}% &middot; over-priced</span>
+{%- else -%}<span class="pill pill-flat">no change</span>
+{%- endif -%}
+{%- endmacro -%}
+
 {%- macro sci(v) -%}
 {%- if v is none -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
@@ -50,28 +68,40 @@
 {#- ---- 1. Headline summary (prose assembled here) ---- -#}
 <section class="summary">
   <h2>Summary</h2>
-  <ul class="summary-list">
-    <li>
-      <strong>Worst-case <code>TX_BASE</code>:</strong>
-      {{ num(tx.new_gas) }} gas, driven by <strong>{{ tx.client_name or "&mdash;" }}</strong>
-      on case <code>{{ tx.case_id or "&mdash;" }}</code>
-      (R&sup2; = {{ r3(tx.rsquared) }}, p-value = {{ g3(tx.pvalue) }}).
-    </li>
-    <li>
-      <strong>Worst-case <code>VALUE_GAS</code>:</strong>
-      {{ num(vg.new_gas) }} gas, driven by <strong>{{ vg.client_name or "&mdash;" }}</strong>
-      on case <code>{{ vg.case_id or "&mdash;" }}</code>
-      (R&sup2; = {{ r3(vg.rsquared) }}, p-value = {{ g3(vg.pvalue) }}).
-    </li>
-    <li>
-      <strong><code>TX_BASE</code></strong> is {{ pct(tx.change_pct) }} vs. the current
-      {{ num(tx.current_gas) }} gas ({{ tx.direction or "&mdash;" }}).
-    </li>
-    <li>
-      <strong><code>VALUE_GAS</code></strong> is {{ pct(vg.change_pct) }} vs. the current
-      {{ num(vg.current_gas) }} gas ({{ vg.direction or "&mdash;" }}).
-    </li>
-  </ul>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <p class="stat-label">Worst-case <code>TX_BASE</code></p>
+      <div class="stat-value">
+        <span class="stat-number">{{ num(tx.new_gas) }}</span>
+        <span class="stat-unit">gas</span>
+        {{ chg_pill(tx.change_pct) }}
+      </div>
+      <p class="stat-meta">
+        vs. current {{ num(tx.current_gas) }} &middot; driven by
+        <strong>{{ tx.client_name or "&mdash;" }}</strong> /
+        <code>{{ tx.case_id or "&mdash;" }}</code>
+      </p>
+      <p class="stat-meta stat-r2">
+        R&sup2; = {{ r3(tx.rsquared) }} &middot; p = {{ g3(tx.pvalue) }}
+      </p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Worst-case <code>VALUE_GAS</code></p>
+      <div class="stat-value">
+        <span class="stat-number">{{ num(vg.new_gas) }}</span>
+        <span class="stat-unit">gas</span>
+        {{ chg_pill(vg.change_pct) }}
+      </div>
+      <p class="stat-meta">
+        vs. current {{ num(vg.current_gas) }} &middot; driven by
+        <strong>{{ vg.client_name or "&mdash;" }}</strong> /
+        <code>{{ vg.case_id or "&mdash;" }}</code>
+      </p>
+      <p class="stat-meta stat-r2">
+        R&sup2; = {{ r3(vg.rsquared) }} &middot; p = {{ g3(vg.pvalue) }}
+      </p>
+    </div>
+  </div>
 
   {#- over/under-priced takeaway -#}
   {% set txp = tx.change_pct %}
@@ -136,7 +166,7 @@
         <td><code>{{ row.param }}</code></td>
         <td class="num">{{ num(row.new_gas_rounded) }}</td>
         <td class="num">{{ num(row.current_gas) }}</td>
-        <td class="num">{{ rpct(row.change) }}</td>
+        <td class="num">{{ chg(row.change) }}</td>
         <td>{{ row.client_name }} / <code>{{ row.case_id }}</code></td>
       </tr>
       {% endfor %}
@@ -200,7 +230,7 @@
           <td class="num">{{ num(row.new_gas_conf_int_low) }}</td>
           <td class="num">{{ num(row.new_gas_conf_int_high) }}</td>
           <td class="num">{{ num(row.current_gas) }}</td>
-          <td class="num">{{ rpct(row.change) }}</td>
+          <td class="num">{{ chg(row.change) }}</td>
           <td class="num">{{ r3(row.rsquared) }}</td>
           <td class="num">{{ g3(row.pvalue) }}</td>
         </tr>

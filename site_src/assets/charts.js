@@ -4,11 +4,32 @@
 (function () {
   "use strict";
 
-  var PLOT_CONFIG = { responsive: true, displaylogo: false };
+  var PLOT_CONFIG = { responsive: true, displaylogo: false, displayModeBar: "hover" };
   var PALETTE = [
     "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3",
     "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"
   ];
+
+  var DARK = window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var INK = DARK ? "#a8b3bf" : "#52606d";
+  var GRID = DARK ? "#2a313a" : "#e1e5ea";
+  var REF = DARK ? "#ff7b9c" : "#d62728";
+
+  // Shared layout theme so charts inherit the page's typography and palette.
+  function theme(extra) {
+    return Object.assign({
+      font: { family: "Inter, -apple-system, Segoe UI, Roboto, sans-serif",
+              size: 12, color: INK },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      hovermode: "closest",
+      bargap: 0.25,
+      bargroupgap: 0.08,
+      xaxis: { gridcolor: GRID, zerolinecolor: GRID, linecolor: GRID },
+      yaxis: { gridcolor: GRID, zerolinecolor: GRID, linecolor: GRID }
+    }, extra);
+  }
 
   function uniqueSorted(rows, key) {
     var seen = {};
@@ -31,14 +52,14 @@
         type: "line",
         xref: "paper", x0: 0, x1: 1,
         yref: "y", y0: value, y1: value,
-        line: { color: "#d62728", width: 1.5, dash: "dash" }
+        line: { color: REF, width: 1.5, dash: "dash" }
       }],
       annotations: [{
         xref: "paper", x: 1, xanchor: "right",
         yref: "y", y: value, yanchor: "bottom",
         text: label,
         showarrow: false,
-        font: { color: "#d62728", size: 11 }
+        font: { color: REF, size: 11 }
       }]
     };
   }
@@ -88,13 +109,14 @@
       };
     });
 
-    var layout = Object.assign({
+    var layout = theme({
       barmode: "group",
       margin: { t: 10, r: 20, b: 70, l: 70 },
-      xaxis: { title: "Case ID", automargin: true },
-      yaxis: { title: "Proposed gas (rounded)" },
       legend: { orientation: "h", y: -0.25 }
-    }, referenceLine(currentGas, "Current (" + currentGas.toLocaleString() + ")"));
+    });
+    Object.assign(layout.xaxis, { title: "Case ID", automargin: true });
+    Object.assign(layout.yaxis, { title: "Proposed gas (rounded)" });
+    Object.assign(layout, referenceLine(currentGas, "Current (" + currentGas.toLocaleString() + ")"));
 
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
@@ -126,13 +148,14 @@
       };
     });
 
-    var layout = Object.assign({
+    var layout = theme({
       barmode: "group",
       margin: { t: 10, r: 20, b: 70, l: 60 },
-      xaxis: { title: "Case ID", automargin: true },
-      yaxis: { title: "R²", range: [0, 1.05] },
       legend: { orientation: "h", y: -0.25 }
-    }, referenceLine(0.5, "R² = 0.5"));
+    });
+    Object.assign(layout.xaxis, { title: "Case ID", automargin: true });
+    Object.assign(layout.yaxis, { title: "R²", range: [0, 1.05] });
+    Object.assign(layout, referenceLine(0.5, "R² = 0.5"));
 
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
