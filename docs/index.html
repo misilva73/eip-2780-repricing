@@ -663,10 +663,10 @@
           <th class="num">R&sup2; adj</th>
           <th class="num">slope</th>
           <th class="num">slope CI</th>
-          <th class="num">slope p</th>
+          <th class="num">slope p-value</th>
           <th class="num">transfer coef</th>
           <th class="num">transfer CI</th>
-          <th class="num">transfer p</th>
+          <th class="num">transfer p-value</th>
         </tr>
       </thead>
       <tbody>
@@ -898,6 +898,13 @@
       </tbody>
     </table>
   </div>
+  <p class="table-note">
+    p-values are bootstrap boundary tests, not conventional two-sided p-values: each is
+    the fraction of resamples in which the coefficient collapses to zero, so a strong,
+    clearly non-zero driver reads <strong>0</strong>. See the
+    <a href="methodology.html#nnls">methodology</a> for details; the confidence intervals
+    are the better guide to precision.
+  </p>
 </section>
 
   </main>
@@ -913,7 +920,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>5396caf</code>
+        commit <code>df6cb05</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a

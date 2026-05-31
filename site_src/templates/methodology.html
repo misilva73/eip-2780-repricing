@@ -87,7 +87,7 @@
     </li>
   </ul>
 
-  <h2>The NNLS model</h2>
+  <h2 id="nnls">The NNLS model</h2>
   <p>
     For each <code>(client, case_id)</code> group we fit a non-negative least squares
     (NNLS) model. The design matrix is built from <code>opcount</code> plus
@@ -104,6 +104,20 @@
     <strong>bootstrap resampling</strong> (1000 iterations) to produce percentile-based
     95% confidence intervals and p-values, since the NNLS constraint breaks the usual
     closed-form ordinary-least-squares standard errors.
+  </p>
+  <p class="note">
+    <strong>Reading the p-values.</strong> These are not conventional two-sided
+    null-hypothesis p-values. To match the non-negativity constraint, each p-value is the
+    <em>fraction of the 1000 bootstrap resamples in which the coefficient collapses to
+    zero</em> &mdash; a one-sided boundary test. The bootstrap distribution is centered on
+    the fitted estimate, so a coefficient sitting well above zero is reproduced as
+    positive in every resample and the p-value reads <strong>0</strong> (the resolution
+    floor is 1/1000&nbsp;=&nbsp;0.001). A value of <strong>1</strong> means NNLS pinned the
+    coefficient to exactly zero. Because <code>opcount</code> and <code>transfer_amount</code>
+    are both strong, clearly non-zero drivers, almost every p-value here is 0 &mdash; that
+    is the expected outcome, the inverse of the usual p-value intuition. The p-value cannot
+    distinguish a barely-positive coefficient from a large one; use the
+    <strong>confidence intervals</strong> for that.
   </p>
   <p>
     A <strong>low-diff-run filter</strong> guards against a small number of anomalous
