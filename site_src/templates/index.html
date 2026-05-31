@@ -79,7 +79,7 @@
       <p class="stat-meta">
         vs. current {{ num(tx.current_gas) }} &middot; driven by
         <strong>{{ tx.client_name or "&mdash;" }}</strong> /
-        <code>{{ tx.case_id or "&mdash;" }}</code>
+        {{ (tx.case_id | case_label) if tx.case_id else "&mdash;" }}
       </p>
       <p class="stat-meta stat-r2">
         R&sup2; = {{ r3(tx.rsquared) }} &middot; p = {{ g3(tx.pvalue) }}
@@ -95,7 +95,7 @@
       <p class="stat-meta">
         vs. current {{ num(vg.current_gas) }} &middot; driven by
         <strong>{{ vg.client_name or "&mdash;" }}</strong> /
-        <code>{{ vg.case_id or "&mdash;" }}</code>
+        {{ (vg.case_id | case_label) if vg.case_id else "&mdash;" }}
       </p>
       <p class="stat-meta stat-r2">
         R&sup2; = {{ r3(vg.rsquared) }} &middot; p = {{ g3(vg.pvalue) }}
@@ -133,7 +133,7 @@
       {% for c in caveats %}
       <li>
         <code>{{ c.param }}</code> driven by <strong>{{ c.client_name }}</strong> /
-        case <code>{{ c.case_id }}</code> has R&sup2; = {{ r3(c.rsquared) }}
+        case {{ c.case_id | case_label }} has R&sup2; = {{ r3(c.rsquared) }}
         (needs follow-up).
       </li>
       {% endfor %}
@@ -167,7 +167,7 @@
         <td class="num">{{ num(row.new_gas_rounded) }}</td>
         <td class="num">{{ num(row.current_gas) }}</td>
         <td class="num">{{ chg(row.change) }}</td>
-        <td>{{ row.client_name }} / <code>{{ row.case_id }}</code></td>
+        <td>{{ row.client_name }} / {{ row.case_id | case_label }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -223,7 +223,7 @@
         {% set is_worst = (row.param, row.client_name, row.case_id) in worst_keys %}
         <tr{% if is_worst %} class="worst-case"{% endif %}>
           <td>{{ row.client_name }}</td>
-          <td><code>{{ row.case_id }}</code></td>
+          <td>{{ row.case_id | case_label }}</td>
           <td><code>{{ row.param }}</code></td>
           <td class="num">{{ r4(row.runtime_ms) }}</td>
           <td class="num">{{ num(row.new_gas_rounded) }}</td>
@@ -264,7 +264,7 @@
         {% for row in results %}
         <tr>
           <td>{{ row.client_name }}</td>
-          <td><code>{{ row.case_id }}</code></td>
+          <td>{{ row.case_id | case_label }}</td>
           <td class="num">{{ num(row.nobs) }}</td>
           <td class="num">{{ r3(row.rsquared) }}</td>
           <td class="num">{{ r3(row.rsquared_adj) }}</td>

@@ -31,6 +31,23 @@ SITE_DIR = REPO_ROOT / "docs"
 
 ASSETS = ["style.css", "charts.js"]
 
+# Human-readable labels for the raw benchmarkoor case_ids. The case_id stays the
+# canonical key everywhere in the pipeline (it groups the NNLS fits and is what
+# results.json records); these labels are display-only. charts.js carries the same
+# map for axis ticks — keep the two in sync. The mapping is documented in
+# site_src/templates/methodology.html ("The four receiver cases").
+CASE_LABELS = {
+    "diff_to_contract": "Contract",
+    "diff_to_existent": "EOA",
+    "diff_to_nonexistent": "Non-existent",
+    "diff_to_unique_code_jumpdest_contract": "Contract (unique code)",
+}
+
+
+def case_label(case_id: str) -> str:
+    """Map a raw case_id to its readable label, falling back to the id itself."""
+    return CASE_LABELS.get(case_id, case_id)
+
 
 def git_commit() -> str:
     """Return the current short commit hash, or "unknown" on failure."""
@@ -70,6 +87,7 @@ def main() -> None:
         loader=FileSystemLoader(str(TEMPLATES_DIR)),
         autoescape=select_autoescape(["html"]),
     )
+    env.filters["case_label"] = case_label
 
     context = {
         "data": data,

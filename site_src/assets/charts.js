@@ -5,6 +5,18 @@
   "use strict";
 
   var PLOT_CONFIG = { responsive: true, displaylogo: false, displayModeBar: "hover" };
+
+  // Human-readable axis labels for the raw case_ids. Keep in sync with CASE_LABELS
+  // in scripts/build_site.py. case_id stays the lookup key; these are display-only.
+  var CASE_LABELS = {
+    diff_to_contract: "Contract",
+    diff_to_existent: "EOA",
+    diff_to_nonexistent: "Non-existent",
+    diff_to_unique_code_jumpdest_contract: "Contract (unique code)"
+  };
+  function caseLabel(caseId) {
+    return CASE_LABELS[caseId] || caseId;
+  }
   var PALETTE = [
     "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3",
     "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"
@@ -75,6 +87,7 @@
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
 
     var cases = uniqueSorted(rows, "case_id");
+    var caseTicks = cases.map(caseLabel);
     var clients = uniqueSorted(rows, "client_name");
 
     var traces = clients.map(function (client, i) {
@@ -94,7 +107,7 @@
       return {
         type: "bar",
         name: client,
-        x: cases,
+        x: caseTicks,
         y: y,
         marker: { color: PALETTE[i % PALETTE.length] },
         error_y: {
@@ -114,7 +127,7 @@
       margin: { t: 10, r: 20, b: 70, l: 70 },
       legend: { orientation: "h", y: -0.25 }
     });
-    Object.assign(layout.xaxis, { title: "Case ID", automargin: true });
+    Object.assign(layout.xaxis, { title: "Case", automargin: true });
     Object.assign(layout.yaxis, { title: "Proposed gas (rounded)" });
     Object.assign(layout, referenceLine(currentGas, "Current (" + currentGas.toLocaleString() + ")"));
 
@@ -130,6 +143,7 @@
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
 
     var cases = uniqueSorted(rows, "case_id");
+    var caseTicks = cases.map(caseLabel);
     var clients = uniqueSorted(rows, "client_name");
 
     var traces = clients.map(function (client, i) {
@@ -142,7 +156,7 @@
       return {
         type: "bar",
         name: client,
-        x: cases,
+        x: caseTicks,
         y: y,
         marker: { color: PALETTE[i % PALETTE.length] }
       };
@@ -153,7 +167,7 @@
       margin: { t: 10, r: 20, b: 70, l: 60 },
       legend: { orientation: "h", y: -0.25 }
     });
-    Object.assign(layout.xaxis, { title: "Case ID", automargin: true });
+    Object.assign(layout.xaxis, { title: "Case", automargin: true });
     Object.assign(layout.yaxis, { title: "R²", range: [0, 1.05] });
     Object.assign(layout, referenceLine(0.5, "R² = 0.5"));
 

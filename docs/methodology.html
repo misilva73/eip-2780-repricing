@@ -62,26 +62,29 @@
   <p>
     The benchmark test <code>test_ether_transfers_onchain_receivers</code> sends ether to
     four kinds of receiver. Each is a separate <code>case_id</code> because the client's
-    work differs by receiver type:
+    work differs by receiver type. The dashboard shows a short readable label for each;
+    the raw <code>case_id</code> below stays the canonical key in
+    <code>data/results.json</code>:
   </p>
   <ul>
     <li>
-      <code>diff_to_contract</code> &mdash; transfers to deployed contracts that share a
-      common <code>codeHash</code>, so clients can cache the code lookup across
-      transactions.
+      <strong>Contract</strong> (<code>diff_to_contract</code>) &mdash; transfers to
+      deployed contracts that share a common <code>codeHash</code>, so clients can cache
+      the code lookup across transactions.
     </li>
     <li>
-      <code>diff_to_unique_code_jumpdest_contract</code> &mdash; transfers to contracts
+      <strong>Contract (unique code)</strong>
+      (<code>diff_to_unique_code_jumpdest_contract</code>) &mdash; transfers to contracts
       with unique code, forcing a fresh code read plus a 24&nbsp;KiB JUMPDEST analysis on
       every transaction (the heaviest contract case).
     </li>
     <li>
-      <code>diff_to_existent</code> &mdash; transfers to externally owned accounts (EOAs)
-      that already exist in state.
+      <strong>EOA</strong> (<code>diff_to_existent</code>) &mdash; transfers to externally
+      owned accounts (EOAs) that already exist in state.
     </li>
     <li>
-      <code>diff_to_nonexistent</code> &mdash; transfers to EOAs that do not yet exist,
-      so the client must create a new account.
+      <strong>Non-existent</strong> (<code>diff_to_nonexistent</code>) &mdash; transfers
+      to EOAs that do not yet exist, so the client must create a new account.
     </li>
   </ul>
 
@@ -95,14 +98,16 @@
   </p>
   <ul>
     <li>
-      <strong>Contract cases</strong> (<code>diff_to_contract</code>,
-      <code>diff_to_unique_code_jumpdest_contract</code>): each transaction executes
+      <strong>Contract cases</strong> (Contract &amp; Contract (unique code) &mdash;
+      <code>diff_to_contract</code>, <code>diff_to_unique_code_jumpdest_contract</code>):
+      each transaction executes
       exactly one <code>JUMP</code>, so the <code>JUMP</code> opcode count from the trace
       equals the transaction count &mdash; <code>opcount = JUMP</code>.
     </li>
     <li>
-      <strong>EOA cases</strong> (<code>diff_to_existent</code>,
-      <code>diff_to_nonexistent</code>): plain transfers run no opcodes, so the trace has
+      <strong>EOA cases</strong> (EOA &amp; Non-existent &mdash;
+      <code>diff_to_existent</code>, <code>diff_to_nonexistent</code>): plain transfers
+      run no opcodes, so the trace has
       no opcode rows. The count falls back to
       <code>opcount = floor(block_gas_limit / 21000)</code> &mdash; the maximum number of
       base-cost transactions that fit in a block.
@@ -181,7 +186,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>1a4c245</code>
+        commit <code>5396caf</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a
