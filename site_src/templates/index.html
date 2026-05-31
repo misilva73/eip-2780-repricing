@@ -242,10 +242,37 @@
 {% for w in worst_case_overall %}
   {% set _ = worst_keys.append((w.param, w.client_name, w.case_id)) %}
 {% endfor %}
+{% set clients = new_gas | map(attribute='client_name') | unique | sort | list %}
+{% set params = new_gas | map(attribute='param') | unique | sort | list %}
+{% set cases = new_gas | map(attribute='case_id') | unique | sort | list %}
 <section class="detail">
   <h2>Proposed gas detail</h2>
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        {% for c in clients %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Param</span>
+      <select data-filter-key="param">
+        <option value="">All params</option>
+        {% for p in params %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        {% for c in cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
   <div class="table-scroll">
-    <table class="data-table">
+    <table class="data-table" data-filter-table>
       <thead>
         <tr>
           <th>Client</th>
@@ -264,7 +291,7 @@
       <tbody>
         {% for row in new_gas %}
         {% set is_worst = (row.param, row.client_name, row.case_id) in worst_keys %}
-        <tr{% if is_worst %} class="worst-case"{% endif %}>
+        <tr{% if is_worst %} class="worst-case"{% endif %} data-client="{{ row.client_name }}" data-param="{{ row.param }}" data-case="{{ row.case_id }}">
           <td>{{ row.client_name }}</td>
           <td>{{ row.case_id | case_label }}</td>
           <td><code>{{ row.param }}</code></td>
@@ -284,10 +311,29 @@
 </section>
 
 {#- ---- 4b. Detail: results (model fit) table ---- -#}
+{% set fit_clients = results | map(attribute='client_name') | unique | sort | list %}
+{% set fit_cases = results | map(attribute='case_id') | unique | sort | list %}
 <section class="detail">
   <h2>Model fit detail</h2>
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        {% for c in fit_clients %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        {% for c in fit_cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
   <div class="table-scroll">
-    <table class="data-table">
+    <table class="data-table" data-filter-table>
       <thead>
         <tr>
           <th>Client</th>
@@ -305,7 +351,7 @@
       </thead>
       <tbody>
         {% for row in results %}
-        <tr>
+        <tr data-client="{{ row.client_name }}" data-case="{{ row.case_id }}">
           <td>{{ row.client_name }}</td>
           <td>{{ row.case_id | case_label }}</td>
           <td class="num">{{ num(row.nobs) }}</td>

@@ -239,8 +239,47 @@
     });
   }
 
+  // Detail-table filters. Pure DOM toggling on server-rendered rows: each select
+  // carries data-filter-key="<k>" and matches against the row's data-<k> attribute,
+  // so a group filters on whatever keys it declares (e.g. client/param/case). No
+  // re-render, no data read. Wires every [data-table-filters] block on the page.
+  function initTableFilter(controls) {
+    var table = controls.parentElement.querySelector("[data-filter-table]");
+    if (!table) return;
+    var selects = Array.prototype.slice.call(
+      controls.querySelectorAll("[data-filter-key]")
+    );
+    var empty = controls.querySelector("[data-filter-empty]");
+    var rows = Array.prototype.slice.call(table.querySelectorAll("tbody tr"));
+
+    function apply() {
+      var shown = 0;
+      rows.forEach(function (tr) {
+        var match = selects.every(function (sel) {
+          return !sel.value ||
+            tr.getAttribute("data-" + sel.getAttribute("data-filter-key")) === sel.value;
+        });
+        tr.hidden = !match;
+        if (match) shown++;
+      });
+      if (empty) empty.hidden = shown > 0;
+    }
+
+    selects.forEach(function (sel) {
+      sel.addEventListener("change", apply);
+    });
+    apply();
+  }
+
+  function initTableFilters() {
+    Array.prototype.slice
+      .call(document.querySelectorAll("[data-table-filters]"))
+      .forEach(initTableFilter);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initRunDropdown();
+    initTableFilters();
     if (!window.DASHBOARD_DATA) return;
     plotNewGas("chart-tx-base", "TX_BASE", 21000);
     plotNewGas("chart-value-gas", "VALUE_GAS", 9000);

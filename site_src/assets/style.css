@@ -337,6 +337,41 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   margin-top: 0.6rem;
 }
 
+/* ---- Table filters ---- */
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.table-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+}
+.table-filter select {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+.table-filter select:hover { border-color: var(--accent); }
+.table-filter select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.table-filter-empty {
+  margin: 0;
+  align-self: center;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
 /* ---- Tables ---- */
 .table-scroll {
   overflow-x: auto;
