@@ -5,7 +5,6 @@ halves:
 
 (A) Analysis functions ported verbatim from the sibling ``evm-gas-repricings`` repo
     (``extract_param_values``, ``NNLSResults``, ``fit_NNLS``,
-    ``fit_NNLS_without_low_diff_runs``, ``find_low_diff_runs``,
     ``prepare_non_simple_model_data``).
 
 (B) A faithful reproduction of the ``ether-transfers-tx-base-value-gas`` notebook:
@@ -25,7 +24,6 @@ from typing import List, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import nnls
-from scipy.stats import zscore
 
 # ---------------------------------------------------------------------------
 # PART A — Ported analysis functions (verbatim from evm-gas-repricings/src)
@@ -291,8 +289,7 @@ class NNLSResults:
         return X_with_const @ self._coefficients
 
 
-# Ported verbatim from evm-gas-repricings/src/nnls.py
-# (fit_NNLS, fit_NNLS_without_low_diff_runs, find_low_diff_runs). The original
+# Ported verbatim from evm-gas-repricings/src/nnls.py (fit_NNLS). The original
 # sys.path.append / "from nnls_results import NNLSResults" lines are removed since
 # NNLSResults is defined inline above.
 def fit_NNLS(
@@ -386,95 +383,6 @@ def fit_NNLS(
         feature_names=feature_names,
         residual_norm=residual_norm,
     )
-
-
-def fit_NNLS_without_low_diff_runs(
-    op_df: pd.DataFrame,
-    features: List[str],
-    n_bootstrap: int = 1000,
-    random_seed: int = 42,
-) -> NNLSResults:
-    """
-    Fit NNLS regression with adaptive filtering of low_diff_runs.
-
-    This function mirrors the behavior of fit_OLS_without_low_diff_runs:
-    - Fits an initial NNLS model on all available data
-    - If R² ≤ 0.5 (poor fit), filters out runs with low average runtime differences
-    - Refits the model on filtered data
-    - Returns the better-fitting model (original or filtered)
-
-    The filtering removes measurement runs where opcounts don't produce increasing
-    runtimes, which can indicate measurement noise or system interference.
-
-    Args:
-        op_df: DataFrame with features, "run_duration_ms", and metadata columns
-                required for filtering (test_file, test_name, test_params,
-                ingestion_timestamp)
-        features: List of feature column names (excluding constant)
-        n_bootstrap: Number of bootstrap iterations (default 1000)
-        random_seed: Random seed for reproducibility (default 42)
-
-    Returns:
-        NNLSResults object (either original or filtered model, whichever is better)
-
-    Raises:
-        ValueError: If op_df is missing required columns
-        Exception: If both original and filtered models fail to fit
-
-    Example:
-        >>> result = fit_NNLS_without_low_diff_runs(op_df, ['opcount', 'num_rounds'])
-        >>> print(f"R² = {result.rsquared:.3f}")
-        R² = 0.856
-    """
-    # Prepare feature dataframe (drop NaN values)
-    required_cols = features + ["run_duration_ms"]
-    feature_df = op_df[required_cols].dropna()
-    if feature_df.empty:
-        raise ValueError("No valid data remaining after dropping NaN values")
-    # Fit initial NNLS model on all data
-    result = fit_NNLS(feature_df, features, n_bootstrap, random_seed)
-    # Check if we need to apply adaptive filtering
-    if result.rsquared <= 0.5:
-        try:
-            # Filter out low_diff_runs (runs with non-increasing runtimes)
-            filtered_op_df = find_low_diff_runs(op_df)
-            filtered_feature_df = filtered_op_df[required_cols].dropna()
-            # Fit model on filtered data
-            result_v2 = fit_NNLS(
-                filtered_feature_df, features, n_bootstrap, random_seed
-            )
-
-            # Return filtered model if it's better
-            if result_v2.rsquared > 0.5:
-                return result_v2
-        except Exception:
-            # If filtering fails, fall back to original result
-            pass
-    # Return original result if no improvement from filtering
-    return result
-
-
-def find_low_diff_runs(op_df: pd.DataFrame) -> pd.DataFrame:
-    cols_zscore = ["test_file", "test_name", "test_params"]
-    all_cols = cols_zscore + ["ingestion_timestamp"]
-    # Compute average diff in runtime per run
-    avg_diff_df = (
-        op_df.sort_values("opcount")
-        .groupby(all_cols)["run_duration_ms"]
-        .apply(lambda x: x.diff().mean())
-        .reset_index()
-        .rename(columns={"run_duration_ms": "avg_diff"})
-    )
-    # Calculate z-scores on average diff
-    avg_diff_df["z_score"] = avg_diff_df.groupby(cols_zscore)["avg_diff"].transform(
-        lambda x: zscore(x, nan_policy="omit") if len(x) > 1 else 0
-    )
-    # Filter runs with low average diff (based on z-score)
-    low_diff_runs = avg_diff_df[avg_diff_df["z_score"] < -1][
-        "ingestion_timestamp"
-    ].unique()
-    filtered_op_df = op_df[~op_df["ingestion_timestamp"].isin(low_diff_runs)]
-    return filtered_op_df
 
 
 # Ported verbatim from evm-gas-repricings/src/runtime_estimation.py
@@ -600,7 +508,10 @@ def build_results_df(df: pd.DataFrame) -> pd.DataFrame:
             model_df, features = prepare_non_simple_model_data(
                 fit_df, ["transfer_amount"]
             )
-            result = fit_NNLS_without_low_diff_runs(model_df, features)
+            fit_df = model_df[features + ["run_duration_ms"]].dropna()
+            if fit_df.empty:
+                raise ValueError("No valid data remaining after dropping NaN values")
+            result = fit_NNLS(fit_df, features)
         except Exception as e:
             print(f"Skipping ({client_name}, {case_id}): {e}")
             continue

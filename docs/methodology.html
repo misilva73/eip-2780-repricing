@@ -146,13 +146,6 @@
     distinguish a barely-positive coefficient from a large one; use the
     <strong>confidence intervals</strong> for that.
   </p>
-  <p>
-    A <strong>low-diff-run filter</strong> guards against a small number of anomalous
-    runs dominating the fit: when a group's R&sup2; is poor (&le;&nbsp;0.5), the model is
-    refit after dropping runs with low z-score differences. The filter is only applied in
-    that poor-fit case, so well-behaved groups keep all their data.
-  </p>
-
   <h2>The 100 Mgas/s anchor and worst-case selection</h2>
   <p>
     Each runtime coefficient (in milliseconds) is converted to gas at a fixed throughput
@@ -200,7 +193,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>df6cb05</code>
+        commit <code>c40c183</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a

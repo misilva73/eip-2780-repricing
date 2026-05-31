@@ -30,9 +30,11 @@ Requires `make`, `jq`, Python 3.11+.
 - **`docs/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
   `docs/{*.html,data.js,style.css,charts.js}` are all generated.
 - **`analysis.py` Part A is ported verbatim** from `evm-gas-repricings`
-  (`NNLSResults`, `fit_NNLS*`, `prepare_non_simple_model_data`,
+  (`NNLSResults`, `fit_NNLS`, `prepare_non_simple_model_data`,
   `extract_param_values`). Don't refactor it — keep it diffable against upstream.
-  All EIP-2780-specific logic lives in Part B.
+  All EIP-2780-specific logic lives in Part B. (The upstream
+  `fit_NNLS_without_low_diff_runs`/`find_low_diff_runs` adaptive filter was
+  dropped — it never triggered on this suite's data.)
 - **`opcount` is recomputed**, ignoring benchmarkoor's own column: `JUMP` from
   the trace per contract tx, else `floor(block_gas_limit/21000)` for EOA cases.
 - **Column rename:** `test_runtime_ms → run_duration_ms` right after load — the
@@ -51,5 +53,6 @@ both `data/results.json` and `docs/`, then push.
 
 `make site && (cd docs && python -m http.server)` — check both pages render,
 Plotly charts are interactive, tables show worst-case highlights, footer
-populated. `results.json` worst case should track besu `diff_to_nonexistent`
-(TX_BASE) / `diff_to_existent` (VALUE_GAS).
+populated. `results.json` worst case currently tracks besu
+`diff_to_unique_code_jumpdest_contract` for both TX_BASE and VALUE_GAS (this
+follows the data — re-check after a data refresh).
