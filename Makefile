@@ -1,7 +1,7 @@
 BENCHMARKOOR_TOKEN := $(shell jq -r .BENCHMARKOOR_TOKEN secrets.json)
 export BENCHMARKOOR_TOKEN
 
-.PHONY: all fetch analyze site clean
+.PHONY: all fetch analyze site serve clean
 
 all: fetch analyze site
 
@@ -13,6 +13,9 @@ analyze:
 
 site:
 	python scripts/build_site.py
+
+serve: site
+	cd docs && python -m http.server
 
 clean:
 	rm -rf data/raw/*.parquet data/raw/*.json data/results.json docs/*.html docs/*.css docs/*.js
