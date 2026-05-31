@@ -473,7 +473,9 @@ def load_meta() -> dict:
 
 def _extract_suite(meta_raw: dict):
     """Reduce meta.json's suite info to a comma-separated hash string."""
-    suites = meta_raw.get("suites") or meta_raw.get("suite") or meta_raw.get("suite_hash")
+    suites = (
+        meta_raw.get("suites") or meta_raw.get("suite") or meta_raw.get("suite_hash")
+    )
     if isinstance(suites, list):
         hashes = [
             s.get("suite_hash") if isinstance(s, dict) else str(s) for s in suites
@@ -553,14 +555,10 @@ def build_results_df(df: pd.DataFrame) -> pd.DataFrame:
             "transfer_amount": result.params.get("transfer_amount", np.nan),
             "transfer_amount_pvalue": result.pvalues.get("transfer_amount", np.nan),
             "transfer_amount_conf_int_low": (
-                result.conf_int().loc["transfer_amount", 0]
-                if has_transfer
-                else np.nan
+                result.conf_int().loc["transfer_amount", 0] if has_transfer else np.nan
             ),
             "transfer_amount_conf_int_high": (
-                result.conf_int().loc["transfer_amount", 1]
-                if has_transfer
-                else np.nan
+                result.conf_int().loc["transfer_amount", 1] if has_transfer else np.nan
             ),
         }
         results_records.append(record)
@@ -733,10 +731,30 @@ def build_summary(new_gas_df: pd.DataFrame, worst_case_overall: pd.DataFrame) ->
         for _, r in poor_in_worst.iterrows()
     ]
 
+    # Same idea for statistical significance: worst-case drivers whose coefficient
+    # p-value > 0.05 (the converted gas is not significantly different from zero).
+    insig_rows = new_gas_df[new_gas_df["pvalue"] > 0.05]
+    insig_in_worst = insig_rows[
+        insig_rows.apply(
+            lambda r: (r["param"], r["client_name"], r["case_id"]) in worst_pairs,
+            axis=1,
+        )
+    ]
+    pvalue_caveats = [
+        {
+            "param": r["param"],
+            "client_name": r["client_name"],
+            "case_id": r["case_id"],
+            "pvalue": float(r["pvalue"]),
+        }
+        for _, r in insig_in_worst.iterrows()
+    ]
+
     return {
         "tx_base": param_summary("TX_BASE", TX_BASE),
         "value_gas": param_summary("VALUE_GAS", VALUE_GAS_CURRENT),
         "caveats": caveats,
+        "pvalue_caveats": pvalue_caveats,
     }
 
 

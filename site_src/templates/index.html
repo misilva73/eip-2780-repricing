@@ -53,6 +53,7 @@
 {% set tx = summary.tx_base or {} %}
 {% set vg = summary.value_gas or {} %}
 {% set caveats = summary.caveats or [] %}
+{% set pvalue_caveats = summary.pvalue_caveats or [] %}
 
 {#- ---- run selector banner ---- -#}
 {% if runs %}
@@ -186,6 +187,27 @@
   <p class="caveats-ok">
     <strong>R&sup2; caveats:</strong> none &mdash; all worst-case drivers have
     R&sup2; &gt; 0.5.
+  </p>
+  {% endif %}
+
+  {#- p-value caveats -#}
+  {% if pvalue_caveats %}
+  <div class="caveats">
+    <p><strong>p-value caveats:</strong></p>
+    <ul>
+      {% for c in pvalue_caveats %}
+      <li>
+        <code>{{ c.param }}</code> driven by <strong>{{ c.client_name }}</strong> /
+        case {{ c.case_id | case_label }} has p&nbsp;=&nbsp;{{ r3(c.pvalue) }}
+        &gt;&nbsp;0.05 (not statistically significant; needs follow-up).
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p class="caveats-ok">
+    <strong>p-value caveats:</strong> none &mdash; all worst-case drivers have
+    p&nbsp;&le;&nbsp;0.05.
   </p>
   {% endif %}
 </section>

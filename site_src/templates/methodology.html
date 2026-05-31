@@ -131,7 +131,9 @@
     <code>(client, case)</code> with the largest proposed gas
     (<code>idxmax</code> on <code>new_gas_rounded</code>) &mdash; the most conservative
     re-pricing that still keeps every client within the anchor. Worst cases whose
-    driving model has R&sup2;&nbsp;&le;&nbsp;0.5 are flagged as caveats on the dashboard.
+    driving model has R&sup2;&nbsp;&le;&nbsp;0.5, or whose coefficient
+    p-value&nbsp;&gt;&nbsp;0.05 (not statistically significant), are flagged as
+    caveats on the dashboard.
   </p>
 
   <h2>Reproducing this analysis</h2>
