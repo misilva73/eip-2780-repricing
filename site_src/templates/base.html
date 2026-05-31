@@ -43,6 +43,10 @@
         suite <code>{{ meta.suite or "unknown" }}</code>
         &middot;
         commit <code>{{ commit or "unknown" }}</code>
+        {%- if meta.generated_at %}
+        &middot;
+        generated <code>{{ meta.generated_at }}</code>
+        {%- endif %}
       </p>
       <p class="repro-note">
         Generated from <code>{{ meta.generated_from or "meta.json" }}</code> at a

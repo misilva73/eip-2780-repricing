@@ -54,6 +54,49 @@
 {% set vg = summary.value_gas or {} %}
 {% set caveats = summary.caveats or [] %}
 
+{#- ---- run selector banner ---- -#}
+{% if runs %}
+{% set n = runs | length %}
+{% set current = (runs | selectattr("is_current") | first) or runs[0] %}
+<div class="run-bar{% if not is_latest %} run-bar-older{% endif %}">
+  <span class="run-bar-label">Viewing run</span>
+  {% if n > 1 %}
+  {#- Custom dropdown: button + listbox of links. Links navigate without JS;
+      charts.js adds open/close + keyboard. So the font/colors match the page
+      open and closed (a native <select> popup uses the OS font). -#}
+  <div class="run-dropdown" data-run-dropdown>
+    <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="run-dropdown-current">{{ current.label }}</span>
+      <span class="run-dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
+      {%- for r in runs %}
+      <li role="option" aria-selected="{{ "true" if r.is_current else "false" }}">
+        <a href="{{ r.href }}" class="run-dropdown-option{% if r.is_current %} is-current{% endif %}"
+           tabindex="-1">{{ r.label }}</a>
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+  <noscript>
+    {#- No-JS fallback: a plain native select still navigates on change is JS-only,
+        so expose links instead. -#}
+    <span class="run-dropdown-noscript">
+      {%- for r in runs %}{% if not r.is_current %}<a href="{{ r.href }}">{{ r.label }}</a>{% endif %}{% endfor %}
+    </span>
+  </noscript>
+  {% else %}
+  <span class="run-bar-single">{{ runs[0].label }}</span>
+  {% endif %}
+  <span class="run-bar-meta">
+    {%- if n == 1 -%}latest run
+    {%- elif is_latest -%}latest of {{ n }}
+    {%- else -%}older run &middot; latest of {{ n }}
+    {%- endif -%}
+  </span>
+</div>
+{% endif %}
+
 <section class="hero">
   <h1>EIP-2780 repricing: <code>TX_BASE</code> &amp; <code>VALUE_GAS</code></h1>
   <p class="lede">
@@ -290,6 +333,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="data.js"></script>
+<script src="{{ data_file or 'data.js' }}"></script>
 <script src="charts.js"></script>
 {% endblock %}

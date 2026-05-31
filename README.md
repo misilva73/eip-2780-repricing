@@ -5,7 +5,8 @@ benchmark run to derive proposed new gas values for EIP-2780's `TX_BASE` (curren
 21000) and `VALUE_GAS` (currently 9000) parameters. It fits an NNLS model per
 `(client, case_id)`, converts the coefficients to gas at a 100 Mgas/s anchor, surfaces
 the worst-case driver per parameter, and renders the whole analysis as an interactive
-static dashboard for GitHub Pages.
+static dashboard for GitHub Pages. Each run is archived, and the dashboard has a run
+selector to view previous runs alongside the latest.
 
 ## Requirements
 
@@ -35,14 +36,21 @@ Or run the targets individually:
 
 ```sh
 make fetch     # pull benchmark data into data/raw/
-make analyze   # build data/results.json
-make site      # render data/results.json + site_src/ into docs/
+make analyze   # build data/results.json + archive a copy to data/runs/<run_id>.json
+make site      # render every archived run into docs/ (latest = index.html)
 ```
 
 Serve the built site locally:
 
 ```sh
 cd docs && python -m http.server
+```
+
+Each `make analyze` archives its result to `data/runs/<run_id>.json` (committed), so
+the dashboard accumulates a history of runs. To remove a run from the dashboard:
+
+```sh
+make clean-run RUN_ID=<run_id>   # delete an archived run and re-render
 ```
 
 ## Repo layout
@@ -54,18 +62,20 @@ eip-2780-repricing/
 ├── configs/
 │   └── benchmarkoor.yaml # pinned suite / fetch config
 ├── scripts/
-│   ├── analysis.py       # ported NNLS analysis → data/results.json
-│   └── build_site.py     # results.json + site_src/ → docs/
+│   ├── analysis.py       # ported NNLS analysis → data/results.json (+ data/runs/)
+│   ├── build_site.py     # data/runs/ + site_src/ → docs/
+│   └── clean_run.py      # delete an archived run (make clean-run)
 ├── data/
 │   ├── raw/              # fetched parquet/json (gitignored)
-│   └── results.json      # committed analysis artifact
+│   ├── results.json      # committed latest-run artifact
+│   └── runs/             # committed per-run history (one file per run_id)
 ├── site_src/
 │   ├── templates/        # Jinja2 templates
 │   └── assets/           # style.css, charts.js
-└── docs/                 # built site served by GitHub Pages
+└── docs/                 # built site served by GitHub Pages (index.html + run-<id>.html)
 ```
 
 ## Deployment
 
 GitHub Pages serves from the `/docs` folder on `main`. There is no CI — build locally,
-then commit `docs/` and `data/results.json` and push.
+then commit `docs/`, `data/results.json`, and the new/changed `data/runs/*.json`, and push.

@@ -174,7 +174,73 @@
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
 
+  // Run selector: a custom button + listbox so the font/colors match the page
+  // open and closed (a native <select> popup uses the OS font). Each option is a
+  // link, so selecting one just navigates to that run's pre-rendered page.
+  function initRunDropdown() {
+    var root = document.querySelector("[data-run-dropdown]");
+    if (!root) return;
+    var toggle = root.querySelector(".run-dropdown-toggle");
+    var list = root.querySelector(".run-dropdown-list");
+    var options = Array.prototype.slice.call(
+      root.querySelectorAll(".run-dropdown-option")
+    );
+    if (!toggle || !list || !options.length) return;
+
+    function isOpen() {
+      return toggle.getAttribute("aria-expanded") === "true";
+    }
+    function open(focusIndex) {
+      list.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      var i = focusIndex;
+      if (i == null) {
+        i = options.findIndex(function (o) {
+          return o.classList.contains("is-current");
+        });
+        if (i < 0) i = 0;
+      }
+      options[i].focus();
+    }
+    function close(focusToggle) {
+      list.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (focusToggle) toggle.focus();
+    }
+    function focusAt(i) {
+      var n = options.length;
+      options[((i % n) + n) % n].focus();
+    }
+
+    toggle.addEventListener("click", function () {
+      isOpen() ? close(false) : open();
+    });
+    toggle.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        open(0);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        open(options.length - 1);
+      }
+    });
+    options.forEach(function (opt, i) {
+      opt.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") { e.preventDefault(); focusAt(i + 1); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); focusAt(i - 1); }
+        else if (e.key === "Home") { e.preventDefault(); focusAt(0); }
+        else if (e.key === "End") { e.preventDefault(); focusAt(options.length - 1); }
+        else if (e.key === "Escape") { e.preventDefault(); close(true); }
+        // Enter / click follow the link's href (native navigation).
+      });
+    });
+    document.addEventListener("click", function (e) {
+      if (isOpen() && !root.contains(e.target)) close(false);
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    initRunDropdown();
     if (!window.DASHBOARD_DATA) return;
     plotNewGas("chart-tx-base", "TX_BASE", 21000);
     plotNewGas("chart-value-gas", "VALUE_GAS", 9000);

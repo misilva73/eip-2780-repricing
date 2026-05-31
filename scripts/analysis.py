@@ -18,6 +18,7 @@ import json
 import math
 import re
 import warnings
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Union
 
@@ -431,6 +432,7 @@ BENCH_PARQUET = RAW_DIR / "bench_data.parquet"
 TRACE_PARQUET = RAW_DIR / "trace.parquet"
 META_JSON = RAW_DIR / "meta.json"
 RESULTS_JSON = REPO_DIR / "data" / "results.json"
+RUNS_DIR = REPO_DIR / "data" / "runs"  # committed history, one file per run
 
 
 def _sanitize(obj):
@@ -479,6 +481,25 @@ def _extract_suite(meta_raw: dict):
         hashes = [h for h in hashes if h]
         return ", ".join(hashes) if hashes else None
     return suites
+
+
+def _make_run_id(window, suite, generated_at: str) -> str:
+    """Build a stable, sortable run id from the data window + suite.
+
+    Keyed on ``window["end"]`` so re-analyzing the same data produces the same id
+    (and overwrites the same archive entry) rather than a duplicate. The end
+    timestamp (e.g. ``2026-05-31T09:01:16Z``) is stripped of ``:``/``-`` so it is
+    filesystem-safe and still sorts chronologically; the first suite hash token is
+    appended to disambiguate same-window runs of different suites. Falls back to
+    the ``generated_at`` stamp when the window is missing.
+    """
+    end = (window or {}).get("end") if isinstance(window, dict) else None
+    stamp = end or generated_at
+    stamp = re.sub(r"[:\-]", "", str(stamp))
+    suite_token = ""
+    if suite:
+        suite_token = "_" + re.split(r"[,\s]+", str(suite).strip())[0]
+    return f"{stamp}{suite_token}"
 
 
 def _extract_case_id(test_params: str):
@@ -776,11 +797,14 @@ def run_analysis() -> dict:
     cases = sorted(df["case_id"].dropna().unique().tolist())
     window = meta_raw.get("data_window")
     suite = _extract_suite(meta_raw)
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     meta = {
         "anchor_rate": ANCHOR_RATE,
         "test_name": TEST_NAME,
         "window": window,
         "generated_from": "meta.json",
+        "generated_at": generated_at,
+        "run_id": _make_run_id(window, suite, generated_at),
         "clients": clients,
         "cases": cases,
         "benchmarkoor_fetch_version": meta_raw.get(
@@ -810,6 +834,17 @@ def main() -> None:
     with open(RESULTS_JSON, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Wrote {RESULTS_JSON}")
+
+    # Archive this run into the committed history (one file per run_id). Keyed on
+    # the data window + suite, so re-analyzing the same data overwrites in place
+    # rather than accumulating duplicates. results.json stays the "latest" pointer.
+    run_id = results["meta"].get("run_id")
+    if run_id:
+        RUNS_DIR.mkdir(parents=True, exist_ok=True)
+        run_path = RUNS_DIR / f"{run_id}.json"
+        with open(run_path, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"Archived {run_path}")
 
 
 if __name__ == "__main__":
