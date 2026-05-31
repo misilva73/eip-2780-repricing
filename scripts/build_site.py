@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Render the EIP-2780 repricing dashboard from data/results.json into site/.
+"""Render the EIP-2780 repricing dashboard from data/results.json into docs/.
 
 Reads the analysis artifact (data/results.json), renders the Jinja2 templates in
-site_src/templates/ into site/, embeds the data verbatim as site/data.js
+site_src/templates/ into docs/, embeds the data verbatim as docs/data.js
 (window.DASHBOARD_DATA = ...) so the page needs no runtime fetch, and copies the
 static assets. Run from the repo root: ``python scripts/build_site.py``.
 
@@ -27,7 +27,7 @@ REPO_ROOT = SCRIPT_DIR.parent
 DEFAULT_RESULTS_JSON = REPO_ROOT / "data" / "results.json"
 TEMPLATES_DIR = REPO_ROOT / "site_src" / "templates"
 ASSETS_DIR = REPO_ROOT / "site_src" / "assets"
-SITE_DIR = REPO_ROOT / "site"
+SITE_DIR = REPO_ROOT / "docs"
 
 ASSETS = ["style.css", "charts.js"]
 

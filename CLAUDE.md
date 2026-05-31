@@ -11,7 +11,7 @@ anchor, picks the worst case per param, renders a static GitHub Pages dashboard.
 
 - `make fetch`   — `benchmarkoor-fetch` → `data/raw/*.parquet` + `meta.json` (gitignored)
 - `make analyze` — [scripts/analysis.py](scripts/analysis.py) → `data/results.json` (committed)
-- `make site`    — [scripts/build_site.py](scripts/build_site.py): `results.json` + `site_src/` → `site/`
+- `make site`    — [scripts/build_site.py](scripts/build_site.py): `results.json` + `site_src/` → `docs/`
 
 Needs `secrets.json` at root: `{"BENCHMARKOOR_TOKEN": "bmk_..."}` (gitignored).
 Requires `make`, `jq`, Python 3.11+.
@@ -27,8 +27,8 @@ Requires `make`, `jq`, Python 3.11+.
 
 ## Must not break
 
-- **`site/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
-  `site/{*.html,data.js,style.css,charts.js}` are all generated.
+- **`docs/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
+  `docs/{*.html,data.js,style.css,charts.js}` are all generated.
 - **`analysis.py` Part A is ported verbatim** from `evm-gas-repricings`
   (`NNLSResults`, `fit_NNLS*`, `prepare_non_simple_model_data`,
   `extract_param_values`). Don't refactor it — keep it diffable against upstream.
@@ -44,12 +44,12 @@ Requires `make`, `jq`, Python 3.11+.
 
 ## Deploy
 
-GitHub Pages serves `/site` on `main`. No CI. After a data/site change, commit
-both `data/results.json` and `site/`, then push.
+GitHub Pages serves `/docs` on `main`. No CI. After a data/site change, commit
+both `data/results.json` and `docs/`, then push.
 
 ## Verify before commit
 
-`make site && (cd site && python -m http.server)` — check both pages render,
+`make site && (cd docs && python -m http.server)` — check both pages render,
 Plotly charts are interactive, tables show worst-case highlights, footer
 populated. `results.json` worst case should track besu `diff_to_nonexistent`
 (TX_BASE) / `diff_to_existent` (VALUE_GAS).

@@ -36,13 +36,13 @@ Or run the targets individually:
 ```sh
 make fetch     # pull benchmark data into data/raw/
 make analyze   # build data/results.json
-make site      # render data/results.json + site_src/ into site/
+make site      # render data/results.json + site_src/ into docs/
 ```
 
 Serve the built site locally:
 
 ```sh
-cd site && python -m http.server
+cd docs && python -m http.server
 ```
 
 ## Repo layout
@@ -55,17 +55,17 @@ eip-2780-repricing/
 │   └── benchmarkoor.yaml # pinned suite / fetch config
 ├── scripts/
 │   ├── analysis.py       # ported NNLS analysis → data/results.json
-│   └── build_site.py     # results.json + site_src/ → site/
+│   └── build_site.py     # results.json + site_src/ → docs/
 ├── data/
 │   ├── raw/              # fetched parquet/json (gitignored)
 │   └── results.json      # committed analysis artifact
 ├── site_src/
 │   ├── templates/        # Jinja2 templates
 │   └── assets/           # style.css, charts.js
-└── site/                 # built site served by GitHub Pages
+└── docs/                 # built site served by GitHub Pages
 ```
 
 ## Deployment
 
-GitHub Pages serves from the `/site` folder on `main`. There is no CI — build locally,
-then commit `site/` and `data/results.json` and push.
+GitHub Pages serves from the `/docs` folder on `main`. There is no CI — build locally,
+then commit `docs/` and `data/results.json` and push.

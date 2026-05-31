@@ -15,4 +15,4 @@ site:
 	python scripts/build_site.py
 
 clean:
-	rm -rf data/raw/*.parquet data/raw/*.json data/results.json site/*.html site/*.css site/*.js
+	rm -rf data/raw/*.parquet data/raw/*.json data/results.json docs/*.html docs/*.css docs/*.js
