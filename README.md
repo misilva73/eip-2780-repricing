@@ -8,6 +8,8 @@ the worst-case driver per parameter, and renders the whole analysis as an intera
 static dashboard for GitHub Pages. Each run is archived, and the dashboard has a run
 selector to view previous runs alongside the latest.
 
+**Live dashboard:** <https://misilva73.github.io/eip-2780-repricing/>
+
 ## Requirements
 
 - Python 3.11+
@@ -77,5 +79,6 @@ eip-2780-repricing/
 
 ## Deployment
 
-GitHub Pages serves from the `/docs` folder on `main`. There is no CI — build locally,
+GitHub Pages serves from the `/docs` folder on `main`, published at
+<https://misilva73.github.io/eip-2780-repricing/>. There is no CI — build locally,
 then commit `docs/`, `data/results.json`, and the new/changed `data/runs/*.json`, and push.
