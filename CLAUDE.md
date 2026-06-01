@@ -1,9 +1,11 @@
 # EIP-2780 Repricing Dashboard
 
 Derives proposed gas values for EIP-2780's `TX_BASE` (21000) and `VALUE_GAS`
-(9000) from `test_ether_transfers_onchain_receivers` benchmark runtimes. Fits
-NNLS per `(client, case_id)`, converts coefficients to gas at a 100 Mgas/s
-anchor, picks the worst case per param, renders a static GitHub Pages dashboard.
+(9000) — plus the derived `VALUE_TRANSFER` (`TX_BASE + VALUE_GAS`, the
+end-to-end cost of a value transfer, referenced against `TX_BASE`) — from
+`test_ether_transfers_onchain_receivers` benchmark runtimes. Fits NNLS per
+`(client, case_id)`, converts coefficients to gas at a 100 Mgas/s anchor, picks
+the worst case per param, renders a static GitHub Pages dashboard.
 
 ## Pipeline
 
@@ -11,7 +13,7 @@ anchor, picks the worst case per param, renders a static GitHub Pages dashboard.
 
 - `make fetch`   — `benchmarkoor-fetch` → `data/raw/*.parquet` + `meta.json` (gitignored)
 - `make analyze` — [scripts/analysis.py](scripts/analysis.py) → `data/results.json` (latest, committed) **and** archives a copy to `data/runs/<run_id>.json` (committed history)
-- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (one page per run; latest is `index.html`)
+- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (one page per run; latest is `index.html`) plus a single run-agnostic `docs/methodology.html`
 
 ## Run history
 
@@ -50,8 +52,10 @@ Requires `make`, `jq`, Python 3.11+.
 ## Must not break
 
 - **`docs/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
-  `docs/{*.html,*.js,style.css}` are all generated, including `run-<id>.html` and
-  per-run `data-<id>.js`.
+  `docs/{*.html,*.js,style.css}` are all generated, including `run-<id>.html`,
+  per-run `data-<id>.js`, and `methodology.html`. Templates extend a shared
+  `site_src/templates/base.html`. `methodology.html` is rendered once from the
+  latest run (run-agnostic, no run selector) — see [build_site.py](scripts/build_site.py).
 - **`analysis.py` Part A is ported verbatim** from `evm-gas-repricings`
   (`NNLSResults`, `fit_NNLS`, `prepare_non_simple_model_data`,
   `extract_param_values`). Don't refactor it — keep it diffable against upstream.
@@ -64,6 +68,8 @@ Requires `make`, `jq`, Python 3.11+.
   ported NNLS code expects the latter.
 - **Constants** (`ANCHOR_RATE`, `TX_BASE`, `VALUE_GAS_CURRENT`, `TEST_NAME`) are
   in analysis.py near `# PART B`. `current_gas` reference values come from these.
+  `VALUE_TRANSFER` is derived (`TX_BASE + VALUE_GAS` per fit) and references
+  `TX_BASE` — there was never a separate flat charge for transfers.
 - **Each page's data file embeds its run verbatim** as `window.DASHBOARD_DATA` —
   no runtime `fetch()` (avoids project-pages base-path issues). `index.html` loads
   `data.js`; `run-<id>.html` loads `data-<id>.js`. `charts.js` reads whichever is
@@ -81,5 +87,5 @@ Plotly charts are interactive, tables show worst-case highlights, footer
 populated (incl. `generated`). With >1 archived run, the **Viewing run** selector
 banner switches pages and the latest reads "(latest)". `results.json` worst case
 currently tracks besu
-`diff_to_unique_code_jumpdest_contract` for both TX_BASE and VALUE_GAS (this
-follows the data — re-check after a data refresh).
+`diff_to_unique_code_jumpdest_contract` for all three params (TX_BASE,
+VALUE_GAS, VALUE_TRANSFER) (this follows the data — re-check after a data refresh).
