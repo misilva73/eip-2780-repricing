@@ -283,6 +283,8 @@
     if (!window.DASHBOARD_DATA) return;
     plotNewGas("chart-tx-base", "TX_BASE", 21000);
     plotNewGas("chart-value-gas", "VALUE_GAS", 9000);
+    // VALUE_TRANSFER = TX_BASE + VALUE_GAS; its reference is today's flat 21000.
+    plotNewGas("chart-value-transfer", "VALUE_TRANSFER", 21000);
     plotRsquared("chart-rsquared");
   });
 })();

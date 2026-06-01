@@ -580,6 +580,9 @@ def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
     current_gas_map = {
         "TX_BASE": TX_BASE,
         "VALUE_GAS": VALUE_GAS_CURRENT,
+        # A value-bearing transfer pays a flat 21000 today (no separate value
+        # charge ever existed for transfers), so its reference is TX_BASE.
+        "VALUE_TRANSFER": TX_BASE,
     }
 
     long_frames = []
@@ -605,6 +608,25 @@ def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
         )
         sub["param"] = param_name
         long_frames.append(sub)
+
+    # Derived param VALUE_TRANSFER = TX_BASE + VALUE_GAS, the end-to-end cost of a
+    # transfer that moves value. transfer_amount is a 0/1 indicator, so a value
+    # transfer's modeled runtime is slope + transfer_amount within the SAME fit —
+    # the two coefficients simply add. CI bounds are summed (a conservative
+    # over-estimate of the paired-bootstrap CI, since it ignores the negative
+    # covariance between the coefficients); pvalue is the max of the two, so the
+    # total is flagged insignificant if either coefficient is; rsquared is shared.
+    vt = results_df[["client_name", "case_id", "rsquared"]].copy()
+    vt["runtime_ms"] = results_df["slope"] + results_df["transfer_amount"]
+    vt["conf_int_low"] = (
+        results_df["slope_conf_int_low"] + results_df["transfer_amount_conf_int_low"]
+    )
+    vt["conf_int_high"] = (
+        results_df["slope_conf_int_high"] + results_df["transfer_amount_conf_int_high"]
+    )
+    vt["pvalue"] = results_df[["slope_pvalue", "transfer_amount_pvalue"]].max(axis=1)
+    vt["param"] = "VALUE_TRANSFER"
+    long_frames.append(vt)
 
     new_gas_df = pd.concat(long_frames, ignore_index=True)
 
@@ -753,6 +775,9 @@ def build_summary(new_gas_df: pd.DataFrame, worst_case_overall: pd.DataFrame) ->
     return {
         "tx_base": param_summary("TX_BASE", TX_BASE),
         "value_gas": param_summary("VALUE_GAS", VALUE_GAS_CURRENT),
+        # End-to-end cost of a value transfer (TX_BASE + VALUE_GAS) vs the flat
+        # 21000 it pays today.
+        "value_transfer": param_summary("VALUE_TRANSFER", TX_BASE),
         "caveats": caveats,
         "pvalue_caveats": pvalue_caveats,
     }

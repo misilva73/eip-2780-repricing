@@ -12,23 +12,46 @@
 
   <h2>EIP-2780 background</h2>
   <p>
+    Today every transaction pays a flat <strong>21&nbsp;000</strong> gas base cost,
+    whether or not it moves ether &mdash; a value transfer and a zero-value transfer
+    cost exactly the same.
     <a href="https://eips.ethereum.org/EIPS/eip-2780" target="_blank" rel="noopener">EIP-2780</a>
-    targets two gas constants that every transaction pays:
+    splits that single cost into two constants so a transfer is priced for the work it
+    actually does:
   </p>
   <ul>
     <li>
-      <code>TX_BASE</code> (currently <strong>21&nbsp;000</strong> gas) &mdash; the flat
-      per-transaction base cost charged on every transaction regardless of what it does.
+      <code>TX_BASE</code> &mdash; the flat per-transaction base cost, charged on every
+      transaction. The proposal re-prices it against today's <strong>21&nbsp;000</strong>.
     </li>
     <li>
-      <code>VALUE_GAS</code> (currently <strong>9&nbsp;000</strong> gas) &mdash; the
-      additional cost charged when a transaction transfers a non-zero amount of ether.
+      <code>VALUE_GAS</code> &mdash; an <em>additional</em> cost charged only when a
+      transaction transfers a non-zero amount of ether. This is a <strong>new</strong>
+      parameter for transfers: no separate value charge existed before. We compare it
+      against <strong>9&nbsp;000</strong>, the cost of a <code>CALL</code> that forwards
+      value (<code>G_callvalue</code>), as the natural reference point for moving value.
     </li>
+  </ul>
+  <p>
+    So under EIP-2780 a plain transfer pays <code>TX_BASE</code>, while a value-bearing
+    transfer pays <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>. The dashboard reports three
+    comparisons:
+  </p>
+  <ul>
+    <li><code>TX_BASE</code> vs. today's <strong>21&nbsp;000</strong> &mdash; how a plain
+      transfer is repriced.</li>
+    <li><code>VALUE_GAS</code> vs. <strong>9&nbsp;000</strong> &mdash; how the new value
+      surcharge compares to the <code>CALL</code>-with-value proxy.</li>
+    <li><strong>Value transfer (total)</strong> &mdash;
+      <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code> vs. today's flat <strong>21&nbsp;000</strong>
+      &mdash; the end-to-end question: does a transfer that moves value get cheaper or
+      more expensive than the 21&nbsp;000 it pays now? See
+      <a href="#value-transfer">the derivation</a> below.</li>
   </ul>
   <p>
     These constants were set long ago and may no longer reflect the real execution cost
     on modern clients. This analysis measures the actual runtime of value transfers and
-    re-prices both constants against a fixed throughput anchor.
+    re-prices them against a fixed throughput anchor.
   </p>
 
   <h2>The four receiver cases</h2>
@@ -134,6 +157,29 @@
     driving model has R&sup2;&nbsp;&le;&nbsp;0.5, or whose coefficient
     p-value&nbsp;&gt;&nbsp;0.05 (not statistically significant), are flagged as
     caveats on the dashboard.
+  </p>
+
+  <h2 id="value-transfer">Value transfer total (<code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>)</h2>
+  <p>
+    The first two comparisons price each constant on its own. The third answers what a
+    user actually feels: a transfer that <em>moves value</em> currently pays the flat
+    21&nbsp;000, and under EIP-2780 it pays <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>.
+  </p>
+  <p>
+    Because <code>transfer_amount</code> is a 0/1 indicator, both coefficients come from
+    the <strong>same fit</strong>: a value transfer's modeled runtime is exactly
+    <code>slope&nbsp;+&nbsp;transfer_amount</code>. So for each
+    <code>(client, case)</code> we add the two converted gas values, then take the
+    worst case (largest total) the same way as the individual params. Its reference is
+    today's flat <strong>21&nbsp;000</strong>, not 30&nbsp;000 &mdash; a value transfer
+    never paid a separate value charge.
+  </p>
+  <p>
+    The central estimate is an exact sum. The 95% interval is the sum of the two
+    coefficients' interval bounds, which slightly <em>over</em>-states the width
+    (it ignores the negative covariance between the paired bootstrap coefficients), so
+    it is a conservative band. The total is flagged with a p-value caveat if
+    <em>either</em> underlying coefficient is not statistically significant.
   </p>
 
   <h2>Reproducing this analysis</h2>
