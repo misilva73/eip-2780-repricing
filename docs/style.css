@@ -311,7 +311,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   padding: 0.85rem 1.1rem;
-  max-width: 80ch;
 }
 .caveats {
   background: var(--worst-bg);
@@ -328,7 +327,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   border-radius: var(--radius);
   padding: 0.7rem 1.1rem;
   margin: 0 0 1.2rem;
-  max-width: 80ch;
 }
 .caveats-ok { color: var(--ink-soft); margin-top: 1rem; }
 .note {
