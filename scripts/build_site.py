@@ -31,7 +31,7 @@ TEMPLATES_DIR = REPO_ROOT / "site_src" / "templates"
 ASSETS_DIR = REPO_ROOT / "site_src" / "assets"
 SITE_DIR = REPO_ROOT / "docs"
 
-ASSETS = ["style.css", "charts.js"]
+ASSETS = ["style.css", "charts.js", "trends.js"]
 
 # Human-readable labels for the raw benchmarkoor case_ids. The case_id stays the
 # canonical key everywhere in the pipeline (it groups the NNLS fits and is what
@@ -160,6 +160,86 @@ def build_run_index(runs: list) -> list:
     return index
 
 
+def collect_trends(runs: list) -> dict:
+    """Per-(client, case) gas/runtime series across all runs, for the Trends page.
+
+    ``load_runs()`` returns newest-first; here we reverse to oldest→newest so the
+    run axis reads chronologically. Unlike the upstream eip-8038 page (one selected
+    fit per (param, client)), 2780 keeps the receiver-``case`` dimension, so each
+    trend line is keyed by (param, client, case) — the same grid the dashboard
+    charts already facet by. Per run we read every ``new_gas`` row (the per-(client,
+    case) converted gas) plus ``worst_case_overall`` (the binding worst-case row
+    that actually sets each param's proposal). A run missing a (param, client, case)
+    leaves a ``None`` gap; clients/cases are unioned across runs.
+
+    ``poor`` mirrors analysis.py's caveat thresholds (R² <= 0.5 or p-value > 0.05):
+    a true value flags the underlying fit as low-confidence."""
+    chron = list(reversed(runs))
+    n = len(chron)
+    gas: dict = {}
+    runtime: dict = {}
+    poor: dict = {}
+    binding: dict = {}
+    params: list = []
+    clients: set = set()
+    cases: set = set()
+
+    def cell(store: dict, param: str, client: str, case: str) -> list:
+        return (
+            store.setdefault(param, {})
+            .setdefault(client, {})
+            .setdefault(case, [None] * n)
+        )
+
+    for i, data in enumerate(chron):
+        for row in data.get("new_gas", []) or []:
+            param = row.get("param")
+            client = row.get("client_name")
+            case = row.get("case_id")
+            if not (param and client and case):
+                continue
+            if param not in params:
+                params.append(param)
+            clients.add(client)
+            cases.add(case)
+            ng = row.get("new_gas_rounded")
+            rt = row.get("runtime_ms")
+            cell(gas, param, client, case)[i] = int(ng) if ng is not None else None
+            cell(runtime, param, client, case)[i] = (
+                float(rt) if rt is not None else None
+            )
+            rsq = row.get("rsquared")
+            pval = row.get("pvalue")
+            cell(poor, param, client, case)[i] = bool(
+                (rsq is not None and rsq <= 0.5)
+                or (pval is not None and pval > 0.05)
+            )
+
+        for row in data.get("worst_case_overall", []) or []:
+            param = row.get("param")
+            if not param:
+                continue
+            val = row.get("new_gas_rounded")
+            binding.setdefault(param, [None] * n)[i] = {
+                "value": int(val) if val is not None else None,
+                "client": row.get("client_name"),
+                "case": row.get("case_id"),
+            }
+
+    return {
+        "runs": [
+            {"run_id": run_id_for(d), "label": run_label(d)} for d in chron
+        ],
+        "clients": sorted(clients),
+        "cases": sorted(cases),
+        "params": params,  # discovery order: TX_BASE, VALUE_GAS, VALUE_TRANSFER
+        "gas": gas,
+        "runtime": runtime,
+        "poor": poor,
+        "binding": binding,
+    }
+
+
 def clear_stale_outputs() -> None:
     """Drop previously generated per-run pages/data so a removed run leaves no
     orphan behind. Leaves index.html/data.js and the static assets untouched."""
@@ -203,6 +283,7 @@ def main() -> None:
             "runs": runs_for_page,
             "is_latest": i == 0,  # index 0 is the newest run
             "data_file": entry["data_file"],
+            "page": "dashboard",
         }
         out_path = SITE_DIR / entry["href"]
         out_path.write_text(index_tpl.render(**context), encoding="utf-8")
@@ -222,10 +303,24 @@ def main() -> None:
         data=latest,
         meta=latest.get("meta", {}) or {},
         commit=commit,
+        page="methodology",
     )
     methodology_path = SITE_DIR / "methodology.html"
     methodology_path.write_text(methodology_html, encoding="utf-8")
     written.append(methodology_path)
+
+    # Trends is a cross-run singleton at the docs root (like methodology — no run
+    # selector). Its data is embedded inline in the template, so no data-*.js file;
+    # the shared footer reads the latest run's meta.
+    trends_html = env.get_template("trends.html").render(
+        trends=collect_trends(runs),
+        meta=latest.get("meta", {}) or {},
+        commit=commit,
+        page="trends",
+    )
+    trends_path = SITE_DIR / "trends.html"
+    trends_path.write_text(trends_html, encoding="utf-8")
+    written.append(trends_path)
 
     for asset in ASSETS:
         src = ASSETS_DIR / asset

@@ -21,8 +21,9 @@
     <div class="container header-inner">
       <a class="site-title" href="index.html">EIP-2780 Repricing</a>
       <nav class="site-nav">
-        <a href="index.html">Dashboard</a>
-        <a href="methodology.html">Methodology</a>
+        <a href="index.html"{% if page == 'dashboard' %} class="active"{% endif %}>Dashboard</a>
+        <a href="trends.html"{% if page == 'trends' %} class="active"{% endif %}>Trends</a>
+        <a href="methodology.html"{% if page == 'methodology' %} class="active"{% endif %}>Methodology</a>
       </nav>
     </div>
   </header>

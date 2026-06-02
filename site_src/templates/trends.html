@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Trends &middot; EIP-2780 Repricing{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <h1>Trends across runs</h1>
+  <p class="lede">
+    How each client's numbers move between benchmark runs. Lower is cheaper &mdash;
+    a falling line or a green delta means a client's proposed gas (or its underlying
+    runtime) came down since the previous run. Lines are split per receiver
+    <strong>case</strong>: colour identifies the client, line style the case.
+  </p>
+</section>
+
+{#- Whole cross-run dataset, consumed by trends.js. -#}
+<script id="trends-data" type="application/json">{{ trends | tojson }}</script>
+
+<div class="table-filters trends-filters" id="trends-filters">
+  <label class="table-filter">
+    <span>Parameter</span>
+    <select id="param-filter">
+      <option value="all">All parameters</option>
+      {% for p in trends.params %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="table-filter">
+    <span>Case</span>
+    <select id="case-filter">
+      <option value="all">All cases</option>
+      {% for c in trends.cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
+    </select>
+  </label>
+  <fieldset class="toggle-set" id="client-toggles">
+    <legend>Clients</legend>
+    {% for c in trends.clients %}
+    <label class="toggle"><input type="checkbox" value="{{ c }}" checked> {{ c }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset class="toggle-set" id="metric-toggle">
+    <legend>Metric</legend>
+    <label class="toggle"><input type="radio" name="metric" value="gas" checked> Proposed gas</label>
+    <label class="toggle"><input type="radio" name="metric" value="runtime"> Runtime (ms)</label>
+  </fieldset>
+</div>
+
+<section class="trends-section">
+  <h2 class="h2-lg">Since last run</h2>
+  {% if trends.runs | length < 2 %}
+  <p class="warning" role="note">
+    <strong>Only one run archived.</strong> The latest-vs-previous comparison needs
+    at least two runs; it'll populate once another run is archived.
+  </p>
+  {% else %}
+  <p id="compare-caption" class="muted"></p>
+  <div class="table-scroll">
+    <table class="data-table" id="delta-table">
+      <thead>
+        <tr>
+          <th>Parameter</th><th>Client</th><th>Case</th>
+          <th class="num">Previous</th><th class="num">Latest</th>
+          <th class="num">&Delta;</th><th class="num">&Delta;%</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p id="delta-empty" class="muted" hidden>No rows match the current filters.</p>
+  <p id="poor-note" class="muted" hidden>
+    <span class="poor-flag">*</span> the underlying fit was flagged low-confidence
+    (R&sup2; &le; 0.5 or p &gt; 0.05) &mdash; treat the value with caution.
+  </p>
+  <p class="muted">
+    Change by row &mdash; each bar points left (green) when a client/case got
+    cheaper and right (red) when it rose, sized by percent change so it's comparable
+    across parameters. The binding (worst-case) row is outlined.
+  </p>
+  <div class="chart-block">
+    <div id="delta-bar" class="chart"></div>
+  </div>
+  {% endif %}
+</section>
+
+<section class="trends-section">
+  <h2 class="h2-lg">Across all runs</h2>
+  <p class="muted">
+    One chart per parameter &mdash; run on the x-axis, the selected metric on the
+    y-axis, one line per (client, case). Colour identifies the client, line style
+    the case. Toggle clients above, filter to a single case, or use each chart's
+    legend; hover a point for the exact value.
+  </p>
+  <div id="trend-legend" class="trend-legend" hidden></div>
+  <div id="trend-charts"></div>
+  <p id="charts-empty" class="muted" hidden>No parameters match the current filters.</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="trends.js"></script>
+{% endblock %}

@@ -114,6 +114,7 @@ a:hover { text-decoration: underline; }
 .site-nav { display: flex; gap: 1.25rem; }
 .site-nav a { color: var(--ink-soft); font-weight: 500; }
 .site-nav a:hover { color: var(--accent-ink); }
+.site-nav a.active { color: var(--accent-ink); font-weight: 600; }
 
 /* ---- Run selector banner ---- */
 /* A strip above the hero for switching between pre-rendered run pages. */
@@ -502,6 +503,85 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 .site-footer .repro { margin: 0 0 0.35rem; }
 .site-footer code { background: var(--bg-accent); }
 .repro-note { margin: 0; }
+
+/* ---- Trends page ---- */
+.trends-filters { align-items: flex-start; gap: 1.5rem; }
+.trends-section { margin-top: 2rem; }
+.muted { color: var(--ink-soft); font-size: 0.9rem; }
+.warning {
+  background: var(--worst-bg);
+  border: 1px solid var(--worst-border);
+  border-left: 4px solid var(--worst-border);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  margin: 0.5rem 0;
+}
+.toggle-set {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.75rem 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0;
+}
+.toggle-set legend {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+  padding: 0 0.3rem;
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.trend-legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+}
+.trend-legend-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.trend-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.trend-legend-line { flex: none; }
+
+.poor-flag { color: var(--up); font-weight: 700; }
+.binding-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.05rem 0.4rem;
+  letter-spacing: 0.02em;
+}
 
 /* ---- Responsive ---- */
 @media (max-width: 640px) {

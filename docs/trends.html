@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Trends &middot; EIP-2780 Repricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <script
+    src="https://cdn.plot.ly/plotly-2.35.2.min.js"
+    integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
+    crossorigin="anonymous"
+    charset="utf-8"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="index.html">EIP-2780 Repricing</a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="trends.html" class="active">Trends</a>
+        <a href="methodology.html">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    
+
+<section class="hero">
+  <h1>Trends across runs</h1>
+  <p class="lede">
+    How each client's numbers move between benchmark runs. Lower is cheaper &mdash;
+    a falling line or a green delta means a client's proposed gas (or its underlying
+    runtime) came down since the previous run. Lines are split per receiver
+    <strong>case</strong>: colour identifies the client, line style the case.
+  </p>
+</section><script id="trends-data" type="application/json">{"binding": {"TX_BASE": [{"case": "diff_to_nonexistent", "client": "besu", "value": 239751}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 222627}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 215562}], "VALUE_GAS": [{"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 743934}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 733611}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 718129}], "VALUE_TRANSFER": [{"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 973483}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 956237}, {"case": "diff_to_unique_code_jumpdest_contract", "client": "besu", "value": 933691}]}, "cases": ["diff_to_contract", "diff_to_existent", "diff_to_nonexistent", "diff_to_unique_code_jumpdest_contract"], "clients": ["besu", "erigon", "ethrex", "geth", "nethermind", "reth"], "gas": {"TX_BASE": {"besu": {"diff_to_contract": [222848, 215896, 209226], "diff_to_existent": [217100, 210035, 202487], "diff_to_nonexistent": [239751, 211608, 203697], "diff_to_unique_code_jumpdest_contract": [229549, 222627, 215562]}, "erigon": {"diff_to_contract": [19816, 13175, 32592], "diff_to_existent": [53082, 49975, 31570], "diff_to_nonexistent": [34867, 32040, 31347], "diff_to_unique_code_jumpdest_contract": [53584, 50265, 32564]}, "ethrex": {"diff_to_contract": [null, 5098, 5110], "diff_to_existent": [null, 5038, 5047], "diff_to_nonexistent": [null, 2305, 2389], "diff_to_unique_code_jumpdest_contract": [null, 12760, 12820]}, "geth": {"diff_to_contract": [10421, null, null], "diff_to_existent": [6737, null, null], "diff_to_nonexistent": [10259, null, null], "diff_to_unique_code_jumpdest_contract": [8842, null, null]}, "nethermind": {"diff_to_contract": [12969, 11721, 11371], "diff_to_existent": [10683, 7694, 8290], "diff_to_nonexistent": [10774, 8000, 7683], "diff_to_unique_code_jumpdest_contract": [16188, 14001, 13880]}, "reth": {"diff_to_contract": [12469, 12316, 12553], "diff_to_existent": [11193, 11197, 11110], "diff_to_nonexistent": [11637, 11536, 11715], "diff_to_unique_code_jumpdest_contract": [15697, 15573, 16191]}}, "VALUE_GAS": {"besu": {"diff_to_contract": [250141, 243844, 235809], "diff_to_existent": [298185, 283064, 269985], "diff_to_nonexistent": [306741, 322373, 311021], "diff_to_unique_code_jumpdest_contract": [743934, 733611, 718129]}, "erigon": {"diff_to_contract": [215979, 222629, 34931], "diff_to_existent": [39780, 38859, 7503], "diff_to_nonexistent": [169447, 174605, 22114], "diff_to_unique_code_jumpdest_contract": [39141, 38104, 7468]}, "ethrex": {"diff_to_contract": [null, 1375, 1355], "diff_to_existent": [null, 1312, 1312], "diff_to_nonexistent": [null, 2102, 2124], "diff_to_unique_code_jumpdest_contract": [null, 0, 0]}, "geth": {"diff_to_contract": [8959, null, null], "diff_to_existent": [5776, null, null], "diff_to_nonexistent": [8715, null, null], "diff_to_unique_code_jumpdest_contract": [4886, null, null]}, "nethermind": {"diff_to_contract": [5140, 3099, 2355], "diff_to_existent": [3746, 3960, 4074], "diff_to_nonexistent": [4696, 4954, 5693], "diff_to_unique_code_jumpdest_contract": [3673, 3559, 3645]}, "reth": {"diff_to_contract": [12405, 12419, 12235], "diff_to_existent": [12410, 12443, 12369], "diff_to_nonexistent": [12950, 12914, 12908], "diff_to_unique_code_jumpdest_contract": [10292, 10253, 10293]}}, "VALUE_TRANSFER": {"besu": {"diff_to_contract": [472988, 459740, 445034], "diff_to_existent": [515284, 493098, 472472], "diff_to_nonexistent": [546491, 533980, 514718], "diff_to_unique_code_jumpdest_contract": [973483, 956237, 933691]}, "erigon": {"diff_to_contract": [235794, 235804, 67522], "diff_to_existent": [92862, 88834, 39073], "diff_to_nonexistent": [204314, 206644, 53460], "diff_to_unique_code_jumpdest_contract": [92724, 88369, 40031]}, "ethrex": {"diff_to_contract": [null, 6472, 6464], "diff_to_existent": [null, 6349, 6359], "diff_to_nonexistent": [null, 4406, 4512], "diff_to_unique_code_jumpdest_contract": [null, 12760, 12820]}, "geth": {"diff_to_contract": [19380, null, null], "diff_to_existent": [12513, null, null], "diff_to_nonexistent": [18974, null, null], "diff_to_unique_code_jumpdest_contract": [13727, null, null]}, "nethermind": {"diff_to_contract": [18108, 14819, 13725], "diff_to_existent": [14428, 11654, 12364], "diff_to_nonexistent": [15470, 12954, 13376], "diff_to_unique_code_jumpdest_contract": [19860, 17560, 17524]}, "reth": {"diff_to_contract": [24873, 24734, 24788], "diff_to_existent": [23603, 23639, 23479], "diff_to_nonexistent": [24587, 24450, 24623], "diff_to_unique_code_jumpdest_contract": [25989, 25825, 26484]}}}, "params": ["TX_BASE", "VALUE_GAS", "VALUE_TRANSFER"], "poor": {"TX_BASE": {"besu": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "erigon": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "ethrex": {"diff_to_contract": [null, false, false], "diff_to_existent": [null, false, false], "diff_to_nonexistent": [null, false, false], "diff_to_unique_code_jumpdest_contract": [null, false, false]}, "geth": {"diff_to_contract": [false, null, null], "diff_to_existent": [false, null, null], "diff_to_nonexistent": [false, null, null], "diff_to_unique_code_jumpdest_contract": [false, null, null]}, "nethermind": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "reth": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}}, "VALUE_GAS": {"besu": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "erigon": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "ethrex": {"diff_to_contract": [null, false, false], "diff_to_existent": [null, false, false], "diff_to_nonexistent": [null, false, false], "diff_to_unique_code_jumpdest_contract": [null, true, true]}, "geth": {"diff_to_contract": [false, null, null], "diff_to_existent": [false, null, null], "diff_to_nonexistent": [false, null, null], "diff_to_unique_code_jumpdest_contract": [false, null, null]}, "nethermind": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "reth": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}}, "VALUE_TRANSFER": {"besu": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "erigon": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "ethrex": {"diff_to_contract": [null, false, false], "diff_to_existent": [null, false, false], "diff_to_nonexistent": [null, false, false], "diff_to_unique_code_jumpdest_contract": [null, true, true]}, "geth": {"diff_to_contract": [false, null, null], "diff_to_existent": [false, null, null], "diff_to_nonexistent": [false, null, null], "diff_to_unique_code_jumpdest_contract": [false, null, null]}, "nethermind": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}, "reth": {"diff_to_contract": [false, false, false], "diff_to_existent": [false, false, false], "diff_to_nonexistent": [false, false, false], "diff_to_unique_code_jumpdest_contract": [false, false, false]}}}, "runs": [{"label": "2026-05-29 23:44", "run_id": "20260529T234448Z_a11611f320a39015"}, {"label": "2026-06-01 23:00", "run_id": "20260601T230017Z_a11611f320a39015"}, {"label": "2026-06-02 07:38", "run_id": "20260602T073811Z_a11611f320a39015"}], "runtime": {"TX_BASE": {"besu": {"diff_to_contract": [2.2284747744593916, 2.1589589157077964, 2.0922519054127515], "diff_to_existent": [2.1709935876764974, 2.100341411202951, 2.024868248068524], "diff_to_nonexistent": [2.3975032808760917, 2.1160702384174206, 2.0369677763327902], "diff_to_unique_code_jumpdest_contract": [2.2954830864199955, 2.2262614021923355, 2.155612970357573]}, "erigon": {"diff_to_contract": [0.19815062308702613, 0.13174725234031393, 0.32591144894813123], "diff_to_existent": [0.5308184134045166, 0.49974782835796977, 0.3156984967565439], "diff_to_nonexistent": [0.34866838087757157, 0.32039745273500436, 0.31346158261367785], "diff_to_unique_code_jumpdest_contract": [0.535836908964813, 0.5026495208873557, 0.325633968495805]}, "ethrex": {"diff_to_contract": [null, 0.05097023220737377, 0.051098477658805416], "diff_to_existent": [null, 0.05037278176251635, 0.05046692773410316], "diff_to_nonexistent": [null, 0.023041568048058802, 0.02388135058307339], "diff_to_unique_code_jumpdest_contract": [null, 0.12759872346774673, 0.12819372647165678]}, "geth": {"diff_to_contract": [0.10420682852026587, null, null], "diff_to_existent": [0.06736802088925933, null, null], "diff_to_nonexistent": [0.10258339173851447, null, null], "diff_to_unique_code_jumpdest_contract": [0.08841290663569995, null, null]}, "nethermind": {"diff_to_contract": [0.12968335654251317, 0.1172008053850044, 0.11370406150631462], "diff_to_existent": [0.10682680124462185, 0.07693440601091138, 0.08289807065499154], "diff_to_nonexistent": [0.10773743803917929, 0.07999745459169642, 0.07682964395878199], "diff_to_unique_code_jumpdest_contract": [0.16187990370764796, 0.1400048566405657, 0.13879274218957108]}, "reth": {"diff_to_contract": [0.12468060848280248, 0.1231551510280708, 0.12552678024091715], "diff_to_existent": [0.11192971490686879, 0.11196269520871269, 0.11109899209700777], "diff_to_nonexistent": [0.11636999899531279, 0.11535777620801073, 0.11714899727510052], "diff_to_unique_code_jumpdest_contract": [0.1569679425500058, 0.15572261392530054, 0.16190220384997425]}}, "VALUE_GAS": {"besu": {"diff_to_contract": [2.501404733960826, 2.438436892937544, 2.3580855516923998], "diff_to_existent": [2.981845854472572, 2.830631999202107, 2.6998459021519907], "diff_to_nonexistent": [3.067402131179918, 3.2237268186156363, 3.110205188322283], "diff_to_unique_code_jumpdest_contract": [7.439338679333031, 7.3361036538791975, 7.181288065267732]}, "erigon": {"diff_to_contract": [2.159785770400754, 2.2262867439019187, 0.34930440122637185], "diff_to_existent": [0.3977959106728379, 0.3885885672956841, 0.07502322326708835], "diff_to_nonexistent": [1.6944631976643882, 1.7460411388017758, 0.22113371353541159], "diff_to_unique_code_jumpdest_contract": [0.39140209130771086, 0.38103337912969276, 0.07467388828392171]}, "ethrex": {"diff_to_contract": [null, 0.013744564911582621, 0.013540866736746282], "diff_to_existent": [null, 0.013114730430296208, 0.01311870157746817], "diff_to_nonexistent": [null, 0.021014173515085575, 0.02123384572818221], "diff_to_unique_code_jumpdest_contract": [null, 0.0, 0.0]}, "geth": {"diff_to_contract": [0.08958651970404821, null, null], "diff_to_existent": [0.057758628837319956, null, null], "diff_to_nonexistent": [0.08714888969267988, null, null], "diff_to_unique_code_jumpdest_contract": [0.04885314920870289, null, null]}, "nethermind": {"diff_to_contract": [0.051392063807067415, 0.0309800821297242, 0.023543320138397685], "diff_to_existent": [0.03745219019305298, 0.03959702752721663, 0.04073883143145975], "diff_to_nonexistent": [0.046954892947076284, 0.049536188588652115, 0.05692355805640355], "diff_to_unique_code_jumpdest_contract": [0.0367200712409123, 0.035587939484839626, 0.03644383325064652]}, "reth": {"diff_to_contract": [0.12404790491246966, 0.12418330159987269, 0.12234679794204509], "diff_to_existent": [0.12409759290592208, 0.12442542979702764, 0.12368224703446352], "diff_to_nonexistent": [0.12949035475219509, 0.12913864401243175, 0.12907720928487243], "diff_to_unique_code_jumpdest_contract": [0.1029179003178577, 0.10252549524231297, 0.1029287092316248]}}, "VALUE_TRANSFER": {"besu": {"diff_to_contract": [4.729879508420217, 4.597395808645341, 4.450337457105151], "diff_to_existent": [5.1528394421490695, 4.930973410405058, 4.724714150220515], "diff_to_nonexistent": [5.46490541205601, 5.339797057033056, 5.1471729646550735], "diff_to_unique_code_jumpdest_contract": [9.734821765753026, 9.562365056071533, 9.336901035625305]}, "erigon": {"diff_to_contract": [2.35793639348778, 2.3580339962422325, 0.6752158501745031], "diff_to_existent": [0.9286143240773546, 0.8883363956536539, 0.39072172002363226], "diff_to_nonexistent": [2.04313157854196, 2.0664385915367802, 0.5345952961490894], "diff_to_unique_code_jumpdest_contract": [0.9272390002725238, 0.8836829000170485, 0.4003078567797267]}, "ethrex": {"diff_to_contract": [null, 0.06471479711895639, 0.0646393443955517], "diff_to_existent": [null, 0.06348751219281255, 0.06358562931157133], "diff_to_nonexistent": [null, 0.044055741563144374, 0.0451151963112556], "diff_to_unique_code_jumpdest_contract": [null, 0.12759872346774673, 0.12819372647165678]}, "geth": {"diff_to_contract": [0.1937933482243141, null, null], "diff_to_existent": [0.12512664972657928, null, null], "diff_to_nonexistent": [0.18973228143119436, null, null], "diff_to_unique_code_jumpdest_contract": [0.13726605584440282, null, null]}, "nethermind": {"diff_to_contract": [0.18107542034958057, 0.1481808875147286, 0.1372473816447123], "diff_to_existent": [0.14427899143767484, 0.116531433538128, 0.12363690208645128], "diff_to_nonexistent": [0.15469233098625557, 0.12953364318034855, 0.13375320201518553], "diff_to_unique_code_jumpdest_contract": [0.19859997494856024, 0.17559279612540532, 0.1752365754402176]}, "reth": {"diff_to_contract": [0.24872851339527213, 0.2473384526279435, 0.24787357818296224], "diff_to_existent": [0.23602730781279085, 0.23638812500574033, 0.2347812391314713], "diff_to_nonexistent": [0.24586035374750786, 0.2444964202204425, 0.24622620655997296], "diff_to_unique_code_jumpdest_contract": [0.2598858428678635, 0.25824810916761354, 0.26483091308159906]}}}}</script>
+
+<div class="table-filters trends-filters" id="trends-filters">
+  <label class="table-filter">
+    <span>Parameter</span>
+    <select id="param-filter">
+      <option value="all">All parameters</option>
+      <option value="TX_BASE">TX_BASE</option><option value="VALUE_GAS">VALUE_GAS</option><option value="VALUE_TRANSFER">VALUE_TRANSFER</option>
+    </select>
+  </label>
+  <label class="table-filter">
+    <span>Case</span>
+    <select id="case-filter">
+      <option value="all">All cases</option>
+      <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (unique code)</option>
+    </select>
+  </label>
+  <fieldset class="toggle-set" id="client-toggles">
+    <legend>Clients</legend>
+    
+    <label class="toggle"><input type="checkbox" value="besu" checked> besu</label>
+    
+    <label class="toggle"><input type="checkbox" value="erigon" checked> erigon</label>
+    
+    <label class="toggle"><input type="checkbox" value="ethrex" checked> ethrex</label>
+    
+    <label class="toggle"><input type="checkbox" value="geth" checked> geth</label>
+    
+    <label class="toggle"><input type="checkbox" value="nethermind" checked> nethermind</label>
+    
+    <label class="toggle"><input type="checkbox" value="reth" checked> reth</label>
+    
+  </fieldset>
+  <fieldset class="toggle-set" id="metric-toggle">
+    <legend>Metric</legend>
+    <label class="toggle"><input type="radio" name="metric" value="gas" checked> Proposed gas</label>
+    <label class="toggle"><input type="radio" name="metric" value="runtime"> Runtime (ms)</label>
+  </fieldset>
+</div>
+
+<section class="trends-section">
+  <h2 class="h2-lg">Since last run</h2>
+  
+  <p id="compare-caption" class="muted"></p>
+  <div class="table-scroll">
+    <table class="data-table" id="delta-table">
+      <thead>
+        <tr>
+          <th>Parameter</th><th>Client</th><th>Case</th>
+          <th class="num">Previous</th><th class="num">Latest</th>
+          <th class="num">&Delta;</th><th class="num">&Delta;%</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p id="delta-empty" class="muted" hidden>No rows match the current filters.</p>
+  <p id="poor-note" class="muted" hidden>
+    <span class="poor-flag">*</span> the underlying fit was flagged low-confidence
+    (R&sup2; &le; 0.5 or p &gt; 0.05) &mdash; treat the value with caution.
+  </p>
+  <p class="muted">
+    Change by row &mdash; each bar points left (green) when a client/case got
+    cheaper and right (red) when it rose, sized by percent change so it's comparable
+    across parameters. The binding (worst-case) row is outlined.
+  </p>
+  <div class="chart-block">
+    <div id="delta-bar" class="chart"></div>
+  </div>
+  
+</section>
+
+<section class="trends-section">
+  <h2 class="h2-lg">Across all runs</h2>
+  <p class="muted">
+    One chart per parameter &mdash; run on the x-axis, the selected metric on the
+    y-axis, one line per (client, case). Colour identifies the client, line style
+    the case. Toggle clients above, filter to a single case, or use each chart's
+    legend; hover a point for the exact value.
+  </p>
+  <div id="trend-legend" class="trend-legend" hidden></div>
+  <div id="trend-charts"></div>
+  <p id="charts-empty" class="muted" hidden>No parameters match the current filters.</p>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="repro">
+        
+        Data window:
+        <strong>2026-06-02T00:08:39Z</strong> &rarr; <strong>2026-06-02T07:38:11Z</strong>
+        &middot;
+        benchmarkoor-fetch <code>0.2.0</code>
+        &middot;
+        suite <code>a11611f320a39015</code>
+        &middot;
+        commit <code>1179633</code>
+        &middot;
+        generated <code>2026-06-02T09:07:44+00:00</code>
+      </p>
+      <p class="repro-note">
+        Generated from <code>meta.json</code> at a
+        100 Mgas/s anchor.
+        Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
+      </p>
+    </div>
+  </footer>
+
+  
+<script src="trends.js"></script>
+
+</body>
+</html>
