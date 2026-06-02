@@ -423,6 +423,7 @@ ANCHOR_RATE = 100 * 1e6  # gas / s
 TX_BASE = 21_000  # current per-tx base gas
 VALUE_GAS_CURRENT = 9_000  # current extra gas for non-zero value transfer
 TEST_NAME = "test_ether_transfers_onchain_receivers"
+EXCLUDED_CLIENTS = {"ethrex"}  # clients dropped from the analysis
 
 # Resolve paths relative to this script so `python scripts/analysis.py` works
 # from the repo root.
@@ -799,6 +800,8 @@ def run_analysis() -> dict:
     bench_df = bench_df.rename(columns={"test_runtime_ms": "run_duration_ms"})
 
     df = bench_df[bench_df["test_name"] == TEST_NAME].copy()
+    if EXCLUDED_CLIENTS:
+        df = df[~df["client_name"].isin(EXCLUDED_CLIENTS)].copy()
     df = df.dropna(axis=1, how="all")
 
     trace_df = pd.read_parquet(TRACE_PARQUET, columns=["test_title", "JUMP"])
