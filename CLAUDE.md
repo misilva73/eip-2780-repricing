@@ -13,7 +13,7 @@ the worst case per param, renders a static GitHub Pages dashboard.
 
 - `make fetch`   — `benchmarkoor-fetch` → `data/raw/*.parquet` + `meta.json` (gitignored)
 - `make analyze` — [scripts/analysis.py](scripts/analysis.py) → `data/results.json` (latest, committed) **and** archives a copy to `data/runs/<run_id>.json` (committed history)
-- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (one page per run; latest is `index.html`) plus a single run-agnostic `docs/methodology.html`
+- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (one page per run; latest is `index.html`) plus two run-agnostic singletons, `docs/methodology.html` and `docs/trends.html`
 
 ## Run history
 
@@ -36,6 +36,13 @@ to switch to previous runs. History accumulates going forward — there is no ba
 - **Delete a run:** `make clean-run RUN_ID=<id>` ([scripts/clean_run.py](scripts/clean_run.py))
   removes the archive file, promotes the next-newest run to `data/results.json`
   if you dropped the latest, and re-renders. Commit the deletion + regenerated `docs/`.
+- **Trends page** (`docs/trends.html`) is a cross-run singleton (no run selector):
+  `build_site.collect_trends(runs)` aggregates every run's `new_gas` +
+  `worst_case_overall` into per-`(param, client, case)` gas/runtime series and a
+  binding worst-case series, embedded inline; [trends.js](site_src/assets/trends.js)
+  draws Plotly line-charts (colour = client, dash = case) with a since-last-run
+  delta table + Δ% bar. No per-run `data-*.js` and no `analysis.py` change — it
+  reads the existing per-run JSON only.
 
 Needs `secrets.json` at root: `{"BENCHMARKOOR_TOKEN": "bmk_..."}` (gitignored).
 Requires `make`, `jq`, Python 3.11+.
@@ -47,15 +54,16 @@ Requires `make`, `jq`, Python 3.11+.
 | data window / suite | [configs/benchmarkoor.yaml](configs/benchmarkoor.yaml) (pinned suite hash) | `make` |
 | analysis / outputs | [scripts/analysis.py](scripts/analysis.py) Part B | `make analyze site` |
 | page content / layout | `site_src/templates/*.html` | `make site` |
-| styles / charts | `site_src/assets/{style.css,charts.js}` | `make site` |
+| styles / charts | `site_src/assets/{style.css,charts.js,trends.js}` | `make site` |
 
 ## Must not break
 
 - **`docs/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
   `docs/{*.html,*.js,style.css}` are all generated, including `run-<id>.html`,
-  per-run `data-<id>.js`, and `methodology.html`. Templates extend a shared
-  `site_src/templates/base.html`. `methodology.html` is rendered once from the
-  latest run (run-agnostic, no run selector) — see [build_site.py](scripts/build_site.py).
+  per-run `data-<id>.js`, `methodology.html`, and `trends.html`. Templates extend a
+  shared `site_src/templates/base.html`. `methodology.html` and `trends.html` are
+  each rendered once from the latest run (run-agnostic, no run selector) — see
+  [build_site.py](scripts/build_site.py).
 - **`analysis.py` Part A is ported verbatim** from `evm-gas-repricings`
   (`NNLSResults`, `fit_NNLS`, `prepare_non_simple_model_data`,
   `extract_param_values`). Don't refactor it — keep it diffable against upstream.
@@ -82,10 +90,12 @@ GitHub Pages serves `/docs` on `main`. No CI. After a data/site change, commit
 
 ## Verify before commit
 
-`make site && (cd docs && python -m http.server)` — check both pages render,
-Plotly charts are interactive, tables show worst-case highlights, footer
-populated (incl. `generated`). With >1 archived run, the **Viewing run** selector
-banner switches pages and the latest reads "(latest)". `results.json` worst case
+`make site && (cd docs && python -m http.server)` — check the Dashboard,
+Methodology, and Trends pages render, Plotly charts are interactive, tables show
+worst-case highlights, footer populated (incl. `generated`). With >1 archived run,
+the **Viewing run** selector banner switches pages and the latest reads "(latest)",
+and the Trends page's since-last-run delta table + Δ% bar populate (with one run it
+shows a "only one run archived" note). `results.json` worst case
 currently tracks besu
 `diff_to_unique_code_jumpdest_contract` for all three params (TX_BASE,
 VALUE_GAS, VALUE_TRANSFER) (this follows the data — re-check after a data refresh).

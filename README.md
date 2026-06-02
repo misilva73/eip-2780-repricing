@@ -6,7 +6,8 @@ benchmark run to derive proposed new gas values for EIP-2780's `TX_BASE` (curren
 `(client, case_id)`, converts the coefficients to gas at a 100 Mgas/s anchor, surfaces
 the worst-case driver per parameter, and renders the whole analysis as an interactive
 static dashboard for GitHub Pages. Each run is archived, and the dashboard has a run
-selector to view previous runs alongside the latest.
+selector to view previous runs alongside the latest, plus a cross-run Trends page
+showing how the proposed values move between runs.
 
 **Live dashboard:** <https://misilva73.github.io/eip-2780-repricing/>
 
@@ -72,9 +73,9 @@ eip-2780-repricing/
 │   ├── results.json      # committed latest-run artifact
 │   └── runs/             # committed per-run history (one file per run_id)
 ├── site_src/
-│   ├── templates/        # Jinja2 templates
-│   └── assets/           # style.css, charts.js
-└── docs/                 # built site served by GitHub Pages (index.html + run-<id>.html)
+│   ├── templates/        # Jinja2 templates (index, methodology, trends, base)
+│   └── assets/           # style.css, charts.js, trends.js
+└── docs/                 # built site served by GitHub Pages (index.html + run-<id>.html + methodology.html + trends.html)
 ```
 
 ## Deployment
