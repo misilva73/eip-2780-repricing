@@ -120,7 +120,7 @@
     block-access-list (BAL) optimizations, so these gas values are expected to
     change as that work lands.
   </p>
-  <h2>Summary</h2>
+  <h2 class="h2-lg">Summary</h2>
   <div class="stat-grid">
     <div class="stat-card">
       <p class="stat-label">Worst-case <code>TX_BASE</code></p>
@@ -155,7 +155,7 @@
       </p>
     </div>
     <div class="stat-card">
-      <p class="stat-label">Worst-case value transfer (<code>TX_BASE</code>&nbsp;+&nbsp;<code>VALUE_GAS</code>)</p>
+      <p class="stat-label">Worst-case value transfer</p>
       <div class="stat-value">
         <span class="stat-number">{{ num(vt.new_gas) }}</span>
         <span class="stat-unit">gas</span>
@@ -309,7 +309,7 @@
 {% set params = new_gas | map(attribute='param') | unique | sort | list %}
 {% set cases = new_gas | map(attribute='case_id') | unique | sort | list %}
 <section class="detail">
-  <h2>Proposed gas detail</h2>
+  <h2 class="h2-lg">Proposed gas detail</h2>
   <div class="table-filters" data-table-filters>
     <label class="table-filter">
       <span>Client</span>
@@ -376,7 +376,7 @@
 {% set fit_clients = results | map(attribute='client_name') | unique | sort | list %}
 {% set fit_cases = results | map(attribute='case_id') | unique | sort | list %}
 <section class="detail">
-  <h2>Model fit detail</h2>
+  <h2 class="h2-lg">Model fit detail</h2>
   <div class="table-filters" data-table-filters>
     <label class="table-filter">
       <span>Client</span>

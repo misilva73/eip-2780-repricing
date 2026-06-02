@@ -229,6 +229,7 @@ h2 {
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--border);
 }
+h2.h2-lg { font-size: 1.6rem; }
 h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 
 .lede { color: var(--ink-soft); font-size: 1.05rem; max-width: 72ch; }
@@ -247,9 +248,14 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 /* ---- Stat cards ---- */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1.25rem;
+}
+@media (max-width: 720px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .stat-card {
   background: var(--surface);
