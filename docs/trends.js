@@ -143,14 +143,22 @@
   // Section 1 — latest-vs-previous rows (shared by the table and the Δ% bar)
   // --------------------------------------------------------------------- //
   function collectDeltaRows() {
-    var prev = N - 2, last = N - 1;
+    var last = N - 1;
     var rows = [];
     visibleParams().forEach(function (param) {
       // The binding row is the worst case in the latest run — it sets the proposal.
       var b = DATA.binding[param] && DATA.binding[param][last];
       visiblePairs(param).forEach(function (pair) {
         var s = seriesFor(param, pair.client, pair.caseId);
-        var pv = s[prev], lv = s[last];
+        var lv = s[last];                            // latest — never backfilled
+        // Previous = the most recent non-null value *before* the latest run. A
+        // client that skipped the immediately-prior run (e.g. geth missing a run)
+        // falls back to the newest earlier run it does have, instead of a gap.
+        var prevIdx = -1;
+        for (var i = last - 1; i >= 0; i--) {
+          if (s[i] != null) { prevIdx = i; break; }
+        }
+        var pv = prevIdx >= 0 ? s[prevIdx] : null;
         if (pv == null && lv == null) return;
         var ps = poorFor(param, pair.client, pair.caseId);
         var delta = (pv != null && lv != null) ? lv - pv : null;
@@ -159,7 +167,8 @@
           param: param, client: pair.client, caseId: pair.caseId,
           isBinding: !!(b && b.client === pair.client && b.case === pair.caseId),
           pv: pv, lv: lv, delta: delta, pct: pct,
-          poorPrev: !!(ps && ps[prev]), poorLast: !!(ps && ps[last]),
+          poorPrev: !!(ps && prevIdx >= 0 && ps[prevIdx]),
+          poorLast: !!(ps && ps[last]),
         });
       });
     });

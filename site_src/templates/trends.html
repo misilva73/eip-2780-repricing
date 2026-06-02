@@ -52,6 +52,12 @@
   </p>
   {% else %}
   <p id="compare-caption" class="muted"></p>
+  <p class="muted">
+    When a client has no measurement in the previous run, its <strong>Previous</strong>
+    value is backfilled from that client's most recent earlier run. The
+    <strong>Latest</strong> value is never backfilled &mdash; a client absent from the
+    newest run stays empty.
+  </p>
   <div class="table-scroll">
     <table class="data-table" id="delta-table">
       <thead>

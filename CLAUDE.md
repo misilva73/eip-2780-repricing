@@ -42,7 +42,10 @@ to switch to previous runs. History accumulates going forward — there is no ba
   binding worst-case series, embedded inline; [trends.js](site_src/assets/trends.js)
   draws Plotly line-charts (colour = client, dash = case) with a since-last-run
   delta table + Δ% bar. No per-run `data-*.js` and no `analysis.py` change — it
-  reads the existing per-run JSON only.
+  reads the existing per-run JSON only. The since-last-run "Previous" value is
+  **backfilled**: a client that skipped run N-2 (e.g. geth missing a run) falls
+  back to its most recent earlier run instead of showing a gap. The "Latest" value
+  is never backfilled — if a client is absent from the newest run it stays empty.
 
 Needs `secrets.json` at root: `{"BENCHMARKOOR_TOKEN": "bmk_..."}` (gitignored).
 Requires `make`, `jq`, Python 3.11+.
