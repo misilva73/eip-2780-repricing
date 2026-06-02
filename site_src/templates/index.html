@@ -334,6 +334,7 @@
     </label>
     <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
   </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
     <table class="data-table" data-filter-table>
       <thead>
@@ -343,10 +344,9 @@
           <th>Param</th>
           <th class="num">Runtime (ms)</th>
           <th class="num">Proposed</th>
+          <th class="num">Change</th>
           <th class="num">CI low</th>
           <th class="num">CI high</th>
-          <th class="num">Current</th>
-          <th class="num">Change</th>
           <th class="num">R&sup2;</th>
           <th class="num">p-value</th>
         </tr>
@@ -360,10 +360,9 @@
           <td><code>{{ row.param }}</code></td>
           <td class="num">{{ r4(row.runtime_ms) }}</td>
           <td class="num">{{ num(row.new_gas_rounded) }}</td>
+          <td class="num">{{ chg(row.change) }}</td>
           <td class="num">{{ num(row.new_gas_conf_int_low) }}</td>
           <td class="num">{{ num(row.new_gas_conf_int_high) }}</td>
-          <td class="num">{{ num(row.current_gas) }}</td>
-          <td class="num">{{ chg(row.change) }}</td>
           <td class="num">{{ r3(row.rsquared) }}</td>
           <td class="num">{{ g3(row.pvalue) }}</td>
         </tr>
@@ -395,6 +394,7 @@
     </label>
     <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
   </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
     <table class="data-table" data-filter-table>
       <thead>

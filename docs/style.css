@@ -207,6 +207,12 @@ a:hover { text-decoration: underline; }
 main { padding: 1.5rem 1.25rem 3rem; }
 main.container { padding-left: 1.25rem; padding-right: 1.25rem; }
 
+/* Constrain page content to the methodology text width (80ch), left-aligned
+   within the full-width container — header/footer chrome stays full width.
+   This is what .prose already does on the methodology page; applying it to
+   every direct child of main makes the dashboard items match that width. */
+main.container > * { max-width: 80ch; }
+
 section { margin: 2.25rem 0; }
 section:first-child { margin-top: 1.25rem; }
 
@@ -342,6 +348,16 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   color: var(--ink-soft);
   font-size: 0.85rem;
   margin-top: 0.6rem;
+}
+/* Lateral-scroll hint above wide tables that overflow their container. */
+.table-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  font-style: italic;
 }
 
 /* ---- Table filters ---- */
