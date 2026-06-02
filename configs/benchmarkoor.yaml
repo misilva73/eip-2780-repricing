@@ -1,7 +1,7 @@
 query:
   fork: amsterdam
   run_id_pattern: '.*-full.*'
-  start_date: 2026-05-30
-  end_date: 2026-06-01
+  start_date: 2026-06-02
+  end_date: 2026-06-05
   suites:
     - a11611f320a39015   # jochennet stateful (the run the notebook analysed)
