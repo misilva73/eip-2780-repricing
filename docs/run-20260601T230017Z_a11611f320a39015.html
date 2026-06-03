@@ -47,7 +47,11 @@
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
       <li role="option" aria-selected="false">
         <a href="index.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-02 11:26 (latest)</a>
+           tabindex="-1">2026-06-03 05:00 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="run-20260602T112640Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-02 11:26</a>
       </li>
       <li role="option" aria-selected="true">
         <a href="run-20260601T230017Z_a11611f320a39015.html" class="run-dropdown-option is-current"
@@ -59,11 +63,11 @@
       </li>
     </ul>
   </div>
-  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-06-02 11:26 (latest)</a><a href="run-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
+  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-06-03 05:00 (latest)</a><a href="run-20260602T112640Z_a11611f320a39015.html">2026-06-02 11:26</a><a href="run-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
     </span>
   </noscript>
   
-  <span class="run-bar-meta">older run &middot; latest of 3</span>
+  <span class="run-bar-meta">older run &middot; latest of 4</span>
 </div>
 
 
@@ -119,38 +123,87 @@
         R&sup2; = 0.599 &middot; p = 0
       </p>
     </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case value transfer</p>
-      <div class="stat-value">
-        <span class="stat-number">956,237</span>
-        <span class="stat-unit">gas</span>
-        <span class="pill pill-up">&#9650; +4454% &middot; under-priced</span>
-      </div>
-      <p class="stat-meta">
-        vs. today's flat 21,000 &middot; driven by
-        <strong>besu</strong> /
-        Contract (unique code)
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = 0.599 &middot; p = 0
-      </p>
-    </div>
   </div>
   
-  <p class="takeaway">
-    
-      Both <code>TX_BASE</code> and <code>VALUE_GAS</code> appear
-      <strong>under-priced</strong> relative to the
-      100&nbsp;Mgas/s anchor.
-    
-  </p>
-  <p class="takeaway">
-    End to end, a transfer that moves value would cost
-    <strong>956,237</strong> gas
-    (<code>TX_BASE</code>&nbsp;+&nbsp;<code>VALUE_GAS</code>) in the worst case,
-    versus the flat <strong>21,000</strong> it pays today &mdash;
-    <span class="pill pill-up">&#9650; +4454% &middot; under-priced</span> on the status quo.
-  </p>
+  <div class="vt-per-client">
+    <h3 class="vt-per-client-title"><code>VALUE_TRANSFER</code> status per client</h3>
+    <table class="data-table vt-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th class="num">Range across cases</th>
+          <th>Worst case</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        
+        
+        
+        
+        
+        
+        <tr>
+          <td>besu</td>
+          <td class="num">460k &ndash; 956k</td>
+          <td>Contract (unique code)</td>
+          <td><span class="vt-status vt-status-way-over">way over</span></td>
+        </tr>
+        
+        
+        
+        
+        
+        
+        
+        
+        <tr>
+          <td>erigon</td>
+          <td class="num">88k &ndash; 236k</td>
+          <td>Contract</td>
+          <td><span class="vt-status vt-status-over">over</span></td>
+        </tr>
+        
+        
+        
+        
+        
+        
+        
+        
+        <tr>
+          <td>nethermind</td>
+          <td class="num">12k &ndash; 18k</td>
+          <td>Contract (unique code)</td>
+          <td><span class="vt-status vt-status-below">below</span></td>
+        </tr>
+        
+        
+        
+        
+        
+        
+        
+        
+        <tr>
+          <td>reth</td>
+          <td class="num">24k &ndash; 26k</td>
+          <td>Contract (unique code)</td>
+          <td><span class="vt-status vt-status-over">over</span></td>
+        </tr>
+        
+        
+      </tbody>
+    </table>
+    <p class="table-note">
+      Range is each client's lowest&ndash;highest <code>VALUE_TRANSFER</code>
+      across the four receiver cases, rounded to the nearest thousand. Status
+      compares that range to today's flat 21,000:
+      <em>below</em> (all cases under), <em>over</em> (all cases above),
+      <em>straddles</em> (range spans it), <em>way over</em> (5&times; or more).
+    </p>
+  </div>
   
   <p class="caveats-ok">
     <strong>R&sup2; caveats:</strong> none &mdash; all worst-case drivers have
@@ -162,46 +215,6 @@
     p&nbsp;&le;&nbsp;0.05.
   </p>
   
-</section><section class="proposal">
-  <h2>Worst-case proposal</h2>
-  <table class="data-table proposal-table">
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th class="num">Proposed gas</th>
-        <th class="num">Current gas</th>
-        <th class="num">Change</th>
-        <th>Driver</th>
-      </tr>
-    </thead>
-    <tbody>
-      
-      <tr class="worst-case">
-        <td><code>TX_BASE</code></td>
-        <td class="num">222,627</td>
-        <td class="num">21,000</td>
-        <td class="num"><span class="chg chg-up">&#9650; +960.0%</span></td>
-        <td>besu / Contract (unique code)</td>
-      </tr>
-      
-      <tr class="worst-case">
-        <td><code>VALUE_GAS</code></td>
-        <td class="num">733,611</td>
-        <td class="num">9,000</td>
-        <td class="num"><span class="chg chg-up">&#9650; +8051.0%</span></td>
-        <td>besu / Contract (unique code)</td>
-      </tr>
-      
-      <tr class="worst-case">
-        <td><code>VALUE_TRANSFER</code></td>
-        <td class="num">956,237</td>
-        <td class="num">21,000</td>
-        <td class="num"><span class="chg chg-up">&#9650; +4454.0%</span></td>
-        <td>besu / Contract (unique code)</td>
-      </tr>
-      
-    </tbody>
-  </table>
 </section><section class="charts">
   <h2>Charts</h2>
 
@@ -1245,7 +1258,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>683a0f9</code>
+        commit <code>280445c</code>
         &middot;
         generated <code>2026-06-02T08:51:57+00:00</code>
       </p>

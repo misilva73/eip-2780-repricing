@@ -49,6 +49,11 @@
 {%- if v is none -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
+{# gas rounded to the nearest thousand, e.g. 218405 -> "218k" #}
+{%- macro kg(v) -%}
+{%- if v is none -%}&mdash;{%- else -%}{{ "%.0f"|format(v / 1000) }}k{%- endif -%}
+{%- endmacro -%}
+
 {% block content %}
 {% set tx = summary.tx_base or {} %}
 {% set vg = summary.value_gas or {} %}
@@ -154,55 +159,58 @@
         R&sup2; = {{ r3(vg.rsquared) }} &middot; p = {{ g3(vg.pvalue) }}
       </p>
     </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case value transfer</p>
-      <div class="stat-value">
-        <span class="stat-number">{{ num(vt.new_gas) }}</span>
-        <span class="stat-unit">gas</span>
-        {{ chg_pill(vt.change_pct) }}
-      </div>
-      <p class="stat-meta">
-        vs. today's flat {{ num(vt.current_gas) }} &middot; driven by
-        <strong>{{ vt.client_name or "&mdash;" }}</strong> /
-        {{ (vt.case_id | case_label) if vt.case_id else "&mdash;" }}
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(vt.rsquared) }} &middot; p = {{ g3(vt.pvalue) }}
-      </p>
-    </div>
   </div>
 
-  {#- over/under-priced takeaway -#}
-  {% set txp = tx.change_pct %}
-  {% set vgp = vg.change_pct %}
-  <p class="takeaway">
-    {% if txp is not none and vgp is not none and txp > 0 and vgp > 0 %}
-      Both <code>TX_BASE</code> and <code>VALUE_GAS</code> appear
-      <strong>under-priced</strong> relative to the
-      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
-    {% elif txp is not none and vgp is not none and txp < 0 and vgp < 0 %}
-      Both <code>TX_BASE</code> and <code>VALUE_GAS</code> appear
-      <strong>over-priced</strong> relative to the
-      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
-    {% else %}
-      <code>TX_BASE</code> appears
-      <strong>{{ "under-priced" if (txp is not none and txp > 0) else "over-priced" }}</strong>
-      while <code>VALUE_GAS</code> appears
-      <strong>{{ "under-priced" if (vgp is not none and vgp > 0) else "over-priced" }}</strong>
-      relative to the
-      {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor.
-    {% endif %}
-  </p>
-
-  {#- end-to-end value-transfer takeaway -#}
-  {% if vt.new_gas is not none %}
-  <p class="takeaway">
-    End to end, a transfer that moves value would cost
-    <strong>{{ num(vt.new_gas) }}</strong> gas
-    (<code>TX_BASE</code>&nbsp;+&nbsp;<code>VALUE_GAS</code>) in the worst case,
-    versus the flat <strong>{{ num(vt.current_gas) }}</strong> it pays today &mdash;
-    {{ chg_pill(vt.change_pct) }} on the status quo.
-  </p>
+  {#- ---- per-client VALUE_TRANSFER table ----
+      The headline cards above show each param's single worst-case driver; this
+      breaks the end-to-end transfer cost (TX_BASE + VALUE_GAS) out per client so
+      the spread across clients is visible. Range/status are derived here from the
+      page's new_gas rows — no analysis.py field backs them. -#}
+  {% set vt_rows = new_gas | selectattr("param", "equalto", "VALUE_TRANSFER") | list %}
+  {% if vt_rows %}
+  <div class="vt-per-client">
+    <h3 class="vt-per-client-title"><code>VALUE_TRANSFER</code> status per client</h3>
+    <table class="data-table vt-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th class="num">Range across cases</th>
+          <th>Worst case</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in vt_rows | map(attribute="client_name") | unique | sort %}
+        {% set crows = vt_rows | selectattr("client_name", "equalto", client) | list %}
+        {% set vals = crows | map(attribute="new_gas_rounded") | reject("none") | list %}
+        {% if vals %}
+        {% set lo = vals | min %}
+        {% set hi = vals | max %}
+        {% set worst = crows | sort(attribute="new_gas_rounded") | last %}
+        {% set cur = (crows | map(attribute="current_gas") | first) or 21000 %}
+        {%- if hi < cur -%}{% set status = "below" %}{% set scls = "below" %}
+        {%- elif lo >= 5 * cur -%}{% set status = "way over" %}{% set scls = "way-over" %}
+        {%- elif lo >= cur -%}{% set status = "over" %}{% set scls = "over" %}
+        {%- else -%}{% set status = "straddles" %}{% set scls = "straddles" %}
+        {%- endif -%}
+        <tr>
+          <td>{{ client }}</td>
+          <td class="num">{{ kg(lo) }} &ndash; {{ kg(hi) }}</td>
+          <td>{{ worst.case_id | case_label }}</td>
+          <td><span class="vt-status vt-status-{{ scls }}">{{ status }}</span></td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="table-note">
+      Range is each client's lowest&ndash;highest <code>VALUE_TRANSFER</code>
+      across the four receiver cases, rounded to the nearest thousand. Status
+      compares that range to today's flat {{ num(vt.current_gas or 21000) }}:
+      <em>below</em> (all cases under), <em>over</em> (all cases above),
+      <em>straddles</em> (range spans it), <em>way over</em> (5&times; or more).
+    </p>
+  </div>
   {% endif %}
 
   {#- R-squared caveats -#}
@@ -248,34 +256,7 @@
   {% endif %}
 </section>
 
-{#- ---- 2. Worst-case proposal table ---- -#}
-<section class="proposal">
-  <h2>Worst-case proposal</h2>
-  <table class="data-table proposal-table">
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th class="num">Proposed gas</th>
-        <th class="num">Current gas</th>
-        <th class="num">Change</th>
-        <th>Driver</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in worst_case_overall %}
-      <tr class="worst-case">
-        <td><code>{{ row.param }}</code></td>
-        <td class="num">{{ num(row.new_gas_rounded) }}</td>
-        <td class="num">{{ num(row.current_gas) }}</td>
-        <td class="num">{{ chg(row.change) }}</td>
-        <td>{{ row.client_name }} / {{ row.case_id | case_label }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</section>
-
-{#- ---- 3. Charts ---- -#}
+{#- ---- 2. Charts ---- -#}
 <section class="charts">
   <h2>Charts</h2>
 
