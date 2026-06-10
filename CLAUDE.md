@@ -99,6 +99,6 @@ worst-case highlights, footer populated (incl. `generated`). With >1 archived ru
 the **Viewing run** selector banner switches pages and the latest reads "(latest)",
 and the Trends page's since-last-run delta table + Δ% bar populate (with one run it
 shows a "only one run archived" note). `results.json` worst case
-currently tracks besu
-`diff_to_unique_code_jumpdest_contract` for all three params (TX_BASE,
-VALUE_GAS, VALUE_TRANSFER) (this follows the data — re-check after a data refresh).
+currently tracks erigon for all three params (TX_BASE →
+`diff_to_unique_code_jumpdest_contract`, VALUE_GAS and VALUE_TRANSFER →
+`diff_to_contract`) (this follows the data — re-check after a data refresh).
