@@ -232,7 +232,7 @@ def collect_trends(runs: list) -> dict:
         ],
         "clients": sorted(clients),
         "cases": sorted(cases),
-        "params": params,  # discovery order: TX_BASE, VALUE_GAS, VALUE_TRANSFER
+        "params": params,  # discovery order, e.g. ZERO_VALUE_TRANSFER, VALUE_TRANSFER, TX_VALUE_COST
         "gas": gas,
         "runtime": runtime,
         "poor": poor,

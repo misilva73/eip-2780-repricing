@@ -377,10 +377,17 @@
       });
       Object.assign(layout.xaxis, { title: "Run", automargin: true });
       Object.assign(layout.yaxis, { title: metricLabel(), rangemode: "tozero" });
-      // Value transfer's reference is today's flat 21,000 gas. Only meaningful on
-      // the proposed-gas axis, not the runtime one.
-      if (param === "VALUE_TRANSFER" && state.metric === "gas") {
-        Object.assign(layout, referenceLine(21000, "Current (21,000)"));
+      // Each param's current-gas reference. Both end-to-end transfer costs compare
+      // to today's flat 21,000; the marginal TX_VALUE_COST to the 9,000 proxy. Only
+      // meaningful on the proposed-gas axis, not the runtime one.
+      var REFERENCE = {
+        ZERO_VALUE_TRANSFER: 21000,
+        VALUE_TRANSFER: 21000,
+        TX_VALUE_COST: 9000,
+      };
+      if (REFERENCE[param] != null && state.metric === "gas") {
+        var ref = REFERENCE[param];
+        Object.assign(layout, referenceLine(ref, "Current (" + ref.toLocaleString() + ")"));
       }
 
       if (!traces.length) {

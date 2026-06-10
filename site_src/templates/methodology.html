@@ -5,9 +5,9 @@
 <section class="prose">
   <h1>Methodology</h1>
   <p class="lede">
-    How the proposed <code>TX_BASE</code> and <code>VALUE_GAS</code> values on the
-    dashboard are derived &mdash; from raw benchmark runtimes through model fitting to
-    the worst-case gas selection.
+    How the proposed <code>ZERO_VALUE_TRANSFER</code> and <code>VALUE_TRANSFER</code>
+    values on the dashboard are derived &mdash; from raw benchmark runtimes through model
+    fitting to the worst-case gas selection.
   </p>
 
   <h2>EIP-2780 background</h2>
@@ -16,42 +16,32 @@
     whether or not it moves ether &mdash; a value transfer and a zero-value transfer
     cost exactly the same.
     <a href="https://eips.ethereum.org/EIPS/eip-2780" target="_blank" rel="noopener">EIP-2780</a>
-    splits that single cost into two constants so a transfer is priced for the work it
-    actually does:
+    asks whether that single price still reflects the real work. Rather than fit one
+    blended model, this dashboard measures the <strong>end-to-end cost of each kind of
+    transfer directly</strong> and reports three values:
   </p>
   <ul>
     <li>
-      <code>TX_BASE</code> &mdash; the flat per-transaction base cost, charged on every
-      transaction. The proposal re-prices it against today's <strong>21&nbsp;000</strong>.
+      <code>ZERO_VALUE_TRANSFER</code> &mdash; the full per-transaction cost of a transfer
+      that moves <em>no</em> ether. Re-priced against today's <strong>21&nbsp;000</strong>.
     </li>
     <li>
-      <code>VALUE_GAS</code> &mdash; an <em>additional</em> cost charged only when a
-      transaction transfers a non-zero amount of ether. This is a <strong>new</strong>
-      parameter for transfers: no separate value charge existed before. We compare it
-      against <strong>9&nbsp;000</strong>, the cost of a <code>CALL</code> that forwards
-      value (<code>G_callvalue</code>), as the natural reference point for moving value.
+      <code>VALUE_TRANSFER</code> &mdash; the full per-transaction cost of a transfer that
+      <em>does</em> move ether. Also compared against today's flat <strong>21&nbsp;000</strong>,
+      since a value transfer never paid a separate value charge at the transaction level.
     </li>
-  </ul>
-  <p>
-    So under EIP-2780 a plain transfer pays <code>TX_BASE</code>, while a value-bearing
-    transfer pays <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>. The dashboard reports three
-    comparisons:
-  </p>
-  <ul>
-    <li><code>TX_BASE</code> vs. today's <strong>21&nbsp;000</strong> &mdash; how a plain
-      transfer is repriced.</li>
-    <li><code>VALUE_GAS</code> vs. <strong>9&nbsp;000</strong> &mdash; how the new value
-      surcharge compares to the <code>CALL</code>-with-value proxy.</li>
-    <li><strong>Value transfer (total)</strong> &mdash;
-      <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code> vs. today's flat <strong>21&nbsp;000</strong>
-      &mdash; the end-to-end question: does a transfer that moves value get cheaper or
-      more expensive than the 21&nbsp;000 it pays now? See
-      <a href="#value-transfer">the derivation</a> below.</li>
+    <li>
+      <code>TX_VALUE_COST</code> &mdash; the <em>marginal</em> cost of moving value,
+      <code>VALUE_TRANSFER&nbsp;&minus;&nbsp;ZERO_VALUE_TRANSFER</code>. Compared against
+      <strong>9&nbsp;000</strong>, the cost of a <code>CALL</code> that forwards value
+      (<code>G_callvalue</code>), as the natural reference point for moving value. See
+      <a href="#value-transfer">the derivation</a> below.
+    </li>
   </ul>
   <p>
     These constants were set long ago and may no longer reflect the real execution cost
-    on modern clients. This analysis measures the actual runtime of value transfers and
-    re-prices them against a fixed throughput anchor.
+    on modern clients. This analysis measures the actual runtime of each transfer kind and
+    re-prices it against a fixed throughput anchor.
   </p>
 
   <h2>The four receiver cases</h2>
@@ -112,17 +102,20 @@
 
   <h2 id="nnls">The NNLS model</h2>
   <p>
-    For each <code>(client, case_id)</code> group we fit a non-negative least squares
-    (NNLS) model. The design matrix is built from <code>opcount</code> plus
-    <code>transfer_amount&nbsp;&times;&nbsp;opcount</code>, i.e. columns
-    <code>[1, opcount, opcount&nbsp;&times;&nbsp;transfer_amount]</code>. The fitted
-    coefficients map directly onto the two parameters:
+    For each <code>(client, case_id)</code> group we split the runs by
+    <code>transfer_amount</code> (the 0/1 indicator for whether the transfer moves ether)
+    and fit <strong>two independent</strong> non-negative least squares (NNLS) models,
+    each with the simple design matrix <code>[1, opcount]</code>:
   </p>
   <ul>
-    <li>the slope on <code>opcount</code> &rarr; <code>TX_BASE</code> (per-transaction cost);</li>
-    <li>the <code>transfer_amount</code> coefficient &rarr; <code>VALUE_GAS</code> (extra cost for moving value).</li>
+    <li>the <code>opcount</code> slope on the <code>transfer_amount&nbsp;=&nbsp;0</code> runs
+      &rarr; <code>ZERO_VALUE_TRANSFER</code> (per-transaction cost of a plain transfer);</li>
+    <li>the <code>opcount</code> slope on the <code>transfer_amount&nbsp;=&nbsp;1</code> runs
+      &rarr; <code>VALUE_TRANSFER</code> (per-transaction cost of a value transfer).</li>
   </ul>
   <p>
+    Fitting the two regimes separately lets each have its own intercept <em>and</em> its
+    own slope, rather than forcing a shared base with a single additive value surcharge.
     Non-negativity is enforced because gas costs cannot be negative. Inference uses
     <strong>bootstrap resampling</strong> (1000 iterations) to produce percentile-based
     95% confidence intervals and p-values, since the NNLS constraint breaks the usual
@@ -136,9 +129,9 @@
     the fitted estimate, so a coefficient sitting well above zero is reproduced as
     positive in every resample and the p-value reads <strong>0</strong> (the resolution
     floor is 1/1000&nbsp;=&nbsp;0.001). A value of <strong>1</strong> means NNLS pinned the
-    coefficient to exactly zero. Because <code>opcount</code> and <code>transfer_amount</code>
-    are both strong, clearly non-zero drivers, almost every p-value here is 0 &mdash; that
-    is the expected outcome, the inverse of the usual p-value intuition. The p-value cannot
+    coefficient to exactly zero. Because <code>opcount</code> is a strong, clearly
+    non-zero driver in both regimes, almost every p-value here is 0 &mdash; that is the
+    expected outcome, the inverse of the usual p-value intuition. The p-value cannot
     distinguish a barely-positive coefficient from a large one; use the
     <strong>confidence intervals</strong> for that.
   </p>
@@ -159,27 +152,32 @@
     caveats on the dashboard.
   </p>
 
-  <h2 id="value-transfer">Value transfer total (<code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>)</h2>
+  <h2 id="value-transfer">Marginal value cost (<code>TX_VALUE_COST</code>)</h2>
   <p>
-    The first two comparisons price each constant on its own. The third answers what a
-    user actually feels: a transfer that <em>moves value</em> currently pays the flat
-    21&nbsp;000, and under EIP-2780 it pays <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>.
+    The first two parameters price each transfer kind end-to-end. The third isolates
+    what moving value actually costs:
+    <code>TX_VALUE_COST&nbsp;=&nbsp;VALUE_TRANSFER&nbsp;&minus;&nbsp;ZERO_VALUE_TRANSFER</code>.
+    This is the analogue of the old <code>VALUE_GAS</code> surcharge, but it is now a
+    <em>derived difference of two independent fits</em> rather than a single fitted
+    coefficient.
   </p>
   <p>
-    Because <code>transfer_amount</code> is a 0/1 indicator, both coefficients come from
-    the <strong>same fit</strong>: a value transfer's modeled runtime is exactly
-    <code>slope&nbsp;+&nbsp;transfer_amount</code>. So for each
-    <code>(client, case)</code> we add the two converted gas values, then take the
-    worst case (largest total) the same way as the individual params. Its reference is
-    today's flat <strong>21&nbsp;000</strong>, not 30&nbsp;000 &mdash; a value transfer
-    never paid a separate value charge.
+    Because the two slopes come from <strong>separate fits</strong> on disjoint data,
+    their uncertainties add rather than partially cancel (there is no shared bootstrap
+    covariance to exploit). We propagate the 95% interval by interval arithmetic on the
+    difference &mdash; <code>[with_low&nbsp;&minus;&nbsp;without_high,
+    with_high&nbsp;&minus;&nbsp;without_low]</code> &mdash; and clamp the estimate and both
+    bounds at zero: a value transfer modeled as <em>cheaper</em> than a plain one is noise,
+    not a negative gas cost. The difference is flagged with a p-value caveat if
+    <em>either</em> underlying slope is not statistically significant, and its R&sup2; is
+    the worse of the two regime fits.
   </p>
   <p>
-    The central estimate is an exact sum. The 95% interval is the sum of the two
-    coefficients' interval bounds, which slightly <em>over</em>-states the width
-    (it ignores the negative covariance between the paired bootstrap coefficients), so
-    it is a conservative band. The total is flagged with a p-value caveat if
-    <em>either</em> underlying coefficient is not statistically significant.
+    <strong>A note on <code>VALUE_TRANSFER</code>.</strong> Earlier versions of this
+    dashboard derived <code>VALUE_TRANSFER</code> as <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code>
+    summed within one combined fit. It is now fit <em>directly</em> as the
+    <code>opcount</code> slope on the value-transfer runs &mdash; the same name, but a
+    measured end-to-end cost rather than a sum.
   </p>
 
   <h2>Reproducing this analysis</h2>

@@ -1,11 +1,14 @@
 # EIP-2780 Repricing Dashboard
 
-Derives proposed gas values for EIP-2780's `TX_BASE` (21000) and `VALUE_GAS`
-(9000) — plus the derived `VALUE_TRANSFER` (`TX_BASE + VALUE_GAS`, the
-end-to-end cost of a value transfer, referenced against `TX_BASE`) — from
-`test_ether_transfers_onchain_receivers` benchmark runtimes. Fits NNLS per
-`(client, case_id)`, converts coefficients to gas at a 100 Mgas/s anchor, picks
-the worst case per param, renders a static GitHub Pages dashboard.
+Derives proposed gas values for EIP-2780 by measuring the end-to-end cost of each
+transfer kind directly: `ZERO_VALUE_TRANSFER` (plain transfer, referenced against
+21000) and `VALUE_TRANSFER` (value transfer, also referenced against 21000) — plus
+the derived `TX_VALUE_COST` (`VALUE_TRANSFER − ZERO_VALUE_TRANSFER`, the marginal
+cost of moving value, referenced against 9000). For each `(client, case_id)` it
+fits **two independent NNLS models** — one on the `transfer_amount=0` runs, one on
+the `transfer_amount=1` runs, each `[const, opcount]` — converts the opcount slopes
+to gas at a 100 Mgas/s anchor, picks the worst case per param, and renders a static
+GitHub Pages dashboard.
 
 ## Pipeline
 
@@ -77,10 +80,19 @@ Requires `make`, `jq`, Python 3.11+.
   the trace per contract tx, else `floor(block_gas_limit/21000)` for EOA cases.
 - **Column rename:** `test_runtime_ms → run_duration_ms` right after load — the
   ported NNLS code expects the latter.
+- **Two fits per `(client, case_id)`** (Part B `build_results_df`): the group is
+  split on `transfer_amount` and each subset fit as its own `[const, opcount]`
+  NNLS model (`without_*` = zero-value, `with_*` = value). The interaction-term
+  `prepare_non_simple_model_data` from Part A is left in place for upstream
+  diffability but is **no longer called**.
 - **Constants** (`ANCHOR_RATE`, `TX_BASE`, `VALUE_GAS_CURRENT`, `TEST_NAME`) are
-  in analysis.py near `# PART B`. `current_gas` reference values come from these.
-  `VALUE_TRANSFER` is derived (`TX_BASE + VALUE_GAS` per fit) and references
-  `TX_BASE` — there was never a separate flat charge for transfers.
+  in analysis.py near `# PART B`. `current_gas` reference values come from these:
+  `ZERO_VALUE_TRANSFER` and `VALUE_TRANSFER` both reference `TX_BASE` (21000 — a
+  value transfer never paid a separate flat charge), and the derived
+  `TX_VALUE_COST` (`VALUE_TRANSFER − ZERO_VALUE_TRANSFER`, clamped ≥0; CI via
+  interval arithmetic on the two independent fits) references `VALUE_GAS_CURRENT`
+  (9000). Note `VALUE_TRANSFER` is now fit directly (the value-subset opcount
+  slope), not summed as `TX_BASE + VALUE_GAS`.
 - **Each page's data file embeds its run verbatim** as `window.DASHBOARD_DATA` —
   no runtime `fetch()` (avoids project-pages base-path issues). `index.html` loads
   `data.js`; `run-<id>.html` loads `data-<id>.js`. `charts.js` reads whichever is
@@ -91,6 +103,9 @@ Requires `make`, `jq`, Python 3.11+.
 GitHub Pages serves `/docs` on `main`. No CI. After a data/site change, commit
 `data/results.json`, the new/changed `data/runs/*.json`, and `docs/`, then push.
 
+**Never create a new git branch unless explicitly asked.** Commit directly to
+`main` (the deploy branch) — do not branch first.
+
 ## Verify before commit
 
 `make site && (cd docs && python -m http.server)` — check the Dashboard,
@@ -99,6 +114,6 @@ worst-case highlights, footer populated (incl. `generated`). With >1 archived ru
 the **Viewing run** selector banner switches pages and the latest reads "(latest)",
 and the Trends page's since-last-run delta table + Δ% bar populate (with one run it
 shows a "only one run archived" note). `results.json` worst case
-currently tracks erigon for all three params (TX_BASE →
-`diff_to_unique_code_jumpdest_contract`, VALUE_GAS and VALUE_TRANSFER →
+currently tracks erigon for all three params (`ZERO_VALUE_TRANSFER` →
+`diff_to_unique_code_jumpdest_contract`, `VALUE_TRANSFER` and `TX_VALUE_COST` →
 `diff_to_contract`) (this follows the data — re-check after a data refresh).

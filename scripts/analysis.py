@@ -523,45 +523,70 @@ def _extract_case_id(test_params: str):
     return re.sub(r"-benchmark_\d+M$", "", m.group(1))
 
 
+# The two value-transfer regimes: a transfer that moves no ether vs. one that
+# does. transfer_amount is a 0/1 indicator; each regime is fit on its own data
+# subset as a simple [const, opcount] model (see build_results_df).
+TRANSFER_REGIMES = (("without", 0), ("with", 1))
+
+
+def _empty_fit_record(label: str) -> dict:
+    """NaN-filled fields for a regime that couldn't be fit (subset missing or no
+    opcount variation), so the (client, case) record keeps a uniform shape."""
+    return {
+        f"{label}_nobs": np.nan,
+        f"{label}_rsquared": np.nan,
+        f"{label}_rsquared_adj": np.nan,
+        f"{label}_intercept": np.nan,
+        f"{label}_intercept_pvalue": np.nan,
+        f"{label}_slope": np.nan,
+        f"{label}_slope_pvalue": np.nan,
+        f"{label}_slope_conf_int_low": np.nan,
+        f"{label}_slope_conf_int_high": np.nan,
+    }
+
+
 def build_results_df(df: pd.DataFrame) -> pd.DataFrame:
-    """Fit NNLS per (client_name, case_id) and collect the per-fit records."""
+    """Fit two NNLS models per (client_name, case_id) — one per transfer regime —
+    and collect the per-fit records.
+
+    Unlike the single combined fit with an ``opcount × transfer_amount``
+    interaction term, we split each group on ``transfer_amount`` and fit each
+    subset as its own simple ``[const, opcount]`` model. The no-value subset's
+    opcount slope becomes ZERO_VALUE_TRANSFER, the value subset's becomes
+    VALUE_TRANSFER; both get their own intercept and slope rather than sharing a
+    base. Fields are prefixed ``without_`` / ``with_`` per regime.
+    """
     results_records = []
     for (client_name, case_id), group_df in df.groupby(["client_name", "case_id"]):
-        fit_df = group_df.drop(columns=["transfer_amount"])
-        try:
-            model_df, features = prepare_non_simple_model_data(
-                fit_df, ["transfer_amount"]
+        record = {"client_name": client_name, "case_id": case_id}
+        for label, ta in TRANSFER_REGIMES:
+            subset = group_df[group_df["transfer_amount"] == ta]
+            fit_df = subset[["opcount", "run_duration_ms"]].dropna()
+            # NNLS needs opcount to vary to recover a slope; a single distinct
+            # value (or no rows) can't identify it.
+            if fit_df.empty or fit_df["opcount"].nunique() < 2:
+                record.update(_empty_fit_record(label))
+                continue
+            try:
+                result = fit_NNLS(fit_df, ["opcount"])
+            except Exception as e:  # noqa: BLE001 — mirror the original's broad skip
+                print(f"Skipping ({client_name}, {case_id}, {label}): {e}")
+                record.update(_empty_fit_record(label))
+                continue
+            conf_int = result.conf_int()
+            record.update(
+                {
+                    f"{label}_nobs": result.nobs,
+                    f"{label}_rsquared": result.rsquared,
+                    f"{label}_rsquared_adj": result.rsquared_adj,
+                    f"{label}_intercept": result.params["const"],
+                    f"{label}_intercept_pvalue": result.pvalues["const"],
+                    f"{label}_slope": result.params["opcount"],
+                    f"{label}_slope_pvalue": result.pvalues["opcount"],
+                    f"{label}_slope_conf_int_low": conf_int.loc["opcount", 0],
+                    f"{label}_slope_conf_int_high": conf_int.loc["opcount", 1],
+                }
             )
-            fit_df = model_df[features + ["run_duration_ms"]].dropna()
-            if fit_df.empty:
-                raise ValueError("No valid data remaining after dropping NaN values")
-            result = fit_NNLS(fit_df, features)
-        except Exception as e:
-            print(f"Skipping ({client_name}, {case_id}): {e}")
-            continue
-
-        has_transfer = "transfer_amount" in result.params
-        record = {
-            "client_name": client_name,
-            "case_id": case_id,
-            "nobs": result.nobs,
-            "rsquared": result.rsquared,
-            "rsquared_adj": result.rsquared_adj,
-            "intercept": result.params["const"],
-            "intercept_pvalue": result.pvalues["const"],
-            "slope": result.params["opcount"],
-            "slope_pvalue": result.pvalues["opcount"],
-            "slope_conf_int_low": result.conf_int().loc["opcount", 0],
-            "slope_conf_int_high": result.conf_int().loc["opcount", 1],
-            "transfer_amount": result.params.get("transfer_amount", np.nan),
-            "transfer_amount_pvalue": result.pvalues.get("transfer_amount", np.nan),
-            "transfer_amount_conf_int_low": (
-                result.conf_int().loc["transfer_amount", 0] if has_transfer else np.nan
-            ),
-            "transfer_amount_conf_int_high": (
-                result.conf_int().loc["transfer_amount", 1] if has_transfer else np.nan
-            ),
-        }
         results_records.append(record)
 
     results_df = (
@@ -574,20 +599,24 @@ def build_results_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
     """Convert the fitted coefficients into long-form new-gas estimates."""
+    # Each transfer regime's opcount slope is one end-to-end param. The no-value
+    # subset -> ZERO_VALUE_TRANSFER, the value subset -> VALUE_TRANSFER. Both are
+    # referenced against today's flat 21000 (a value transfer never paid a
+    # separate value charge at the tx level).
     rename_map = {
-        "slope": "TX_BASE",
-        "transfer_amount": "VALUE_GAS",
+        "without_slope": "ZERO_VALUE_TRANSFER",
+        "with_slope": "VALUE_TRANSFER",
     }
     current_gas_map = {
-        "TX_BASE": TX_BASE,
-        "VALUE_GAS": VALUE_GAS_CURRENT,
-        # A value-bearing transfer pays a flat 21000 today (no separate value
-        # charge ever existed for transfers), so its reference is TX_BASE.
+        "ZERO_VALUE_TRANSFER": TX_BASE,
         "VALUE_TRANSFER": TX_BASE,
+        # Marginal cost of moving value; compared to the 9000 CALL-with-value proxy.
+        "TX_VALUE_COST": VALUE_GAS_CURRENT,
     }
 
     long_frames = []
     for source_col, param_name in rename_map.items():
+        label = source_col.removesuffix("_slope")  # "without" / "with"
         sub = results_df[
             [
                 "client_name",
@@ -596,7 +625,7 @@ def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
                 f"{source_col}_conf_int_low",
                 f"{source_col}_conf_int_high",
                 f"{source_col}_pvalue",
-                "rsquared",
+                f"{label}_rsquared",
             ]
         ].copy()
         sub = sub.rename(
@@ -605,29 +634,36 @@ def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
                 f"{source_col}_conf_int_low": "conf_int_low",
                 f"{source_col}_conf_int_high": "conf_int_high",
                 f"{source_col}_pvalue": "pvalue",
+                f"{label}_rsquared": "rsquared",
             }
         )
         sub["param"] = param_name
         long_frames.append(sub)
 
-    # Derived param VALUE_TRANSFER = TX_BASE + VALUE_GAS, the end-to-end cost of a
-    # transfer that moves value. transfer_amount is a 0/1 indicator, so a value
-    # transfer's modeled runtime is slope + transfer_amount within the SAME fit —
-    # the two coefficients simply add. CI bounds are summed (a conservative
-    # over-estimate of the paired-bootstrap CI, since it ignores the negative
-    # covariance between the coefficients); pvalue is the max of the two, so the
-    # total is flagged insignificant if either coefficient is; rsquared is shared.
-    vt = results_df[["client_name", "case_id", "rsquared"]].copy()
-    vt["runtime_ms"] = results_df["slope"] + results_df["transfer_amount"]
-    vt["conf_int_low"] = (
-        results_df["slope_conf_int_low"] + results_df["transfer_amount_conf_int_low"]
+    # Derived param TX_VALUE_COST = VALUE_TRANSFER - ZERO_VALUE_TRANSFER, the
+    # marginal cost of moving value. The two slopes now come from INDEPENDENT fits
+    # (different data subsets), so — unlike the old summed VALUE_TRANSFER, which
+    # added paired-bootstrap coefficients from one fit — uncertainties add rather
+    # than partially cancel. We propagate by interval arithmetic on the difference
+    # and clamp at 0: a value transfer modeled as cheaper than a plain one is noise,
+    # not a negative gas cost. pvalue is the max of the two (insignificant if either
+    # regime is); rsquared is the min (most conservative for the caveat checks).
+    vc = results_df[["client_name", "case_id"]].copy()
+    vc["runtime_ms"] = (results_df["with_slope"] - results_df["without_slope"]).clip(
+        lower=0
     )
-    vt["conf_int_high"] = (
-        results_df["slope_conf_int_high"] + results_df["transfer_amount_conf_int_high"]
-    )
-    vt["pvalue"] = results_df[["slope_pvalue", "transfer_amount_pvalue"]].max(axis=1)
-    vt["param"] = "VALUE_TRANSFER"
-    long_frames.append(vt)
+    vc["conf_int_low"] = (
+        results_df["with_slope_conf_int_low"]
+        - results_df["without_slope_conf_int_high"]
+    ).clip(lower=0)
+    vc["conf_int_high"] = (
+        results_df["with_slope_conf_int_high"]
+        - results_df["without_slope_conf_int_low"]
+    ).clip(lower=0)
+    vc["pvalue"] = results_df[["without_slope_pvalue", "with_slope_pvalue"]].max(axis=1)
+    vc["rsquared"] = results_df[["without_rsquared", "with_rsquared"]].min(axis=1)
+    vc["param"] = "TX_VALUE_COST"
+    long_frames.append(vc)
 
     new_gas_df = pd.concat(long_frames, ignore_index=True)
 
@@ -774,11 +810,13 @@ def build_summary(new_gas_df: pd.DataFrame, worst_case_overall: pd.DataFrame) ->
     ]
 
     return {
-        "tx_base": param_summary("TX_BASE", TX_BASE),
-        "value_gas": param_summary("VALUE_GAS", VALUE_GAS_CURRENT),
-        # End-to-end cost of a value transfer (TX_BASE + VALUE_GAS) vs the flat
-        # 21000 it pays today.
+        # End-to-end cost of a plain transfer vs. today's flat 21000.
+        "zero_value_transfer": param_summary("ZERO_VALUE_TRANSFER", TX_BASE),
+        # End-to-end cost of a value transfer vs. the flat 21000 it pays today.
         "value_transfer": param_summary("VALUE_TRANSFER", TX_BASE),
+        # Marginal cost of moving value (VALUE_TRANSFER - ZERO_VALUE_TRANSFER) vs.
+        # the 9000 CALL-with-value proxy.
+        "tx_value_cost": param_summary("TX_VALUE_COST", VALUE_GAS_CURRENT),
         "caveats": caveats,
         "pvalue_caveats": pvalue_caveats,
     }

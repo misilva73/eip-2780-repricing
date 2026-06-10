@@ -134,7 +134,9 @@
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
 
-  // Grouped bar chart of R^2 per (client, case) from results, x = case_id, grouped by client.
+  // Grouped bar chart of R^2 per (client, case) from results, x = case_id, grouped by
+  // client. Each (client, case) is now two fits (zero-value / value); we plot the worse
+  // of the two, matching the R² <= 0.5 caveat logic. The detail table breaks out both.
   function plotRsquared(divId) {
     var div = document.getElementById(divId);
     if (!div || !window.DASHBOARD_DATA) return;
@@ -151,7 +153,11 @@
         var row = rows.find(function (r) {
           return r.client_name === client && r.case_id === caseId;
         });
-        return row && row.rsquared != null ? row.rsquared : null;
+        if (!row) return null;
+        var vals = [row.without_rsquared, row.with_rsquared].filter(function (v) {
+          return v != null;
+        });
+        return vals.length ? Math.min.apply(null, vals) : null;
       });
       return {
         type: "bar",
@@ -281,10 +287,11 @@
     initRunDropdown();
     initTableFilters();
     if (!window.DASHBOARD_DATA) return;
-    plotNewGas("chart-tx-base", "TX_BASE", 21000);
-    plotNewGas("chart-value-gas", "VALUE_GAS", 9000);
-    // VALUE_TRANSFER = TX_BASE + VALUE_GAS; its reference is today's flat 21000.
+    // Both end-to-end transfer costs reference today's flat 21000.
+    plotNewGas("chart-zero-value-transfer", "ZERO_VALUE_TRANSFER", 21000);
     plotNewGas("chart-value-transfer", "VALUE_TRANSFER", 21000);
+    // TX_VALUE_COST is the marginal value surcharge; its reference is the 9000 proxy.
+    plotNewGas("chart-tx-value-cost", "TX_VALUE_COST", 9000);
     plotRsquared("chart-rsquared");
   });
 })();

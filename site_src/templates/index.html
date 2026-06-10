@@ -3,33 +3,33 @@
 
 {#- ---- formatting helpers ---- -#}
 {%- macro num(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "{:,}".format(v|int) }}{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "{:,}".format(v|int) }}{%- endif -%}
 {%- endmacro -%}
 
 {%- macro r3(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%.3f"|format(v) }}{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3f"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
 {%- macro r4(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%.4f"|format(v) }}{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.4f"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
 {%- macro g3(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%.3g"|format(v) }}{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
 {%- macro pct(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%+.1f"|format(v) }}%{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%+.1f"|format(v) }}%{%- endif -%}
 {%- endmacro -%}
 
 {# change is stored as a ratio (e.g. 19.67 == +1967%); render it as a true percent #}
 {%- macro rpct(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%+.1f"|format(v * 100) }}%{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%+.1f"|format(v * 100) }}%{%- endif -%}
 {%- endmacro -%}
 
 {# colored, arrowed change cell. v is the ratio (19.67 == +1967%). #}
 {%- macro chg(v) -%}
-{%- if v is none -%}<span class="chg chg-flat">&mdash;</span>
+{%- if v is none or v is undefined -%}<span class="chg chg-flat">&mdash;</span>
 {%- elif v > 0 -%}<span class="chg chg-up">&#9650; {{ "%+.1f"|format(v * 100) }}%</span>
 {%- elif v < 0 -%}<span class="chg chg-down">&#9660; {{ "%+.1f"|format(v * 100) }}%</span>
 {%- else -%}<span class="chg chg-flat">0%</span>
@@ -38,7 +38,7 @@
 
 {# direction pill from a true-percent change. positive => under-priced (up). #}
 {%- macro chg_pill(pct) -%}
-{%- if pct is none -%}<span class="pill pill-flat">&mdash;</span>
+{%- if pct is none or pct is undefined -%}<span class="pill pill-flat">&mdash;</span>
 {%- elif pct > 0 -%}<span class="pill pill-up">&#9650; {{ "%+.0f"|format(pct) }}% &middot; under-priced</span>
 {%- elif pct < 0 -%}<span class="pill pill-down">&#9660; {{ "%+.0f"|format(pct) }}% &middot; over-priced</span>
 {%- else -%}<span class="pill pill-flat">no change</span>
@@ -46,18 +46,18 @@
 {%- endmacro -%}
 
 {%- macro sci(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
 {# gas rounded to the nearest thousand, e.g. 218405 -> "218k" #}
 {%- macro kg(v) -%}
-{%- if v is none -%}&mdash;{%- else -%}{{ "%.0f"|format(v / 1000) }}k{%- endif -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.0f"|format(v / 1000) }}k{%- endif -%}
 {%- endmacro -%}
 
 {% block content %}
-{% set tx = summary.tx_base or {} %}
-{% set vg = summary.value_gas or {} %}
+{% set zvt = summary.zero_value_transfer or {} %}
 {% set vt = summary.value_transfer or {} %}
+{% set vc = summary.tx_value_cost or {} %}
 {% set caveats = summary.caveats or [] %}
 {% set pvalue_caveats = summary.pvalue_caveats or [] %}
 
@@ -105,14 +105,15 @@
 {% endif %}
 
 <section class="hero">
-  <h1>EIP-2780 repricing: <code>TX_BASE</code> &amp; <code>VALUE_GAS</code></h1>
+  <h1>EIP-2780 repricing: <code>ZERO_VALUE_TRANSFER</code> &amp; <code>VALUE_TRANSFER</code></h1>
   <p class="lede">
     Today every transfer pays a flat <strong>21,000</strong> gas, value or not.
-    EIP-2780 splits that into <code>TX_BASE</code> for a plain transfer and
-    <code>TX_BASE&nbsp;+&nbsp;VALUE_GAS</code> for one that moves value. We fit the
-    per-client, per-case runtime of
-    <code>{{ meta.test_name or "test_ether_transfers_onchain_receivers" }}</code>
-    with non-negative least squares and convert it to proposed gas at the
+    We measure the end-to-end cost of each: <code>ZERO_VALUE_TRANSFER</code> for a
+    plain transfer and <code>VALUE_TRANSFER</code> for one that moves value, plus the
+    marginal <code>TX_VALUE_COST</code> between them. Each is a separate per-client,
+    per-case non-negative least squares fit on the runtime of
+    <code>{{ meta.test_name or "test_ether_transfers_onchain_receivers" }}</code>,
+    converted to proposed gas at the
     {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor. Each
     parameter's worst case is the most expensive driver across all clients and cases.
   </p>
@@ -128,42 +129,58 @@
   <h2 class="h2-lg">Summary</h2>
   <div class="stat-grid">
     <div class="stat-card">
-      <p class="stat-label">Worst-case <code>TX_BASE</code></p>
+      <p class="stat-label">Worst-case <code>ZERO_VALUE_TRANSFER</code></p>
       <div class="stat-value">
-        <span class="stat-number">{{ num(tx.new_gas) }}</span>
+        <span class="stat-number">{{ num(zvt.new_gas) }}</span>
         <span class="stat-unit">gas</span>
-        {{ chg_pill(tx.change_pct) }}
+        {{ chg_pill(zvt.change_pct) }}
       </div>
       <p class="stat-meta">
-        vs. current {{ num(tx.current_gas) }} &middot; driven by
-        <strong>{{ tx.client_name or "&mdash;" }}</strong> /
-        {{ (tx.case_id | case_label) if tx.case_id else "&mdash;" }}
+        vs. current {{ num(zvt.current_gas) }} &middot; driven by
+        <strong>{{ zvt.client_name or "&mdash;" }}</strong> /
+        {{ (zvt.case_id | case_label) if zvt.case_id else "&mdash;" }}
       </p>
       <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(tx.rsquared) }} &middot; p = {{ g3(tx.pvalue) }}
+        R&sup2; = {{ r3(zvt.rsquared) }} &middot; p = {{ g3(zvt.pvalue) }}
       </p>
     </div>
     <div class="stat-card">
-      <p class="stat-label">Worst-case <code>VALUE_GAS</code></p>
+      <p class="stat-label">Worst-case <code>VALUE_TRANSFER</code></p>
       <div class="stat-value">
-        <span class="stat-number">{{ num(vg.new_gas) }}</span>
+        <span class="stat-number">{{ num(vt.new_gas) }}</span>
         <span class="stat-unit">gas</span>
-        {{ chg_pill(vg.change_pct) }}
+        {{ chg_pill(vt.change_pct) }}
       </div>
       <p class="stat-meta">
-        vs. current {{ num(vg.current_gas) }} &middot; driven by
-        <strong>{{ vg.client_name or "&mdash;" }}</strong> /
-        {{ (vg.case_id | case_label) if vg.case_id else "&mdash;" }}
+        vs. current {{ num(vt.current_gas) }} &middot; driven by
+        <strong>{{ vt.client_name or "&mdash;" }}</strong> /
+        {{ (vt.case_id | case_label) if vt.case_id else "&mdash;" }}
       </p>
       <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(vg.rsquared) }} &middot; p = {{ g3(vg.pvalue) }}
+        R&sup2; = {{ r3(vt.rsquared) }} &middot; p = {{ g3(vt.pvalue) }}
+      </p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Worst-case <code>TX_VALUE_COST</code></p>
+      <div class="stat-value">
+        <span class="stat-number">{{ num(vc.new_gas) }}</span>
+        <span class="stat-unit">gas</span>
+        {{ chg_pill(vc.change_pct) }}
+      </div>
+      <p class="stat-meta">
+        vs. current {{ num(vc.current_gas) }} &middot; driven by
+        <strong>{{ vc.client_name or "&mdash;" }}</strong> /
+        {{ (vc.case_id | case_label) if vc.case_id else "&mdash;" }}
+      </p>
+      <p class="stat-meta stat-r2">
+        R&sup2; = {{ r3(vc.rsquared) }} &middot; p = {{ g3(vc.pvalue) }}
       </p>
     </div>
   </div>
 
   {#- ---- per-client VALUE_TRANSFER table ----
       The headline cards above show each param's single worst-case driver; this
-      breaks the end-to-end transfer cost (TX_BASE + VALUE_GAS) out per client so
+      breaks the end-to-end value-transfer cost (VALUE_TRANSFER) out per client so
       the spread across clients is visible. Range/status are derived here from the
       page's new_gas rows — no analysis.py field backs them. -#}
   {% set vt_rows = new_gas | selectattr("param", "equalto", "VALUE_TRANSFER") | list %}
@@ -261,22 +278,22 @@
   <h2>Charts</h2>
 
   <div class="chart-block">
-    <h3><code>TX_BASE</code> &mdash; proposed gas per case (95% CI)</h3>
-    <div id="chart-tx-base" class="chart"></div>
+    <h3><code>ZERO_VALUE_TRANSFER</code> &mdash; proposed gas per case (95% CI)</h3>
+    <div id="chart-zero-value-transfer" class="chart"></div>
   </div>
 
   <div class="chart-block">
-    <h3><code>VALUE_GAS</code> &mdash; proposed gas per case (95% CI)</h3>
-    <div id="chart-value-gas" class="chart"></div>
-  </div>
-
-  <div class="chart-block">
-    <h3>Value transfer total (<code>TX_BASE</code>&nbsp;+&nbsp;<code>VALUE_GAS</code>) vs. today's 21,000 (95% CI)</h3>
+    <h3><code>VALUE_TRANSFER</code> &mdash; proposed gas per case (95% CI)</h3>
     <div id="chart-value-transfer" class="chart"></div>
   </div>
 
   <div class="chart-block">
-    <h3>Model fit quality (R&sup2;) per (client, case)</h3>
+    <h3><code>TX_VALUE_COST</code> (<code>VALUE_TRANSFER</code>&nbsp;&minus;&nbsp;<code>ZERO_VALUE_TRANSFER</code>) vs. 9,000 (95% CI)</h3>
+    <div id="chart-tx-value-cost" class="chart"></div>
+  </div>
+
+  <div class="chart-block">
+    <h3>Model fit quality (R&sup2;, worse of the two regime fits) per (client, case)</h3>
     <div id="chart-rsquared" class="chart"></div>
   </div>
 </section>
@@ -382,15 +399,15 @@
         <tr>
           <th>Client</th>
           <th>Case</th>
-          <th class="num">nobs</th>
-          <th class="num">R&sup2;</th>
-          <th class="num">R&sup2; adj</th>
-          <th class="num">slope</th>
-          <th class="num">slope CI</th>
-          <th class="num">slope p-value</th>
-          <th class="num">transfer coef</th>
-          <th class="num">transfer CI</th>
-          <th class="num">transfer p-value</th>
+          <th class="num">nobs (zero / value)</th>
+          <th class="num">R&sup2; zero</th>
+          <th class="num">R&sup2; value</th>
+          <th class="num">slope zero</th>
+          <th class="num">slope CI zero</th>
+          <th class="num">p zero</th>
+          <th class="num">slope value</th>
+          <th class="num">slope CI value</th>
+          <th class="num">p value</th>
         </tr>
       </thead>
       <tbody>
@@ -398,23 +415,26 @@
         <tr data-client="{{ row.client_name }}" data-case="{{ row.case_id }}">
           <td>{{ row.client_name }}</td>
           <td>{{ row.case_id | case_label }}</td>
-          <td class="num">{{ num(row.nobs) }}</td>
-          <td class="num">{{ r3(row.rsquared) }}</td>
-          <td class="num">{{ r3(row.rsquared_adj) }}</td>
-          <td class="num">{{ sci(row.slope) }}</td>
-          <td class="num">{{ sci(row.slope_conf_int_low) }} &ndash; {{ sci(row.slope_conf_int_high) }}</td>
-          <td class="num">{{ g3(row.slope_pvalue) }}</td>
-          <td class="num">{{ sci(row.transfer_amount) }}</td>
-          <td class="num">{{ sci(row.transfer_amount_conf_int_low) }} &ndash; {{ sci(row.transfer_amount_conf_int_high) }}</td>
-          <td class="num">{{ g3(row.transfer_amount_pvalue) }}</td>
+          <td class="num">{{ num(row.without_nobs) }} / {{ num(row.with_nobs) }}</td>
+          <td class="num">{{ r3(row.without_rsquared) }}</td>
+          <td class="num">{{ r3(row.with_rsquared) }}</td>
+          <td class="num">{{ sci(row.without_slope) }}</td>
+          <td class="num">{{ sci(row.without_slope_conf_int_low) }} &ndash; {{ sci(row.without_slope_conf_int_high) }}</td>
+          <td class="num">{{ g3(row.without_slope_pvalue) }}</td>
+          <td class="num">{{ sci(row.with_slope) }}</td>
+          <td class="num">{{ sci(row.with_slope_conf_int_low) }} &ndash; {{ sci(row.with_slope_conf_int_high) }}</td>
+          <td class="num">{{ g3(row.with_slope_pvalue) }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   <p class="table-note">
-    p-values are bootstrap boundary tests, not conventional two-sided p-values: each is
-    the fraction of resamples in which the coefficient collapses to zero, so a strong,
+    Each <code>(client, case)</code> is two independent fits &mdash; one on the
+    zero-value transfers, one on the value transfers &mdash; so each regime has its own
+    slope (&rarr; <code>ZERO_VALUE_TRANSFER</code> / <code>VALUE_TRANSFER</code>). p-values
+    are bootstrap boundary tests, not conventional two-sided p-values: each is the
+    fraction of resamples in which the coefficient collapses to zero, so a strong,
     clearly non-zero driver reads <strong>0</strong>. See the
     <a href="methodology.html#nnls">methodology</a> for details; the confidence intervals
     are the better guide to precision.
