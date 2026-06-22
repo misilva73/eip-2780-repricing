@@ -49,6 +49,39 @@
 {%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
+{# Runner-up driver for a param: the worst case of the second-worst *client*.
+   Derived from the page's new_gas rows — ranked[0] is the headline worst case
+   shown above, so we take its highest-gas row from a different client (not just
+   the next row, which is usually the same client with another case). Renders
+   nothing when only one client has rows for this param. #}
+{%- macro second_worst(rows, param) -%}
+{%- set ranked = rows | selectattr("param", "equalto", param) | sort(attribute="new_gas_rounded", reverse=true) | list -%}
+{%- set ns = namespace(s=none) -%}
+{%- if ranked -%}
+{%- for r in ranked -%}
+{%- if ns.s is none and r.client_name != ranked[0].client_name -%}{%- set ns.s = r -%}{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- set s = ns.s -%}
+{%- if s is not none -%}
+<div class="stat-second">
+  <p class="stat-second-head">
+    <span class="stat-second-tag">2nd worst client</span>
+    <span class="stat-second-number">{{ num(s.new_gas_rounded) }}</span>
+    <span class="stat-unit">gas</span>
+    {{ chg_pill(s.change * 100) }}
+  </p>
+  <p class="stat-meta">
+    driven by <strong>{{ s.client_name or "&mdash;" }}</strong> /
+    {{ (s.case_id | case_label) if s.case_id else "&mdash;" }}
+  </p>
+  <p class="stat-meta stat-r2">
+    R&sup2; = {{ r3(s.rsquared) }} &middot; p = {{ g3(s.pvalue) }}
+  </p>
+</div>
+{%- endif -%}
+{%- endmacro -%}
+
 {# gas rounded to the nearest thousand, e.g. 218405 -> "218k" #}
 {%- macro kg(v) -%}
 {%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.0f"|format(v / 1000) }}k{%- endif -%}
@@ -143,6 +176,7 @@
       <p class="stat-meta stat-r2">
         R&sup2; = {{ r3(zvt.rsquared) }} &middot; p = {{ g3(zvt.pvalue) }}
       </p>
+      {{ second_worst(new_gas, "ZERO_VALUE_TRANSFER") }}
     </div>
     <div class="stat-card">
       <p class="stat-label">Worst-case <code>VALUE_TRANSFER</code></p>
@@ -159,6 +193,7 @@
       <p class="stat-meta stat-r2">
         R&sup2; = {{ r3(vt.rsquared) }} &middot; p = {{ g3(vt.pvalue) }}
       </p>
+      {{ second_worst(new_gas, "VALUE_TRANSFER") }}
     </div>
     <div class="stat-card">
       <p class="stat-label">Worst-case <code>TX_VALUE_COST</code></p>
@@ -175,6 +210,7 @@
       <p class="stat-meta stat-r2">
         R&sup2; = {{ r3(vc.rsquared) }} &middot; p = {{ g3(vc.pvalue) }}
       </p>
+      {{ second_worst(new_gas, "TX_VALUE_COST") }}
     </div>
   </div>
 

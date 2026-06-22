@@ -249,7 +249,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 /* ---- Stat cards ---- */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
@@ -299,6 +299,36 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 .stat-meta { font-size: 0.86rem; color: var(--ink-soft); margin: 0; }
 .stat-meta strong { color: var(--ink); }
 .stat-r2 { color: var(--ink-faint); }
+
+/* Runner-up driver, de-emphasized below the headline worst case. */
+.stat-second {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.stat-second-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.stat-second-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.stat-second-number {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ---- Pills / badges ---- */
 .pill {
