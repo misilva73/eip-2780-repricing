@@ -132,7 +132,8 @@
     (<code>TX_BASE_COST</code>&nbsp;=&nbsp;12,000, <code>COLD_ACCOUNT_ACCESS</code>&nbsp;=&nbsp;3,000, <code>TX_VALUE_COST</code>&nbsp;=&nbsp;6,000).
     Each cell is that client's <strong>worst</strong> proposed gas across those
     cases: green clears the goal, amber is up to 25% over,
-    red is further over. Hover a cell for its margin and which case it came from.
+    red is further over. Hover a goal name for the component sum behind it, or a
+    cell for its margin and which case it came from.
   </p>
   <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
@@ -149,9 +150,8 @@
       <tbody>
         
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>TX_BASE_COST</code>
-            <span class="goal-what">the cost of an eth transfer to self</span>
+          <th class="goal-name" scope="row" title="TX_BASE_COST = 12,000">
+            Transfer to self
           </th>
           <td class="num goal-target">12,000</td>
           
@@ -190,9 +190,8 @@
         </tr>
         
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>TX_BASE_COST + COLD_ACCOUNT_ACCESS</code>
-            <span class="goal-what">the cost of a no-transfer</span>
+          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000">
+            No-value transfer
           </th>
           <td class="num goal-target">15,000</td>
           
@@ -231,9 +230,8 @@
         </tr>
         
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST</code>
-            <span class="goal-what">the cost of an eth transfer</span>
+          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000">
+            Transfer
           </th>
           <td class="num goal-target">21,000</td>
           
@@ -272,9 +270,8 @@
         </tr>
         
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS</code>
-            <span class="goal-what">the cost of a no-transfer to a delegated account</span>
+          <th class="goal-name" scope="row" title="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000">
+            No-value transfer to delegated account
           </th>
           <td class="num goal-target">18,000</td>
           
@@ -312,9 +309,8 @@
         </tr>
         
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST</code>
-            <span class="goal-what">the cost of an eth transfer to a delegated account</span>
+          <th class="goal-name" scope="row" title="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000">
+            Transfer to delegated account
           </th>
           <td class="num goal-target">24,000</td>
           
@@ -3492,7 +3488,7 @@
         &middot;
         suite <code>3f6a0898955dff4f</code>
         &middot;
-        commit <code>0cb312e</code>
+        commit <code>7fd810b</code>
         &middot;
         generated <code>2026-07-30T13:06:01+00:00</code>
       </p>

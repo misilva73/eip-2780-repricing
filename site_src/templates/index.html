@@ -133,7 +133,8 @@
     ({% for c in goals.components %}<code>{{ c.name }}</code>&nbsp;=&nbsp;{{ num(c.value) }}{% if not loop.last %}, {% endif %}{% endfor %}).
     Each cell is that client's <strong>worst</strong> proposed gas across those
     cases: green clears the goal, amber is up to {{ goals.mid_margin_pct }}% over,
-    red is further over. Hover a cell for its margin and which case it came from.
+    red is further over. Hover a goal name for the component sum behind it, or a
+    cell for its margin and which case it came from.
   </p>
   <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
@@ -150,9 +151,8 @@
       <tbody>
         {% for r in goals.rows %}
         <tr>
-          <th class="goal-formula" scope="row">
-            <code>{{ r.formula }}</code>
-            <span class="goal-what">the cost of {{ r.what }}</span>
+          <th class="goal-name" scope="row" title="{{ r.formula }} = {{ num(r.goal) }}">
+            {{ r.name }}
           </th>
           <td class="num goal-target">{{ num(r.goal) }}</td>
           {% for c in r.cells %}

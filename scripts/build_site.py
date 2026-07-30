@@ -179,15 +179,15 @@ GOAL_SPECS = [
         "param": "ZERO_VALUE_TRANSFER",
         "shapes": ("self",),
         "goal": TX_BASE_COST,
+        "name": "Transfer to self",
         "formula": "TX_BASE_COST",
-        "what": "an eth transfer to self",
     },
     {
         "param": "ZERO_VALUE_TRANSFER",
         "shapes": ("standard",),
         "goal": TX_BASE_COST + COLD_ACCOUNT_ACCESS,
+        "name": "No-value transfer",
         "formula": "TX_BASE_COST + COLD_ACCOUNT_ACCESS",
-        "what": "a no-transfer",
     },
     {
         # Every non-delegated receiver, self included: per the goal spec a value
@@ -195,22 +195,22 @@ GOAL_SPECS = [
         "param": "VALUE_TRANSFER",
         "shapes": ("self", "standard"),
         "goal": TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST_GOAL,
+        "name": "Transfer",
         "formula": "TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST",
-        "what": "an eth transfer",
     },
     {
         "param": "ZERO_VALUE_TRANSFER",
         "shapes": ("delegated",),
         "goal": TX_BASE_COST + 2 * COLD_ACCOUNT_ACCESS,
+        "name": "No-value transfer to delegated account",
         "formula": "TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS",
-        "what": "a no-transfer to a delegated account",
     },
     {
         "param": "VALUE_TRANSFER",
         "shapes": ("delegated",),
         "goal": TX_BASE_COST + 2 * COLD_ACCOUNT_ACCESS + TX_VALUE_COST_GOAL,
+        "name": "Transfer to delegated account",
         "formula": "TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST",
-        "what": "an eth transfer to a delegated account",
     },
 ]
 
@@ -317,8 +317,8 @@ def collect_goals(new_gas_rows: list) -> dict:
             {
                 "param": param,
                 "goal": goal,
+                "name": spec["name"],
                 "formula": spec["formula"],
-                "what": spec["what"],
                 "cases": [{"case_id": c, "label": case_label(c)} for c in covered],
                 "cells": cells,
             }

@@ -258,24 +258,14 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 }
 .goal-table tbody tr:nth-child(even),
 .goal-table tbody tr:hover { background: none; }
-/* The formula is the row's identity: header tint, two lines (sum + what it is). */
-.goal-table .goal-formula {
+/* The row's identity is a short name (header tint); the component sum it stands
+   for is the cell's tooltip, so the column stays narrow. */
+.goal-table .goal-name {
   background: var(--bg-accent);
   vertical-align: middle;
   font-weight: 600;
-}
-.goal-table .goal-formula code {
-  background: none;
-  padding: 0;
-  font-size: 0.82rem;
-  color: var(--ink);
-}
-.goal-table .goal-what {
-  display: block;
-  font-weight: 400;
-  font-size: 0.78rem;
-  color: var(--ink-faint);
-  margin-top: 0.15rem;
+  white-space: normal;
+  max-width: 16rem;
 }
 .goal-table .goal-target { font-weight: 700; }
 /* Parameter + cases trail the client columns — rule in front of them so the tinted

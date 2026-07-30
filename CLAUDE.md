@@ -107,13 +107,16 @@ Requires `make`, `jq`, Python 3.11+.
   A spec names its cases by *shape* (`goal_variant`: `self` / `delegated` /
   `standard`), and `GOAL_SPECS` order is the row order:
 
-  | Goal | Target | Param | Shapes covered |
-  | --- | --- | --- | --- |
-  | `TX_BASE_COST` | 12000 | `ZERO_VALUE_TRANSFER` | self |
-  | `+ COLD_ACCOUNT_ACCESS` | 15000 | `ZERO_VALUE_TRANSFER` | standard |
-  | `+ COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 21000 | `VALUE_TRANSFER` | self + standard |
-  | `+ 2 × COLD_ACCOUNT_ACCESS` | 18000 | `ZERO_VALUE_TRANSFER` | delegated |
-  | `+ 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 24000 | `VALUE_TRANSFER` | delegated |
+  | Goal (`name`) | `formula` | Target | Param | Shapes covered |
+  | --- | --- | --- | --- | --- |
+  | Transfer to self | `TX_BASE_COST` | 12000 | `ZERO_VALUE_TRANSFER` | self |
+  | No-value transfer | `+ COLD_ACCOUNT_ACCESS` | 15000 | `ZERO_VALUE_TRANSFER` | standard |
+  | Transfer | `+ COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 21000 | `VALUE_TRANSFER` | self + standard |
+  | No-value transfer to delegated account | `+ 2 × COLD_ACCOUNT_ACCESS` | 18000 | `ZERO_VALUE_TRANSFER` | delegated |
+  | Transfer to delegated account | `+ 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 24000 | `VALUE_TRANSFER` | delegated |
+
+  The Goal column renders the short `name`; the component sum (`formula`) is the
+  cell's tooltip, so the column stays narrow.
 
   Columns are clients; each cell is that client's **worst (highest)**
   `new_gas_rounded` across the goal's cases — the budget has to cover all of them —
