@@ -27,7 +27,12 @@
     diff_to_contract: "Contract",
     diff_to_existent: "EOA",
     diff_to_nonexistent: "Non-existent",
-    diff_to_unique_code_jumpdest_contract: "Contract (unique code)"
+    diff_to_self: "Self",
+    diff_to_unique_code_jumpdest_contract: "Contract (jumpdest)",
+    diff_to_contract_minimal: "Contract (minimal)",
+    diff_to_contract_same_max: "Contract (24KB, same code)",
+    diff_to_contract_diff_max: "Contract (24KB, unique code)",
+    diff_to_delegated_contract_diff: "Delegated (24KB, unique code)"
   };
   function caseLabel(c) { return CASE_LABELS[c] || c; }
 

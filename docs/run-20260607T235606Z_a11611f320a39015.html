@@ -34,9 +34,6 @@
 
 
 
-
-
-
 <div class="run-bar run-bar-older">
   <span class="run-bar-label">Viewing run</span>
   <div class="run-dropdown" data-run-dropdown>
@@ -47,7 +44,11 @@
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
       <li role="option" aria-selected="false">
         <a href="index.html" class="run-dropdown-option"
-           tabindex="-1">2026-07-20 16:52 (latest)</a>
+           tabindex="-1">2026-07-30 04:52 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="run-20260720T165222Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-20 16:52</a>
       </li>
       <li role="option" aria-selected="false">
         <a href="run-20260707T075028Z_d88b18464da7445e.html" class="run-dropdown-option"
@@ -91,11 +92,11 @@
       </li>
     </ul>
   </div>
-  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-07-20 16:52 (latest)</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a><a href="run-20260610T012820Z_d88b18464da7445e.html">2026-06-10 01:28</a><a href="run-20260603T235618Z_a11611f320a39015.html">2026-06-03 23:56</a><a href="run-20260602T234049Z_a11611f320a39015.html">2026-06-02 23:40</a><a href="run-20260601T230017Z_a11611f320a39015.html">2026-06-01 23:00</a><a href="run-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
+  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-07-30 04:52 (latest)</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a><a href="run-20260610T012820Z_d88b18464da7445e.html">2026-06-10 01:28</a><a href="run-20260603T235618Z_a11611f320a39015.html">2026-06-03 23:56</a><a href="run-20260602T234049Z_a11611f320a39015.html">2026-06-02 23:40</a><a href="run-20260601T230017Z_a11611f320a39015.html">2026-06-01 23:00</a><a href="run-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
     </span>
   </noscript>
   
-  <span class="run-bar-meta">older run &middot; latest of 11</span>
+  <span class="run-bar-meta">older run &middot; latest of 12</span>
 </div>
 
 
@@ -112,202 +113,125 @@
     100&nbsp;Mgas/s anchor. Each
     parameter's worst case is the most expensive driver across all clients and cases.
   </p>
-</section><section class="summary">
+</section><p class="note" role="note">
+  Two cases are excluded from the summary and charts below:
+  <strong>Contract (jumpdest)</strong>
+  (<code>diff_to_unique_code_jumpdest_contract</code>) and
+  <strong>Contract</strong> (<code>diff_to_contract</code>). Both are still fit and
+  reported in full in the <a href="#detail">detail tables</a>.
+</p><section class="summary">
   <p class="preliminary-warning" role="note">
     <strong>Preliminary results.</strong> Clients are still working on their
     block-access-list (BAL) optimizations, so these gas values are expected to
     change as that work lands.
   </p>
   <h2 class="h2-lg">Summary</h2>
-  <div class="stat-grid">
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>ZERO_VALUE_TRANSFER</code></p>
-      <div class="stat-value">
-        <span class="stat-number">61,189</span>
-        <span class="stat-unit">gas</span>
-        <span class="pill pill-up">&#9650; +191% &middot; under-priced</span>
-      </div>
-      <p class="stat-meta">
-        vs. current 21,000 &middot; driven by
-        <strong>geth</strong> /
-        Contract
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = 0.081 &middot; p = 0
-      </p>
-      <div class="stat-second">
-  <p class="stat-second-head">
-    <span class="stat-second-tag">2nd worst client</span>
-    <span class="stat-second-number">35,413</span>
-    <span class="stat-unit">gas</span>
-    <span class="pill pill-up">&#9650; +69% &middot; under-priced</span>
+  <p class="goal-intro">
+    Each row is a gas budget EIP-2780 allots to one parameter over the receiver
+    cases listed
+    (<code>TX_BASE_COST</code>&nbsp;=&nbsp;12,000, <code>COLD_ACCOUNT_ACCESS</code>&nbsp;=&nbsp;3,000, <code>TX_VALUE_COST</code>&nbsp;=&nbsp;6,000).
+    Each cell is that client's <strong>worst</strong> proposed gas across those
+    cases: green clears the goal, amber is up to 25% over,
+    red is further over. Hover a cell for its margin and which case it came from.
   </p>
-  <p class="stat-meta">
-    driven by <strong>erigon</strong> /
-    Contract
-  </p>
-  <p class="stat-meta stat-r2">
-    R&sup2; = 0.975 &middot; p = 0
-  </p>
-</div>
-    </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>VALUE_TRANSFER</code></p>
-      <div class="stat-value">
-        <span class="stat-number">73,366</span>
-        <span class="stat-unit">gas</span>
-        <span class="pill pill-up">&#9650; +249% &middot; under-priced</span>
-      </div>
-      <p class="stat-meta">
-        vs. current 21,000 &middot; driven by
-        <strong>geth</strong> /
-        Contract
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = 0.101 &middot; p = 0
-      </p>
-      <div class="stat-second">
-  <p class="stat-second-head">
-    <span class="stat-second-tag">2nd worst client</span>
-    <span class="stat-second-number">57,057</span>
-    <span class="stat-unit">gas</span>
-    <span class="pill pill-up">&#9650; +172% &middot; under-priced</span>
-  </p>
-  <p class="stat-meta">
-    driven by <strong>erigon</strong> /
-    Contract
-  </p>
-  <p class="stat-meta stat-r2">
-    R&sup2; = 0.986 &middot; p = 0
-  </p>
-</div>
-    </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>TX_VALUE_COST</code></p>
-      <div class="stat-value">
-        <span class="stat-number">21,645</span>
-        <span class="stat-unit">gas</span>
-        <span class="pill pill-up">&#9650; +140% &middot; under-priced</span>
-      </div>
-      <p class="stat-meta">
-        vs. current 9,000 &middot; driven by
-        <strong>erigon</strong> /
-        Contract
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = 0.975 &middot; p = 0
-      </p>
-      <div class="stat-second">
-  <p class="stat-second-head">
-    <span class="stat-second-tag">2nd worst client</span>
-    <span class="stat-second-number">12,178</span>
-    <span class="stat-unit">gas</span>
-    <span class="pill pill-up">&#9650; +35% &middot; under-priced</span>
-  </p>
-  <p class="stat-meta">
-    driven by <strong>geth</strong> /
-    Contract
-  </p>
-  <p class="stat-meta stat-r2">
-    R&sup2; = 0.081 &middot; p = 0
-  </p>
-</div>
-    </div>
-  </div>
-  
-  <div class="vt-per-client">
-    <h3 class="vt-per-client-title"><code>VALUE_TRANSFER</code> status per client</h3>
-    <table class="data-table vt-table">
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table goal-table">
       <thead>
         <tr>
-          <th>Client</th>
-          <th class="num">Range across cases</th>
-          <th>Worst case</th>
-          <th>Status</th>
+          <th>Goal</th>
+          <th class="num">Target</th>
+          <th class="num">besu</th><th class="num">erigon</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
+          <th class="goal-param">Parameter</th>
+          <th class="goal-cases-col">Cases covered</th>
         </tr>
       </thead>
       <tbody>
         
-        
-        
-        
-        
-        
-        
         <tr>
-          <td>besu</td>
-          <td class="num">18k &ndash; 22k</td>
-          <td>Contract</td>
-          <td><span class="vt-status vt-status-straddles">straddles</span></td>
+          <th class="goal-formula" scope="row">
+            <code>TX_BASE_COST + COLD_ACCOUNT_ACCESS</code>
+            <span class="goal-what">the cost of a no-transfer</span>
+          </th>
+          <td class="num goal-target">15,000</td>
+          
+          
+          <td class="num goal-pass"
+              title="besu: 11,724 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; -22%">11,724</td>
+          
+          
+          
+          <td class="num goal-fail"
+              title="erigon: 30,354 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; +102%">30,354</td>
+          
+          
+          
+          <td class="num goal-fail"
+              title="geth: 60,707 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; +305%">60,707</td>
+          
+          
+          
+          <td class="num goal-pass"
+              title="nethermind: 7,761 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; -48%">7,761</td>
+          
+          
+          
+          <td class="num goal-pass"
+              title="reth: 12,736 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; -15%">12,736</td>
+          
+          
+          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="goal-cases-col">Non-existent, EOA</td>
         </tr>
         
-        
-        
-        
-        
-        
-        
-        
         <tr>
-          <td>erigon</td>
-          <td class="num">37k &ndash; 57k</td>
-          <td>Contract</td>
-          <td><span class="vt-status vt-status-over">over</span></td>
+          <th class="goal-formula" scope="row">
+            <code>TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST</code>
+            <span class="goal-what">the cost of an eth transfer</span>
+          </th>
+          <td class="num goal-target">21,000</td>
+          
+          
+          <td class="num goal-pass"
+              title="besu: 20,332 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; -3%">20,332</td>
+          
+          
+          
+          <td class="num goal-fail"
+              title="erigon: 51,392 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +145%">51,392</td>
+          
+          
+          
+          <td class="num goal-fail"
+              title="geth: 72,176 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +244%">72,176</td>
+          
+          
+          
+          <td class="num goal-pass"
+              title="nethermind: 13,235 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; -37%">13,235</td>
+          
+          
+          
+          <td class="num goal-mid"
+              title="reth: 23,071 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +10%">23,071</td>
+          
+          
+          <td class="goal-param"><code>VALUE_TRANSFER</code></td>
+          <td class="goal-cases-col">Non-existent, EOA</td>
         </tr>
-        
-        
-        
-        
-        
-        
-        
-        
-        <tr>
-          <td>geth</td>
-          <td class="num">54k &ndash; 73k</td>
-          <td>Contract</td>
-          <td><span class="vt-status vt-status-over">over</span></td>
-        </tr>
-        
-        
-        
-        
-        
-        
-        
-        
-        <tr>
-          <td>nethermind</td>
-          <td class="num">12k &ndash; 17k</td>
-          <td>Contract (unique code)</td>
-          <td><span class="vt-status vt-status-below">below</span></td>
-        </tr>
-        
-        
-        
-        
-        
-        
-        
-        
-        <tr>
-          <td>reth</td>
-          <td class="num">22k &ndash; 25k</td>
-          <td>Contract (unique code)</td>
-          <td><span class="vt-status vt-status-over">over</span></td>
-        </tr>
-        
         
       </tbody>
     </table>
-    <p class="table-note">
-      Range is each client's lowest&ndash;highest <code>VALUE_TRANSFER</code>
-      across the four receiver cases, rounded to the nearest thousand. Status
-      compares that range to today's flat 21,000:
-      <em>below</em> (all cases under), <em>over</em> (all cases above),
-      <em>straddles</em> (range spans it), <em>way over</em> (5&times; or more).
-    </p>
   </div>
+  <p class="table-note">
+    The goals are EIP-2780's own component sums, so they differ by how many accounts
+    a transfer touches: a self-transfer touches no second account, an ordinary
+    receiver one (<code>COLD_ACCOUNT_ACCESS</code>) and a delegated receiver two
+    (the delegating account and the one it points at). Each
+    <code>VALUE_TRANSFER</code> goal is the matching no-transfer goal plus
+    <code>TX_VALUE_COST</code>. A client with no fit for a goal's cases shows
+    &mdash;.
+  </p>
   
   <div class="caveats">
     <p><strong>R&sup2; caveats:</strong></p>
@@ -315,13 +239,13 @@
       
       <li>
         <code>VALUE_TRANSFER</code> driven by <strong>geth</strong> /
-        case Contract has R&sup2; = 0.101
+        case Non-existent has R&sup2; = 0.099
         (needs follow-up).
       </li>
       
       <li>
         <code>ZERO_VALUE_TRANSFER</code> driven by <strong>geth</strong> /
-        case Contract has R&sup2; = 0.081
+        case Non-existent has R&sup2; = 0.081
         (needs follow-up).
       </li>
       
@@ -366,7 +290,7 @@
 
 
 
-<section class="detail">
+<section class="detail" id="detail">
   <h2 class="h2-lg">Proposed gas detail</h2>
   <div class="table-filters" data-table-filters>
     <label class="table-filter">
@@ -387,7 +311,7 @@
       <span>Case</span>
       <select data-filter-key="case">
         <option value="">All cases</option>
-        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (unique code)</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
       </select>
     </label>
     <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
@@ -456,7 +380,7 @@
         
         <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
           <td>besu</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0739</td>
           <td class="num">7,389</td>
@@ -468,7 +392,7 @@
         </tr>
         
         
-        <tr class="worst-case" data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_contract">
+        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_contract">
           <td>erigon</td>
           <td>Contract</td>
           <td><code>TX_VALUE_COST</code></td>
@@ -496,7 +420,7 @@
         </tr>
         
         
-        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
+        <tr class="worst-case" data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
           <td>erigon</td>
           <td>Non-existent</td>
           <td><code>TX_VALUE_COST</code></td>
@@ -512,7 +436,7 @@
         
         <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
           <td>erigon</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0694</td>
           <td class="num">6,940</td>
@@ -568,7 +492,7 @@
         
         <tr data-client="geth" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
           <td>geth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0521</td>
           <td class="num">5,207</td>
@@ -624,7 +548,7 @@
         
         <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
           <td>nethermind</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0285</td>
           <td class="num">2,846</td>
@@ -680,7 +604,7 @@
         
         <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
           <td>reth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0923</td>
           <td class="num">9,234</td>
@@ -736,7 +660,7 @@
         
         <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>besu</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.2161</td>
           <td class="num">21,611</td>
@@ -792,7 +716,7 @@
         
         <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>erigon</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.3800</td>
           <td class="num">38,003</td>
@@ -804,7 +728,7 @@
         </tr>
         
         
-        <tr class="worst-case" data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
+        <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
           <td>geth</td>
           <td>Contract</td>
           <td><code>VALUE_TRANSFER</code></td>
@@ -832,7 +756,7 @@
         </tr>
         
         
-        <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
+        <tr class="worst-case" data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
           <td>geth</td>
           <td>Non-existent</td>
           <td><code>VALUE_TRANSFER</code></td>
@@ -848,7 +772,7 @@
         
         <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>geth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.5436</td>
           <td class="num">54,360</td>
@@ -904,7 +828,7 @@
         
         <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>nethermind</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1709</td>
           <td class="num">17,087</td>
@@ -960,7 +884,7 @@
         
         <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>reth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.2510</td>
           <td class="num">25,103</td>
@@ -1016,7 +940,7 @@
         
         <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>besu</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1422</td>
           <td class="num">14,222</td>
@@ -1072,7 +996,7 @@
         
         <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>erigon</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.3106</td>
           <td class="num">31,064</td>
@@ -1084,7 +1008,7 @@
         </tr>
         
         
-        <tr class="worst-case" data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
+        <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
           <td>geth</td>
           <td>Contract</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
@@ -1112,7 +1036,7 @@
         </tr>
         
         
-        <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
+        <tr class="worst-case" data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
           <td>geth</td>
           <td>Non-existent</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
@@ -1128,7 +1052,7 @@
         
         <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>geth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.4915</td>
           <td class="num">49,154</td>
@@ -1184,7 +1108,7 @@
         
         <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>nethermind</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1424</td>
           <td class="num">14,241</td>
@@ -1240,7 +1164,7 @@
         
         <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
           <td>reth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1587</td>
           <td class="num">15,869</td>
@@ -1270,7 +1194,7 @@
       <span>Case</span>
       <select data-filter-key="case">
         <option value="">All cases</option>
-        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (unique code)</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
       </select>
     </label>
     <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
@@ -1339,7 +1263,7 @@
         
         <tr data-client="besu" data-case="diff_to_unique_code_jumpdest_contract">
           <td>besu</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td class="num">1,177 / 1,177</td>
           <td class="num">0.858</td>
           <td class="num">0.940</td>
@@ -1395,7 +1319,7 @@
         
         <tr data-client="erigon" data-case="diff_to_unique_code_jumpdest_contract">
           <td>erigon</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td class="num">319 / 319</td>
           <td class="num">0.902</td>
           <td class="num">0.942</td>
@@ -1451,7 +1375,7 @@
         
         <tr data-client="geth" data-case="diff_to_unique_code_jumpdest_contract">
           <td>geth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td class="num">836 / 836</td>
           <td class="num">0.081</td>
           <td class="num">0.092</td>
@@ -1507,7 +1431,7 @@
         
         <tr data-client="nethermind" data-case="diff_to_unique_code_jumpdest_contract">
           <td>nethermind</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td class="num">407 / 407</td>
           <td class="num">0.964</td>
           <td class="num">0.940</td>
@@ -1563,7 +1487,7 @@
         
         <tr data-client="reth" data-case="diff_to_unique_code_jumpdest_contract">
           <td>reth</td>
-          <td>Contract (unique code)</td>
+          <td>Contract (jumpdest)</td>
           <td class="num">231 / 231</td>
           <td class="num">0.919</td>
           <td class="num">0.987</td>
@@ -1603,7 +1527,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>d6dbc29</code>
+        commit <code>0cb312e</code>
         &middot;
         generated <code>2026-06-10T09:26:02+00:00</code>
       </p>
