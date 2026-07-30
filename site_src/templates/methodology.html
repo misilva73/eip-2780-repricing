@@ -44,13 +44,15 @@
     re-prices it against a fixed throughput anchor.
   </p>
 
-  <h2>The four receiver cases</h2>
+  <h2>The receiver cases</h2>
   <p>
     The benchmark test <code>test_ether_transfers_onchain_receivers</code> sends ether to
-    four kinds of receiver. Each is a separate <code>case_id</code> because the client's
+    several kinds of receiver. Each is a separate <code>case_id</code> because the client's
     work differs by receiver type. The dashboard shows a short readable label for each;
     the raw <code>case_id</code> below stays the canonical key in
-    <code>data/results.json</code>:
+    <code>data/results.json</code>. Contract receivers (all but the last three) execute
+    on-chain code; the 24&nbsp;KiB variants pad the account to the code-size limit used for
+    this repricing benchmark.
   </p>
   <ul>
     <li>
@@ -59,10 +61,30 @@
       the code lookup across transactions.
     </li>
     <li>
-      <strong>Contract (unique code)</strong>
+      <strong>Contract (minimal)</strong> (<code>diff_to_contract_minimal</code>) &mdash;
+      transfers to a minimal contract whose code is a single <code>STOP</code>.
+    </li>
+    <li>
+      <strong>Contract (24KB, same code)</strong>
+      (<code>diff_to_contract_same_max</code>) &mdash; transfers to contracts padded to
+      24&nbsp;KiB whose copies are byte-identical, so clients can cache the code lookup.
+    </li>
+    <li>
+      <strong>Contract (24KB, unique code)</strong>
+      (<code>diff_to_contract_diff_max</code>) &mdash; transfers to 24&nbsp;KiB contracts
+      whose copies are each unique (their own address embedded), forcing a fresh code read
+      per transaction.
+    </li>
+    <li>
+      <strong>Contract (jumpdest)</strong>
       (<code>diff_to_unique_code_jumpdest_contract</code>) &mdash; transfers to contracts
-      with unique code, forcing a fresh code read plus a 24&nbsp;KiB JUMPDEST analysis on
-      every transaction (the heaviest contract case).
+      with unique code that <code>JUMP</code> to the 24&nbsp;KiB code-size limit, forcing a
+      fresh code read plus a JUMPDEST analysis on every transaction.
+    </li>
+    <li>
+      <strong>Delegated (24KB, unique code)</strong>
+      (<code>diff_to_delegated_contract_diff</code>) &mdash; transfers to a delegated EOA
+      (EIP-7702) that delegates to a unique 24&nbsp;KiB contract.
     </li>
     <li>
       <strong>EOA</strong> (<code>diff_to_existent</code>) &mdash; transfers to externally
@@ -72,31 +94,60 @@
       <strong>Non-existent</strong> (<code>diff_to_nonexistent</code>) &mdash; transfers
       to EOAs that do not yet exist, so the client must create a new account.
     </li>
+    <li>
+      <strong>Self</strong> (<code>diff_to_self</code>) &mdash; transfers where the sender
+      is its own receiver.
+    </li>
   </ul>
+  <p class="note" role="note">
+    <strong>Which cases are charted.</strong> Every case above is fit and reported in the
+    Dashboard's detail tables. Two are held out of the charts:
+    <strong>Contract (jumpdest)</strong> and <strong>Contract</strong>
+    (<code>diff_to_contract</code>) are excluded from the Dashboard's charts, its Summary
+    goal table and its worst-case highlight, and <strong>Contract</strong> is excluded from the
+    Trends page as well &mdash; so the Trends page still charts
+    <strong>Contract (jumpdest)</strong> while the Dashboard does not.
+  </p>
 
   <h2>Deriving <code>opcount</code> (the &ldquo;opcode trick&rdquo;)</h2>
   <p>
     The model needs the number of value-transfer transactions packed into each benchmark
     block (<code>opcount</code>). The harness does not yet emit that count directly, so it
-    is reconstructed from the execution trace. This is a <strong>temporary</strong>
-    technique &mdash; once the harness emits a per-block transaction count, that field
-    should replace it.
+    is reconstructed &mdash; from a per-transaction opcode in the execution trace where
+    one exists, and otherwise from the block gas limit and the transaction's EIP-2780
+    cost. This is a <strong>temporary</strong> technique &mdash; once the harness emits a
+    per-block transaction count, that field should replace it.
   </p>
   <ul>
     <li>
-      <strong>Contract cases</strong> (Contract &amp; Contract (unique code) &mdash;
+      <strong>Jumping contract cases</strong> (Contract &amp; Contract (jumpdest) &mdash;
       <code>diff_to_contract</code>, <code>diff_to_unique_code_jumpdest_contract</code>):
-      each transaction executes
-      exactly one <code>JUMP</code>, so the <code>JUMP</code> opcode count from the trace
-      equals the transaction count &mdash; <code>opcount = JUMP</code>.
+      each transaction executes exactly one <code>JUMP</code>, so the <code>JUMP</code>
+      opcode count from the trace equals the transaction count &mdash;
+      <code>opcount = JUMP</code>.
     </li>
     <li>
-      <strong>EOA cases</strong> (EOA &amp; Non-existent &mdash;
-      <code>diff_to_existent</code>, <code>diff_to_nonexistent</code>): plain transfers
-      run no opcodes, so the trace has
-      no opcode rows. The count falls back to
-      <code>opcount = floor(block_gas_limit / 21000)</code> &mdash; the maximum number of
-      base-cost transactions that fit in a block.
+      <strong>STOP-only contract cases</strong> (Contract (minimal), the 24&nbsp;KiB
+      variants &amp; Delegated &mdash; <code>diff_to_contract_minimal</code>,
+      <code>diff_to_contract_same_max</code>, <code>diff_to_contract_diff_max</code>,
+      <code>diff_to_delegated_contract_diff</code>): these do not <code>JUMP</code>, but
+      each transaction executes exactly one <code>STOP</code>, so the count falls back to
+      <code>opcount = STOP</code> (verified equal to <code>JUMP</code> on cases that emit
+      both).
+    </li>
+    <li>
+      <strong>EOA cases</strong> (EOA, Non-existent &amp; Self &mdash;
+      <code>diff_to_existent</code>, <code>diff_to_nonexistent</code>,
+      <code>diff_to_self</code>): plain transfers run no opcodes, so the trace has no
+      rows for them. Because these blocks are packed under
+      <a href="https://eips.ethereum.org/EIPS/eip-2780">EIP-2780</a> pricing, the count is
+      <code>opcount = floor(block_gas_limit / per_tx_gas)</code>, where
+      <code>per_tx_gas</code> is the transaction's EIP-2780 cost rather than a flat
+      21000: <strong>12,000</strong> for a self-transfer, <strong>15,000</strong> for a
+      zero-value transfer to an EOA, <strong>21,000</strong> for a value transfer to an
+      existing EOA, and <strong>183,600</strong> for a value transfer that creates a new
+      account (the new-account state-gas charge dominates). A flat 21000 would mis-count
+      these blocks and mis-scale their recovered gas.
     </li>
   </ul>
 

@@ -36,61 +36,11 @@
 {%- endif -%}
 {%- endmacro -%}
 
-{# direction pill from a true-percent change. positive => under-priced (up). #}
-{%- macro chg_pill(pct) -%}
-{%- if pct is none or pct is undefined -%}<span class="pill pill-flat">&mdash;</span>
-{%- elif pct > 0 -%}<span class="pill pill-up">&#9650; {{ "%+.0f"|format(pct) }}% &middot; under-priced</span>
-{%- elif pct < 0 -%}<span class="pill pill-down">&#9660; {{ "%+.0f"|format(pct) }}% &middot; over-priced</span>
-{%- else -%}<span class="pill pill-flat">no change</span>
-{%- endif -%}
-{%- endmacro -%}
-
 {%- macro sci(v) -%}
 {%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
-{# Runner-up driver for a param: the worst case of the second-worst *client*.
-   Derived from the page's new_gas rows — ranked[0] is the headline worst case
-   shown above, so we take its highest-gas row from a different client (not just
-   the next row, which is usually the same client with another case). Renders
-   nothing when only one client has rows for this param. #}
-{%- macro second_worst(rows, param) -%}
-{%- set ranked = rows | selectattr("param", "equalto", param) | sort(attribute="new_gas_rounded", reverse=true) | list -%}
-{%- set ns = namespace(s=none) -%}
-{%- if ranked -%}
-{%- for r in ranked -%}
-{%- if ns.s is none and r.client_name != ranked[0].client_name -%}{%- set ns.s = r -%}{%- endif -%}
-{%- endfor -%}
-{%- endif -%}
-{%- set s = ns.s -%}
-{%- if s is not none -%}
-<div class="stat-second">
-  <p class="stat-second-head">
-    <span class="stat-second-tag">2nd worst client</span>
-    <span class="stat-second-number">{{ num(s.new_gas_rounded) }}</span>
-    <span class="stat-unit">gas</span>
-    {{ chg_pill(s.change * 100) }}
-  </p>
-  <p class="stat-meta">
-    driven by <strong>{{ s.client_name or "&mdash;" }}</strong> /
-    {{ (s.case_id | case_label) if s.case_id else "&mdash;" }}
-  </p>
-  <p class="stat-meta stat-r2">
-    R&sup2; = {{ r3(s.rsquared) }} &middot; p = {{ g3(s.pvalue) }}
-  </p>
-</div>
-{%- endif -%}
-{%- endmacro -%}
-
-{# gas rounded to the nearest thousand, e.g. 218405 -> "218k" #}
-{%- macro kg(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.0f"|format(v / 1000) }}k{%- endif -%}
-{%- endmacro -%}
-
 {% block content %}
-{% set zvt = summary.zero_value_transfer or {} %}
-{% set vt = summary.value_transfer or {} %}
-{% set vc = summary.tx_value_cost or {} %}
 {% set caveats = summary.caveats or [] %}
 {% set pvalue_caveats = summary.pvalue_caveats or [] %}
 
@@ -152,6 +102,15 @@
   </p>
 </section>
 
+{#- Scope note for everything that follows, so it is read before the summary. -#}
+<p class="note" role="note">
+  Two cases are excluded from the summary and charts below:
+  <strong>Contract (jumpdest)</strong>
+  (<code>diff_to_unique_code_jumpdest_contract</code>) and
+  <strong>Contract</strong> (<code>diff_to_contract</code>). Both are still fit and
+  reported in full in the <a href="#detail">detail tables</a>.
+</p>
+
 {#- ---- 1. Headline summary (prose assembled here) ---- -#}
 <section class="summary">
   <p class="preliminary-warning" role="note">
@@ -160,110 +119,66 @@
     change as that work lands.
   </p>
   <h2 class="h2-lg">Summary</h2>
-  <div class="stat-grid">
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>ZERO_VALUE_TRANSFER</code></p>
-      <div class="stat-value">
-        <span class="stat-number">{{ num(zvt.new_gas) }}</span>
-        <span class="stat-unit">gas</span>
-        {{ chg_pill(zvt.change_pct) }}
-      </div>
-      <p class="stat-meta">
-        vs. current {{ num(zvt.current_gas) }} &middot; driven by
-        <strong>{{ zvt.client_name or "&mdash;" }}</strong> /
-        {{ (zvt.case_id | case_label) if zvt.case_id else "&mdash;" }}
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(zvt.rsquared) }} &middot; p = {{ g3(zvt.pvalue) }}
-      </p>
-      {{ second_worst(new_gas, "ZERO_VALUE_TRANSFER") }}
-    </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>VALUE_TRANSFER</code></p>
-      <div class="stat-value">
-        <span class="stat-number">{{ num(vt.new_gas) }}</span>
-        <span class="stat-unit">gas</span>
-        {{ chg_pill(vt.change_pct) }}
-      </div>
-      <p class="stat-meta">
-        vs. current {{ num(vt.current_gas) }} &middot; driven by
-        <strong>{{ vt.client_name or "&mdash;" }}</strong> /
-        {{ (vt.case_id | case_label) if vt.case_id else "&mdash;" }}
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(vt.rsquared) }} &middot; p = {{ g3(vt.pvalue) }}
-      </p>
-      {{ second_worst(new_gas, "VALUE_TRANSFER") }}
-    </div>
-    <div class="stat-card">
-      <p class="stat-label">Worst-case <code>TX_VALUE_COST</code></p>
-      <div class="stat-value">
-        <span class="stat-number">{{ num(vc.new_gas) }}</span>
-        <span class="stat-unit">gas</span>
-        {{ chg_pill(vc.change_pct) }}
-      </div>
-      <p class="stat-meta">
-        vs. current {{ num(vc.current_gas) }} &middot; driven by
-        <strong>{{ vc.client_name or "&mdash;" }}</strong> /
-        {{ (vc.case_id | case_label) if vc.case_id else "&mdash;" }}
-      </p>
-      <p class="stat-meta stat-r2">
-        R&sup2; = {{ r3(vc.rsquared) }} &middot; p = {{ g3(vc.pvalue) }}
-      </p>
-      {{ second_worst(new_gas, "TX_VALUE_COST") }}
-    </div>
-  </div>
 
-  {#- ---- per-client VALUE_TRANSFER table ----
-      The headline cards above show each param's single worst-case driver; this
-      breaks the end-to-end value-transfer cost (VALUE_TRANSFER) out per client so
-      the spread across clients is visible. Range/status are derived here from the
-      page's new_gas rows — no analysis.py field backs them. -#}
-  {% set vt_rows = new_gas | selectattr("param", "equalto", "VALUE_TRANSFER") | list %}
-  {% if vt_rows %}
-  <div class="vt-per-client">
-    <h3 class="vt-per-client-title"><code>VALUE_TRANSFER</code> status per client</h3>
-    <table class="data-table vt-table">
+  {#- ---- goal targets, per client ----
+      One row per EIP-2780 goal: a component sum the EIP allots to a parameter over
+      a set of receiver cases. Where a goal covers several cases the cell shows the
+      client's worst (highest) one, since the budget has to cover all of them.
+      Rows/goals/tints come from collect_goals() in build_site.py, fed the page's
+      charted rows (summary_new_gas — excluded cases dropped). -#}
+  {% if goals and goals.rows %}
+  <p class="goal-intro">
+    Each row is a gas budget EIP-2780 allots to one parameter over the receiver
+    cases listed
+    ({% for c in goals.components %}<code>{{ c.name }}</code>&nbsp;=&nbsp;{{ num(c.value) }}{% if not loop.last %}, {% endif %}{% endfor %}).
+    Each cell is that client's <strong>worst</strong> proposed gas across those
+    cases: green clears the goal, amber is up to {{ goals.mid_margin_pct }}% over,
+    red is further over. Hover a cell for its margin and which case it came from.
+  </p>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table goal-table">
       <thead>
         <tr>
-          <th>Client</th>
-          <th class="num">Range across cases</th>
-          <th>Worst case</th>
-          <th>Status</th>
+          <th>Goal</th>
+          <th class="num">Target</th>
+          {% for c in goals.clients %}<th class="num">{{ c }}</th>{% endfor %}
+          <th class="goal-param">Parameter</th>
+          <th class="goal-cases-col">Cases covered</th>
         </tr>
       </thead>
       <tbody>
-        {% for client in vt_rows | map(attribute="client_name") | unique | sort %}
-        {% set crows = vt_rows | selectattr("client_name", "equalto", client) | list %}
-        {% set vals = crows | map(attribute="new_gas_rounded") | reject("none") | list %}
-        {% if vals %}
-        {% set lo = vals | min %}
-        {% set hi = vals | max %}
-        {% set worst = crows | sort(attribute="new_gas_rounded") | last %}
-        {% set cur = (crows | map(attribute="current_gas") | first) or 21000 %}
-        {%- if hi < cur -%}{% set status = "below" %}{% set scls = "below" %}
-        {%- elif lo >= 5 * cur -%}{% set status = "way over" %}{% set scls = "way-over" %}
-        {%- elif lo >= cur -%}{% set status = "over" %}{% set scls = "over" %}
-        {%- else -%}{% set status = "straddles" %}{% set scls = "straddles" %}
-        {%- endif -%}
+        {% for r in goals.rows %}
         <tr>
-          <td>{{ client }}</td>
-          <td class="num">{{ kg(lo) }} &ndash; {{ kg(hi) }}</td>
-          <td>{{ worst.case_id | case_label }}</td>
-          <td><span class="vt-status vt-status-{{ scls }}">{{ status }}</span></td>
+          <th class="goal-formula" scope="row">
+            <code>{{ r.formula }}</code>
+            <span class="goal-what">the cost of {{ r.what }}</span>
+          </th>
+          <td class="num goal-target">{{ num(r.goal) }}</td>
+          {% for c in r.cells %}
+          {% if c.gas is none %}
+          <td class="num goal-nodata" title="{{ c.client }}: no fit for these cases">&mdash;</td>
+          {% else %}
+          <td class="num {{ c.cls }}"
+              title="{{ c.client }}: {{ num(c.gas) }} gas on {{ c.worst_case_label }}{% if c.n_cases > 1 %} (worst of {{ c.n_cases }} cases){% endif %} vs goal {{ num(r.goal) }} &mdash; {{ "%+.0f"|format(c.over_pct) }}%">{{ num(c.gas) }}</td>
+          {% endif %}
+          {% endfor %}
+          <td class="goal-param"><code>{{ r.param }}</code></td>
+          <td class="goal-cases-col">{{ r.cases | map(attribute="label") | join(", ") }}</td>
         </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </table>
-    <p class="table-note">
-      Range is each client's lowest&ndash;highest <code>VALUE_TRANSFER</code>
-      across the four receiver cases, rounded to the nearest thousand. Status
-      compares that range to today's flat {{ num(vt.current_gas or 21000) }}:
-      <em>below</em> (all cases under), <em>over</em> (all cases above),
-      <em>straddles</em> (range spans it), <em>way over</em> (5&times; or more).
-    </p>
   </div>
+  <p class="table-note">
+    The goals are EIP-2780's own component sums, so they differ by how many accounts
+    a transfer touches: a self-transfer touches no second account, an ordinary
+    receiver one (<code>COLD_ACCOUNT_ACCESS</code>) and a delegated receiver two
+    (the delegating account and the one it points at). Each
+    <code>VALUE_TRANSFER</code> goal is the matching no-transfer goal plus
+    <code>TX_VALUE_COST</code>. A client with no fit for a goal's cases shows
+    &mdash;.
+  </p>
   {% endif %}
 
   {#- R-squared caveats -#}
@@ -342,7 +257,7 @@
 {% set clients = new_gas | map(attribute='client_name') | unique | sort | list %}
 {% set params = new_gas | map(attribute='param') | unique | sort | list %}
 {% set cases = new_gas | map(attribute='case_id') | unique | sort | list %}
-<section class="detail">
+<section class="detail" id="detail">
   <h2 class="h2-lg">Proposed gas detail</h2>
   <div class="table-filters" data-table-filters>
     <label class="table-filter">

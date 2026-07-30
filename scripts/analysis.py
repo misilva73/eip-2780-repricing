@@ -425,6 +425,51 @@ VALUE_GAS_CURRENT = 9_000  # current extra gas for non-zero value transfer
 TEST_NAME = "test_ether_transfers_onchain_receivers"
 EXCLUDED_CLIENTS = set()  # clients dropped from the analysis
 
+# EIP-2780 per-transaction gas primitives (https://eips.ethereum.org/EIPS/eip-2780),
+# used only to reconstruct opcount for the marker-less EOA receiver cases. These
+# benchmark blocks are packed under EIP-2780 pricing: each block is filled to its
+# gas limit, so the transaction count is block_gas_limit / per_tx_gas. Contract and
+# delegated receivers don't use these — their per-tx count is read straight from a
+# trace opcode marker (one JUMP/STOP per tx). Verified: for the marker cases,
+# block_gas_limit / marker_count reproduces these primitives to the gas.
+EIP2780_TX_BASE_COST = 12_000  # sender: recovery, access, write, inclusion
+EIP2780_TX_VALUE_COST = 6_000  # recipient balance write + EIP-7708 log
+EIP2780_COLD_ACCOUNT_ACCESS = 3_000  # cold recipient touch
+EIP2780_NEW_ACCOUNT_STATE = 183_600  # STATE_BYTES_PER_NEW_ACCOUNT × CPSB
+
+# Per-transaction gas used by each marker-less EOA receiver case, keyed by
+# (case_id, transfer_amount) with transfer_amount 0 = zero-value, 1 = value. A flat
+# 21000 (the pre-EIP-2780 base) would be wrong here: self- and zero-value transfers
+# are cheaper and a value transfer that creates an account far dearer, so a flat
+# constant would mis-scale these cases' recovered gas.
+EOA_TX_GAS = {
+    # self-transfer: EIP-2780 charges neither the recipient touch nor the value
+    # cost when sender == recipient, so both regimes are just the base.
+    ("diff_to_self", 0): EIP2780_TX_BASE_COST,  # 12,000
+    ("diff_to_self", 1): EIP2780_TX_BASE_COST,  # 12,000
+    # existing external account: base + cold recipient touch, + value cost when
+    # ether moves.
+    ("diff_to_existent", 0): EIP2780_TX_BASE_COST
+    + EIP2780_COLD_ACCOUNT_ACCESS,  # 15,000
+    ("diff_to_existent", 1): EIP2780_TX_BASE_COST
+    + EIP2780_COLD_ACCOUNT_ACCESS
+    + EIP2780_TX_VALUE_COST,  # 21,000
+    # non-existent account: same as an existing EOA for a zero-value tx; a value
+    # transfer additionally creates the account, whose runtime state-gas charge
+    # dominates the per-tx cost (project decision: use the state charge, 183,600).
+    ("diff_to_nonexistent", 0): EIP2780_TX_BASE_COST
+    + EIP2780_COLD_ACCOUNT_ACCESS,  # 15,000
+    ("diff_to_nonexistent", 1): EIP2780_NEW_ACCOUNT_STATE,  # 183,600
+}
+# Fallback for any future marker-less case not in EOA_TX_GAS: price it as a plain
+# transfer to an existing external account.
+EOA_TX_GAS_DEFAULT = {
+    0: EIP2780_TX_BASE_COST + EIP2780_COLD_ACCOUNT_ACCESS,  # 15,000
+    1: EIP2780_TX_BASE_COST
+    + EIP2780_COLD_ACCOUNT_ACCESS
+    + EIP2780_TX_VALUE_COST,  # 21,000
+}
+
 # Resolve paths relative to this script so `python scripts/analysis.py` works
 # from the repo root.
 REPO_DIR = Path(__file__).resolve().parent.parent
@@ -505,22 +550,53 @@ def _make_run_id(window, suite, generated_at: str) -> str:
     return f"{stamp}{suite_token}"
 
 
-def _extract_case_id(test_params: str):
+def _extract_test_name(test_title: str):
+    """Pull the pytest test-function name out of a fully-qualified test_title.
+
+    Current benchmarkoor-fetch leaves the flat ``test_name`` column empty and packs
+    the identity into ``test_title`` (e.g.
+    ``.../test_transaction_types.py::test_ether_transfers_onchain_receivers[fork_...]``).
+    Older output used a ``file.py__test_name[...]`` form. Match either separator.
+    """
+    if not isinstance(test_title, str):
+        return np.nan
+    m = re.search(r"(?:::|__)(test_\w+)\[", test_title)
+    return m.group(1) if m is not None else np.nan
+
+
+def _extract_case_id(test_id: str):
     """Extract the case_id, stripping the trailing block-size token.
 
-    benchmarkoor-fetch's test_params look like
-    ``...-case_id_diff_to_contract-benchmark_100M`` — the ``-benchmark_<N>M``
-    suffix encodes the block gas limit, which is the regression variable
-    (opcount scales with it), so it must NOT be part of the group key. The
-    notebook's CSV had no such suffix; the ``re.sub`` is a no-op there, so this
-    is faithful to the notebook on its own data and correct on the parquet.
+    The identity string (``test_title`` in current benchmarkoor-fetch output; the
+    old ``test_params`` column before that) looks like
+    ``...-case_id_diff_to_contract-benchmark-gas-value_100M`` (older suites used the
+    shorter ``-benchmark_100M``). The block-size suffix encodes the block gas limit,
+    which is the regression variable (opcount scales with it), so it must NOT be part
+    of the group key. We take everything between ``case_id_`` and the first
+    ``-benchmark`` token, which strips either suffix form. The notebook's CSV had no
+    ``-benchmark`` suffix, so we fall back to end-of-string there (faithful to the
+    notebook on its own data).
     """
-    if not isinstance(test_params, str):
+    if not isinstance(test_id, str):
         return np.nan
-    m = re.search(r"case_id_(.+)$", test_params)
-    if m is None:
+    m = re.search(r"case_id_(.+?)-benchmark", test_id)
+    if m is not None:
+        return m.group(1)
+    m = re.search(r"case_id_(.+)$", test_id)
+    return m.group(1) if m is not None else np.nan
+
+
+def _extract_block_limit(test_id: str):
+    """Block gas limit in millions, parsed from the trailing ``_<N>M`` token.
+
+    Current benchmarkoor-fetch leaves the flat ``block_limit_million`` column empty;
+    the limit survives only in the identity string's block-size suffix (e.g.
+    ``...-benchmark-gas-value_180M``). Returns NaN when absent.
+    """
+    if not isinstance(test_id, str):
         return np.nan
-    return re.sub(r"-benchmark_\d+M$", "", m.group(1))
+    m = re.search(r"_(\d+)M(?:\]|$)", test_id)
+    return float(m.group(1)) if m is not None else np.nan
 
 
 # The two value-transfer regimes: a transfer that moves no ether vs. one that
@@ -837,31 +913,52 @@ def run_analysis() -> dict:
     # `run_duration_ms`. Rename right after loading.
     bench_df = bench_df.rename(columns={"test_runtime_ms": "run_duration_ms"})
 
+    # Current benchmarkoor-fetch leaves the flat identity columns (test_name,
+    # test_params, block_limit_million, opcount) empty and packs everything into
+    # test_title. Derive every field we need from test_title so the pipeline no
+    # longer depends on those columns being populated.
+    bench_df["test_name"] = bench_df["test_title"].apply(_extract_test_name)
     df = bench_df[bench_df["test_name"] == TEST_NAME].copy()
     if EXCLUDED_CLIENTS:
         df = df[~df["client_name"].isin(EXCLUDED_CLIENTS)].copy()
-    df = df.dropna(axis=1, how="all")
 
-    trace_df = pd.read_parquet(TRACE_PARQUET, columns=["test_title", "JUMP"])
+    trace_df = pd.read_parquet(TRACE_PARQUET, columns=["test_title", "JUMP", "STOP"])
 
-    # 2. Derive transfer_amount and case_id --------------------------------
+    # 2. Derive transfer_amount, case_id and block limit from test_title ---
     df["transfer_amount"] = (
-        df["test_params"]
+        df["test_title"]
         .apply(lambda s: extract_param_values(s, "transfer_amount"))
         .astype(int)
     )
-    df["case_id"] = df["test_params"].apply(_extract_case_id)
+    df["case_id"] = df["test_title"].apply(_extract_case_id)
+    df["block_limit_million"] = df["test_title"].apply(_extract_block_limit)
 
     # 3. opcount "opcode trick" — ignore benchmarkoor's own opcount column and
-    #    recompute. Drop bench opcount BEFORE the merge to avoid suffixes.
+    #    recompute from the trace. Drop bench opcount BEFORE the merge to avoid
+    #    suffixes.
     if "opcount" in df.columns:
         df = df.drop(columns=["opcount"])
     df = df.merge(trace_df, on="test_title", how="left")
-    floor_count = (df["block_limit_million"] * 1e6) // TX_BASE
-    # Contract cases emit one JUMP/tx -> opcount=JUMP; EOA cases have NaN JUMP ->
-    # opcount=floor(gas_limit/21000).
-    df["opcount"] = df["JUMP"].where(df["JUMP"].notna(), floor_count).astype(float)
-    df = df.drop(columns=["JUMP"])
+    # Contract & delegated cases: each executed tx leaves exactly one per-tx marker
+    # opcode in the trace — jumping contracts emit JUMP, STOP-only contracts (minimal
+    # / *_max / delegated) emit STOP (verified 1:1 with JUMP on cases that emit both)
+    # — so opcount is that marker count.
+    marker = df["JUMP"].where(df["JUMP"].notna(), df["STOP"])
+    # EOA cases run no contract code, so they leave no marker. benchmarkoor packs
+    # each block up to its gas limit, so their tx count is block_gas_limit /
+    # per_tx_gas, where per_tx_gas is the EIP-2780 cost for that (case,
+    # transfer_amount) — see EOA_TX_GAS.
+    block_gas = df["block_limit_million"] * 1e6
+    eoa_cost = df.apply(
+        lambda r: EOA_TX_GAS.get(
+            (r["case_id"], r["transfer_amount"]),
+            EOA_TX_GAS_DEFAULT[r["transfer_amount"]],
+        ),
+        axis=1,
+    )
+    eoa_count = block_gas // eoa_cost
+    df["opcount"] = marker.where(marker.notna(), eoa_count).astype(float)
+    df = df.drop(columns=["JUMP", "STOP"])
 
     # 4. Fit per (client_name, case_id) ------------------------------------
     results_df = build_results_df(df)

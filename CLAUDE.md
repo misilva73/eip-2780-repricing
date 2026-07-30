@@ -76,8 +76,14 @@ Requires `make`, `jq`, Python 3.11+.
   All EIP-2780-specific logic lives in Part B. (The upstream
   `fit_NNLS_without_low_diff_runs`/`find_low_diff_runs` adaptive filter was
   dropped — it never triggered on this suite's data.)
-- **`opcount` is recomputed**, ignoring benchmarkoor's own column: `JUMP` from
-  the trace per contract tx, else `floor(block_gas_limit/21000)` for EOA cases.
+- **`opcount` is recomputed**, ignoring benchmarkoor's own column: one per-tx
+  marker opcode from the trace for contract/delegated cases (`JUMP` for jumping
+  contracts, else `STOP` for STOP-only contracts — minimal / `*_max` / delegated),
+  else — for the marker-less EOA cases — `floor(block_gas_limit / per_tx_gas)`
+  where `per_tx_gas` is the tx's **EIP-2780** cost (`EOA_TX_GAS`: self 12000,
+  zero-value 15000, value-to-EOA 21000, value-to-new-account 183600), **not** a
+  flat 21000. These blocks are packed under EIP-2780 pricing, so a flat base would
+  mis-count the cheaper/dearer EOA cases and mis-scale their gas.
 - **Column rename:** `test_runtime_ms → run_duration_ms` right after load — the
   ported NNLS code expects the latter.
 - **Two fits per `(client, case_id)`** (Part B `build_results_df`): the group is
@@ -93,6 +99,58 @@ Requires `make`, `jq`, Python 3.11+.
   interval arithmetic on the two independent fits) references `VALUE_GAS_CURRENT`
   (9000). Note `VALUE_TRANSFER` is now fit directly (the value-subset opcount
   slope), not summed as `TX_BASE + VALUE_GAS`.
+- **The Summary section is one table: goal targets per client**
+  (`collect_goals` in [build_site.py](scripts/build_site.py), modelled on the
+  eip-8038 Goals page). **One row per `GOAL_SPECS` entry** — five goals, each a sum
+  of EIP-2780's own components (`TX_BASE_COST` 12000, `COLD_ACCOUNT_ACCESS` 3000,
+  `TX_VALUE_COST` 6000) that has to cover one param over a set of receiver cases.
+  A spec names its cases by *shape* (`goal_variant`: `self` / `delegated` /
+  `standard`), and `GOAL_SPECS` order is the row order:
+
+  | Goal | Target | Param | Shapes covered |
+  | --- | --- | --- | --- |
+  | `TX_BASE_COST` | 12000 | `ZERO_VALUE_TRANSFER` | self |
+  | `+ COLD_ACCOUNT_ACCESS` | 15000 | `ZERO_VALUE_TRANSFER` | standard |
+  | `+ COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 21000 | `VALUE_TRANSFER` | self + standard |
+  | `+ 2 × COLD_ACCOUNT_ACCESS` | 18000 | `ZERO_VALUE_TRANSFER` | delegated |
+  | `+ 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 24000 | `VALUE_TRANSFER` | delegated |
+
+  Columns are clients; each cell is that client's **worst (highest)**
+  `new_gas_rounded` across the goal's cases — the budget has to cover all of them —
+  tinted green at or under the goal, amber up to `GOAL_MID_MARGIN` (25%) over, red
+  beyond, `—` where the client has no fit for any of them. The tooltip names the
+  case the worst value came from. Note `VALUE_TRANSFER` is 21000 for every
+  non-delegated receiver **including self** (per the goal spec, not re-derived from
+  the components), and `TX_VALUE_COST` gets no row — it is a component of the goals,
+  not a target. A goal no client has data for is dropped, so older runs (which
+  predate the self/delegated cases) render two rows, not five. These are targets,
+  independent of `current_gas`/`analysis.py`; nothing is read from the run's
+  `summary` block except the caveats.
+- **Excluded cases are a render-time filter, not an analysis one.** Two sets in
+  [build_site.py](scripts/build_site.py), deliberately different:
+  `EXCLUDED_CASES` = `{diff_to_unique_code_jumpdest_contract, diff_to_contract}`
+  drops those `case_id`s from the dashboard's four bar charts, its Summary section
+  (the goal-targets table) and the detail
+  table's worst-case highlight; `TRENDS_EXCLUDED_CASES` = `{diff_to_contract}` drops
+  only that one from the Trends page, which **still charts the jumpdest case**.
+  `analysis.py` fits every case regardless and both detail tables list every row.
+  Consequences:
+  - The dashboard's `summary` / `worst_case_overall` are **re-derived in
+    `build_site.py`** (`rebuild_worst_cases`, `rebuild_summary`) from the
+    non-excluded `new_gas` rows, not read from the run JSON; templates get the
+    filtered rows as `summary_new_gas`. `rebuild_summary` now only feeds the R²/
+    p-value caveat blocks — the Summary's headline is the goal-targets table below.
+  - `collect_goals` is fed the same filtered rows, so the goal table covers exactly
+    the cases the charts show.
+  - `collect_trends` filters its rows with `TRENDS_EXCLUDED_CASES` and re-derives
+    its `binding` series from them (not from the run's stored `worst_case_overall`,
+    which ranks over every case), so trends.js needs no filter of its own.
+  - `charts.js` carries a copy of `EXCLUDED_CASES` for the client-side chart filter
+    — keep it in sync with the Python set.
+  Because nothing is baked into the data, the exclusions apply to **every archived
+  run page**, and emptying the sets + `make site` fully reverts them. Verified: on
+  runs where no excluded case was binding, the rebuilt summary is byte-identical to
+  analysis.py's.
 - **Each page's data file embeds its run verbatim** as `window.DASHBOARD_DATA` —
   no runtime `fetch()` (avoids project-pages base-path issues). `index.html` loads
   `data.js`; `run-<id>.html` loads `data-<id>.js`. `charts.js` reads whichever is
@@ -113,7 +171,14 @@ Methodology, and Trends pages render, Plotly charts are interactive, tables show
 worst-case highlights, footer populated (incl. `generated`). With >1 archived run,
 the **Viewing run** selector banner switches pages and the latest reads "(latest)",
 and the Trends page's since-last-run delta table + Δ% bar populate (with one run it
-shows a "only one run archived" note). `results.json` worst case
-currently tracks erigon for all three params (`ZERO_VALUE_TRANSFER` →
-`diff_to_unique_code_jumpdest_contract`, `VALUE_TRANSFER` and `TX_VALUE_COST` →
-`diff_to_contract`) (this follows the data — re-check after a data refresh).
+shows a "only one run archived" note). On the latest run the Summary's goal table
+should show five rows (targets 12,000 / 15,000 / 21,000 / 18,000 / 24,000, in that
+order) with a green/amber/red cell per client; hovering a cell shows its margin and
+which case the worst value came from. Per the excluded-cases invariant
+above: no dashboard chart or Summary table row should mention
+`Contract (jumpdest)` or `Contract`, the Trends page should still show
+`Contract (jumpdest)` but not `Contract`, and both detail tables should list every
+case. The dashboard's worst case (the highlighted rows in the detail table) on the
+latest run currently reads erigon / `diff_to_contract_diff_max` for
+`ZERO_VALUE_TRANSFER` and erigon / `diff_to_nonexistent` for `VALUE_TRANSFER` and
+`TX_VALUE_COST` (this follows the data — re-check after a data refresh).

@@ -246,125 +246,61 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   padding: 1.6rem 1.5rem;
 }
 
-/* ---- Stat cards ---- */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+/* ---- Goal targets table (the Summary section) ----
+   One row per goal (a component sum over a set of receiver cases), one column per
+   client. Cells own their pass/amber/fail tint, so the row stripe and hover must
+   not paint over them. */
+.goal-intro {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  max-width: 80ch;
+  margin: 0 0 0.9rem;
 }
-@media (max-width: 720px) {
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.stat-card .stat-label {
-  font-size: 0.78rem;
+.goal-table tbody tr:nth-child(even),
+.goal-table tbody tr:hover { background: none; }
+/* The formula is the row's identity: header tint, two lines (sum + what it is). */
+.goal-table .goal-formula {
+  background: var(--bg-accent);
+  vertical-align: middle;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin: 0;
 }
-.stat-card .stat-label code {
+.goal-table .goal-formula code {
   background: none;
   padding: 0;
-  font-size: 0.95em;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.goal-table .goal-what {
+  display: block;
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 0.15rem;
+}
+.goal-table .goal-target { font-weight: 700; }
+/* Parameter + cases trail the client columns — rule in front of them so the tinted
+   block reads as the table's centre of gravity. */
+.goal-table .goal-param { border-left: 1px solid var(--border); }
+.goal-table .goal-param code { background: none; padding: 0; font-size: 0.82rem; }
+/* The case list is the one wrapping column — it is long and every other cell is
+   short, so let it use the vertical space instead of widening the table. */
+.goal-table .goal-cases-col {
+  white-space: normal;
+  min-width: 14rem;
+  font-size: 0.82rem;
   color: var(--ink-soft);
 }
-.stat-value {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-.stat-unit { color: var(--ink-faint); font-size: 0.9rem; }
-.stat-meta { font-size: 0.86rem; color: var(--ink-soft); margin: 0; }
-.stat-meta strong { color: var(--ink); }
-.stat-r2 { color: var(--ink-faint); }
-
-/* Runner-up driver, de-emphasized below the headline worst case. */
-.stat-second {
-  margin-top: 0.6rem;
-  padding-top: 0.6rem;
-  border-top: 1px dashed var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.stat-second-head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin: 0;
-}
-.stat-second-tag {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-.stat-second-number {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- Pills / badges ---- */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.12rem 0.5rem;
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.pill-up { color: var(--up); background: var(--up-bg); }
-.pill-down { color: var(--down); background: var(--down-bg); }
-.pill-flat { color: var(--ink-soft); background: var(--border-soft); }
-
-/* ---- Per-client VALUE_TRANSFER table ---- */
-.vt-per-client { margin-top: 1.5rem; }
-.vt-per-client-title { font-size: 1rem; margin: 0 0 0.6rem; }
-.vt-status {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.12rem 0.5rem;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-.vt-status-below { color: var(--down); background: var(--down-bg); }
-.vt-status-over { color: var(--up); background: var(--up-bg); }
-.vt-status-straddles { color: var(--worst); background: var(--worst-bg); }
-.vt-status-way-over {
-  color: var(--up);
-  background: var(--up-bg);
-  box-shadow: inset 0 0 0 1px var(--up);
+/* pass = at or under the goal, mid = up to GOAL_MID_MARGIN over, fail = beyond,
+   nodata = no fit for that client. Kept in sync with collect_goals(). */
+.goal-pass { background: rgba(15, 157, 88, 0.82); color: #fff; font-weight: 600; }
+.goal-mid { background: rgba(184, 134, 11, 0.85); color: #fff; font-weight: 600; }
+.goal-fail { background: rgba(201, 42, 42, 0.82); color: #fff; font-weight: 600; }
+.goal-nodata { color: var(--ink-faint); }
+/* Softer tints on the dark background — same hues, less glare. */
+@media (prefers-color-scheme: dark) {
+  .goal-pass { background: rgba(15, 157, 88, 0.62); }
+  .goal-mid { background: rgba(184, 134, 11, 0.68); }
+  .goal-fail { background: rgba(201, 42, 42, 0.62); }
 }
 
 /* ---- Summary ---- */
@@ -398,6 +334,7 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   border-left: 4px solid var(--accent);
   border-radius: var(--radius);
   padding: 0.7rem 1.1rem;
+  margin: 0 0 1.2rem;
   color: var(--ink-soft);
   font-size: 0.92rem;
   max-width: 80ch;
@@ -637,7 +574,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   .header-inner { min-height: 0; padding: 0.5rem 0; }
   h1 { font-size: 1.45rem; }
   h2 { font-size: 1.15rem; }
-  .stat-number { font-size: 1.65rem; }
   .data-table { font-size: 0.82rem; }
   .data-table th, .data-table td { padding: 0.4rem 0.55rem; }
 }

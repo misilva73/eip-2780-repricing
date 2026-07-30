@@ -12,10 +12,30 @@
     diff_to_contract: "Contract",
     diff_to_existent: "EOA",
     diff_to_nonexistent: "Non-existent",
-    diff_to_unique_code_jumpdest_contract: "Contract (unique code)"
+    diff_to_self: "Self",
+    diff_to_unique_code_jumpdest_contract: "Contract (jumpdest)",
+    diff_to_contract_minimal: "Contract (minimal)",
+    diff_to_contract_same_max: "Contract (24KB, same code)",
+    diff_to_contract_diff_max: "Contract (24KB, unique code)",
+    diff_to_delegated_contract_diff: "Delegated (24KB, unique code)"
   };
   function caseLabel(caseId) {
     return CASE_LABELS[caseId] || caseId;
+  }
+
+  // Cases kept out of the charts. Presentation-only: the embedded run data still
+  // carries them and both detail tables still list them; the summary cards and the
+  // worst-case highlight drop them server-side. Keep in sync with EXCLUDED_CASES
+  // in scripts/build_site.py (the Trends page has its own, smaller set — see
+  // TRENDS_EXCLUDED_CASES there).
+  var EXCLUDED_CASES = {
+    diff_to_unique_code_jumpdest_contract: true,
+    diff_to_contract: true
+  };
+  function charted(rows) {
+    return rows.filter(function (r) {
+      return !EXCLUDED_CASES[r.case_id];
+    });
   }
   var PALETTE = [
     "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3",
@@ -81,7 +101,7 @@
     var div = document.getElementById(divId);
     if (!div || !window.DASHBOARD_DATA) return;
 
-    var rows = (window.DASHBOARD_DATA.new_gas || []).filter(function (r) {
+    var rows = charted(window.DASHBOARD_DATA.new_gas || []).filter(function (r) {
       return r.param === param;
     });
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
@@ -141,7 +161,7 @@
     var div = document.getElementById(divId);
     if (!div || !window.DASHBOARD_DATA) return;
 
-    var rows = window.DASHBOARD_DATA.results || [];
+    var rows = charted(window.DASHBOARD_DATA.results || []);
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
 
     var cases = uniqueSorted(rows, "case_id");
