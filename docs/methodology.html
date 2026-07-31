@@ -214,10 +214,10 @@
     distinguish a barely-positive coefficient from a large one; use the
     <strong>confidence intervals</strong> for that.
   </p>
-  <h2>The 100 Mgas/s anchor and worst-case selection</h2>
+  <h2>The 75 Mgas/s anchor and worst-case selection</h2>
   <p>
     Each runtime coefficient (in milliseconds) is converted to gas at a fixed throughput
-    anchor of <strong>100&nbsp;Mgas/s</strong>:
+    anchor of <strong>75&nbsp;Mgas/s</strong>:
   </p>
   <p class="formula"><code>new_gas = ceil(anchor_rate &times; runtime_ms / 1e3)</code></p>
   <p>
@@ -285,19 +285,19 @@
       <p class="repro">
         
         Data window:
-        <strong>2026-07-29T02:42:32Z</strong> &rarr; <strong>2026-07-30T04:52:59Z</strong>
+        <strong>2026-07-29T02:42:32Z</strong> &rarr; <strong>2026-07-31T05:36:59Z</strong>
         &middot;
         benchmarkoor-fetch <code>0.2.0</code>
         &middot;
         suite <code>3f6a0898955dff4f</code>
         &middot;
-        commit <code>7fd810b</code>
+        commit <code>6aad05e</code>
         &middot;
-        generated <code>2026-07-30T13:06:01+00:00</code>
+        generated <code>2026-07-31T14:29:04+00:00</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a
-        100 Mgas/s anchor.
+        75 Mgas/s anchor.
         Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
       </p>
     </div>

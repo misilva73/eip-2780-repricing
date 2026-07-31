@@ -12,6 +12,25 @@
   </p>
 </section>
 
+{#- The anchor is a post-hoc scalar on runtime, and archived runs keep the anchor they
+    were analyzed under, so a change in it puts a step in every gas series on this page.
+    Only rendered when the archived history actually spans more than one anchor. -#}
+{%- if trends.anchor_eras | length > 1 %}
+<p class="warning" role="note">
+  <strong>Mixed gas anchors across this history.</strong> Proposed gas is a measured
+  runtime scaled by a fixed throughput anchor, and that anchor changed between runs:
+  {% for era in trends.anchor_eras -%}
+  <strong>{{ era.mgas or "?" }}&nbsp;Mgas/s</strong>
+  {%- if era.count > 1 %} from {{ era.first }} to {{ era.last }}
+  {%- else %} at {{ era.first }}{% endif %}{% if not loop.last %};{% else %}.{% endif %}
+  {% endfor %}
+  Older runs are left as analyzed rather than rescaled, so part of the step in the
+  <strong>Proposed gas</strong> lines &mdash; and in the since-last-run delta below
+  &mdash; at each boundary is the anchor change, not a client getting faster or slower.
+  Switch the metric to <strong>Runtime (ms)</strong> for an anchor-independent view.
+</p>
+{%- endif %}
+
 {#- Whole cross-run dataset, consumed by trends.js. -#}
 <script id="trends-data" type="application/json">{{ trends | tojson }}</script>
 

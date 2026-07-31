@@ -211,8 +211,14 @@ main.container { padding-left: 1.25rem; padding-right: 1.25rem; }
 /* Constrain page content to the methodology text width (80ch), left-aligned
    within the full-width container — header/footer chrome stays full width.
    This is what .prose already does on the methodology page; applying it to
-   every direct child of main makes the dashboard items match that width. */
-main.container > * { max-width: 80ch; }
+   every direct child of main makes the dashboard items match that width.
+
+   `ch` resolves against each element's OWN font-size, so a child set below 1rem
+   would land short of the measure the 1rem blocks use. Such a child declares
+   --measure-scale as its font-size ratio (see .note) and the cap is divided by it,
+   which reproduces 80ch-at-1rem. Note this rule outranks a bare class selector
+   (0-1-1 vs 0-1-0), so the scale has to travel as a property, not an override. */
+main.container > * { max-width: calc(80ch / var(--measure-scale, 1)); }
 
 section { margin: 2.25rem 0; }
 section:first-child { margin-top: 1.25rem; }
@@ -319,15 +325,20 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   margin: 0 0 1.2rem;
 }
 .caveats-ok { color: var(--ink-soft); margin-top: 1rem; }
+/* Sub-1rem font, so --measure-scale carries the ratio: `main.container > *` reads it
+   to keep this box the same width as the 1rem blocks around it (see that rule), and
+   the max-width here does the same for a .note nested deeper — e.g. inside .prose on
+   the methodology page, where the container rule doesn't reach. */
 .note {
+  --measure-scale: 0.92;
   background: var(--accent-soft);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius);
   padding: 0.7rem 1.1rem;
   margin: 0 0 1.2rem;
   color: var(--ink-soft);
-  font-size: 0.92rem;
-  max-width: 80ch;
+  font-size: calc(var(--measure-scale) * 1rem);
+  max-width: calc(80ch / var(--measure-scale));
 }
 .table-note {
   color: var(--ink-soft);

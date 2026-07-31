@@ -97,7 +97,7 @@
     per-case non-negative least squares fit on the runtime of
     <code>{{ meta.test_name or "test_ether_transfers_onchain_receivers" }}</code>,
     converted to proposed gas at the
-    {{ "%.0f"|format((meta.anchor_rate or 1e8) / 1e6) }}&nbsp;Mgas/s anchor. Each
+    {{ "%.0f"|format((meta.anchor_rate or 5e7) / 1e6) }}&nbsp;Mgas/s anchor. Each
     parameter's worst case is the most expensive driver across all clients and cases.
   </p>
 </section>

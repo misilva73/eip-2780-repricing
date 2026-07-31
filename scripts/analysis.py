@@ -419,7 +419,7 @@ def prepare_non_simple_model_data(
 # PART B — Notebook reproduction (parquet in -> data/results.json out)
 # ---------------------------------------------------------------------------
 
-ANCHOR_RATE = 100 * 1e6  # gas / s
+ANCHOR_RATE = 75 * 1e6  # gas / s
 TX_BASE = 21_000  # current per-tx base gas
 VALUE_GAS_CURRENT = 9_000  # current extra gas for non-zero value transfer
 TEST_NAME = "test_ether_transfers_onchain_receivers"

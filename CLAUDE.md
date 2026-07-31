@@ -7,7 +7,8 @@ the derived `TX_VALUE_COST` (`VALUE_TRANSFER − ZERO_VALUE_TRANSFER`, the margi
 cost of moving value, referenced against 9000). For each `(client, case_id)` it
 fits **two independent NNLS models** — one on the `transfer_amount=0` runs, one on
 the `transfer_amount=1` runs, each `[const, opcount]` — converts the opcount slopes
-to gas at a 100 Mgas/s anchor, picks the worst case per param, and renders a static
+to gas at a fixed throughput anchor (`ANCHOR_RATE`, currently 75 Mgas/s), picks the
+worst case per param, and renders a static
 GitHub Pages dashboard.
 
 ## Pipeline
@@ -49,6 +50,14 @@ to switch to previous runs. History accumulates going forward — there is no ba
   **backfilled**: a client that skipped run N-2 (e.g. geth missing a run) falls
   back to its most recent earlier run instead of showing a gap. The "Latest" value
   is never backfilled — if a client is absent from the newest run it stays empty.
+  `collect_trends` also groups consecutive runs by `meta.anchor_rate` into
+  `anchor_eras`; with more than one era [trends.html](site_src/templates/trends.html)
+  renders a **mixed-anchor caveat** above the filters (gas is runtime × anchor, so an
+  anchor change puts a step in every gas series and in the since-last-run delta —
+  runtime series are unaffected). Archived runs keep the anchor they were analyzed
+  under and are **never rescaled**; the raw parquet for old windows is gone, so they
+  can't be re-analyzed either. The note disappears on its own once every archived run
+  shares one anchor.
 
 Needs `secrets.json` at root: `{"BENCHMARKOOR_TOKEN": "bmk_..."}` (gitignored).
 Requires `make`, `jq`, Python 3.11+.

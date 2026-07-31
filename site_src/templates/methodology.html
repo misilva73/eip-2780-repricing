@@ -186,10 +186,10 @@
     distinguish a barely-positive coefficient from a large one; use the
     <strong>confidence intervals</strong> for that.
   </p>
-  <h2>The 100 Mgas/s anchor and worst-case selection</h2>
+  <h2>The {{ "%.0f"|format((meta.anchor_rate or 5e7) / 1e6) }} Mgas/s anchor and worst-case selection</h2>
   <p>
     Each runtime coefficient (in milliseconds) is converted to gas at a fixed throughput
-    anchor of <strong>100&nbsp;Mgas/s</strong>:
+    anchor of <strong>{{ "%.0f"|format((meta.anchor_rate or 5e7) / 1e6) }}&nbsp;Mgas/s</strong>:
   </p>
   <p class="formula"><code>new_gas = ceil(anchor_rate &times; runtime_ms / 1e3)</code></p>
   <p>

@@ -455,7 +455,13 @@ def collect_trends(runs: list) -> dict:
     case) leaves a ``None`` gap; clients/cases are unioned across runs.
 
     ``poor`` mirrors analysis.py's caveat thresholds (R² <= 0.5 or p-value > 0.05):
-    a true value flags the underlying fit as low-confidence."""
+    a true value flags the underlying fit as low-confidence.
+
+    ``anchor_eras`` groups consecutive runs by their ``meta.anchor_rate``. Gas is
+    runtime scaled by that anchor, and archived runs keep whatever anchor they were
+    analyzed under (raw parquet for old windows is gone, so they can't be recomputed),
+    so a change in ANCHOR_RATE puts a step in every gas series here. More than one era
+    means the page shows a caveat; the runtime series are anchor-independent."""
     chron = list(reversed(runs))
     n = len(chron)
     gas: dict = {}
@@ -510,8 +516,22 @@ def collect_trends(runs: list) -> dict:
                 "case": row.get("case_id"),
             }
 
+    anchor_eras: list = []
+    for data in chron:
+        rate = (data.get("meta", {}) or {}).get("anchor_rate")
+        mgas = round(float(rate) / 1e6) if rate else None
+        label = run_label(data)
+        if anchor_eras and anchor_eras[-1]["mgas"] == mgas:
+            anchor_eras[-1]["last"] = label
+            anchor_eras[-1]["count"] += 1
+        else:
+            anchor_eras.append(
+                {"mgas": mgas, "first": label, "last": label, "count": 1}
+            )
+
     return {
         "runs": [{"run_id": run_id_for(d), "label": run_label(d)} for d in chron],
+        "anchor_eras": anchor_eras,
         "clients": sorted(clients),
         "cases": sorted(cases),
         "params": params,  # discovery order, e.g. ZERO_VALUE_TRANSFER, VALUE_TRANSFER, TX_VALUE_COST

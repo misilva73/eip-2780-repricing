@@ -3,7 +3,8 @@
 Analyses the runtime of `test_ether_transfers_onchain_receivers` from the EIP-7904
 benchmark run to derive proposed new gas values for EIP-2780's `TX_BASE` (currently
 21000) and `VALUE_GAS` (currently 9000) parameters. It fits an NNLS model per
-`(client, case_id)`, converts the coefficients to gas at a 100 Mgas/s anchor, surfaces
+`(client, case_id)`, converts the coefficients to gas at a fixed throughput anchor (currently
+75 Mgas/s), surfaces
 the worst-case driver per parameter, and renders the whole analysis as an interactive
 static dashboard for GitHub Pages. Each run is archived, and the dashboard has a run
 selector to view previous runs alongside the latest, plus a cross-run Trends page
