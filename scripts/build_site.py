@@ -169,44 +169,47 @@ GOAL_COMPONENTS = [
 ]
 
 # One entry per goal — and one table row per entry. ``shapes`` names the receiver
-# shapes (see goal_variant) the budget has to cover, so a goal spanning several
-# receiver cases shows its **worst** case in each cell. The divergence is all in
-# how many accounts a transfer touches: a self-transfer touches no second account,
-# a delegated receiver is two cold account accesses (the delegating account and
-# the one it points at) instead of one. Order here is the table's row order.
+# shapes (see goal_variant) the budget has to cover and ``params`` the parameters,
+# so a goal spanning several of either shows its **worst** measurement in each cell.
+# The divergence is all in how many accounts a transfer touches: a self-transfer
+# touches no second account, a delegated receiver is two cold account accesses (the
+# delegating account and the one it points at) instead of one. Order here is the
+# table's row order.
 GOAL_SPECS = [
     {
-        "param": "ZERO_VALUE_TRANSFER",
+        # The one goal covering both params: a self-transfer is charged the bare
+        # base cost whether or not it moves value, since moving value to yourself
+        # touches no second account and leaves the balance where it was.
+        "params": ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"),
         "shapes": ("self",),
         "goal": TX_BASE_COST,
         "name": "Transfer to self",
         "formula": "TX_BASE_COST",
     },
     {
-        "param": "ZERO_VALUE_TRANSFER",
+        "params": ("ZERO_VALUE_TRANSFER",),
         "shapes": ("standard",),
         "goal": TX_BASE_COST + COLD_ACCOUNT_ACCESS,
         "name": "No-value transfer",
         "formula": "TX_BASE_COST + COLD_ACCOUNT_ACCESS",
     },
     {
-        # Every non-delegated receiver, self included: per the goal spec a value
-        # transfer is priced at 21000 whatever it hits.
-        "param": "VALUE_TRANSFER",
-        "shapes": ("self", "standard"),
+        # Self is excluded — it has its own, cheaper goal above.
+        "params": ("VALUE_TRANSFER",),
+        "shapes": ("standard",),
         "goal": TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST_GOAL,
         "name": "Transfer",
         "formula": "TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST",
     },
     {
-        "param": "ZERO_VALUE_TRANSFER",
+        "params": ("ZERO_VALUE_TRANSFER",),
         "shapes": ("delegated",),
         "goal": TX_BASE_COST + 2 * COLD_ACCOUNT_ACCESS,
         "name": "No-value transfer to delegated account",
         "formula": "TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS",
     },
     {
-        "param": "VALUE_TRANSFER",
+        "params": ("VALUE_TRANSFER",),
         "shapes": ("delegated",),
         "goal": TX_BASE_COST + 2 * COLD_ACCOUNT_ACCESS + TX_VALUE_COST_GOAL,
         "name": "Transfer to delegated account",
@@ -216,7 +219,7 @@ GOAL_SPECS = [
 
 # Params with a goal. TX_VALUE_COST has none — it is a component of the goals
 # above, not a target of its own.
-GOAL_PARAMS = frozenset(spec["param"] for spec in GOAL_SPECS)
+GOAL_PARAMS = frozenset(p for spec in GOAL_SPECS for p in spec["params"])
 
 # Order the cases a goal covers are listed in, cheapest receiver first. A case not
 # listed here still shows — it just sorts last, alphabetically.
@@ -242,13 +245,36 @@ def goal_variant(case_id: str) -> str:
     return "standard"
 
 
+def format_goal_cases(labels: list) -> str:
+    """The "Cases covered" cell: several contract receivers read as one "Contracts".
+
+    Spelling out every contract variant ("Contract (minimal), Contract (24KB, same
+    code), …") takes most of the row's width to say what the detail table already
+    lists case by case, and the distinction doesn't matter here — a goal covers all
+    of them alike. Only collapses an actual plural; a lone contract keeps its own
+    label. The unabbreviated list stays on as the cell's tooltip.
+    """
+    contracts = [
+        label for label in labels if label == "Contract" or label.startswith("Contract (")
+    ]
+    parts: list = []
+    for label in labels:
+        short = "Contracts" if len(contracts) > 1 and label in contracts else label
+        if short not in parts:
+            parts.append(short)
+    if len(parts) < 3:
+        return " and ".join(parts)
+    return ", ".join(parts[:-1]) + ", and " + parts[-1]
+
+
 def collect_goals(new_gas_rows: list) -> dict:
     """Per-client measured gas against each EIP-2780 goal.
 
-    One row per ``GOAL_SPECS`` entry and one column per client. Where a goal
-    covers several receiver cases the cell holds that client's **worst** (highest)
-    case, since the budget has to cover all of them; the cell records which case
-    that was. Cells are tinted against the goal: green at or under it, amber up to
+    One row per ``GOAL_SPECS`` entry and one column per client. Where a goal spans
+    several receiver cases or several params the cell holds that client's **worst**
+    (highest) measurement over that whole set, since the budget has to cover all of
+    them; the cell records which case and param it came from, and ``n_values`` how
+    many it beat. Cells are tinted against the goal: green at or under it, amber up to
     ``GOAL_MID_MARGIN`` over, red beyond. Callers pass the *charted* rows (excluded
     cases already dropped), so the table covers exactly what the charts below it
     show. A client with no fit for any of a goal's cases leaves a no-data cell.
@@ -279,19 +305,20 @@ def collect_goals(new_gas_rows: list) -> dict:
 
     rows: list = []
     for spec in GOAL_SPECS:
-        param, goal = spec["param"], spec["goal"]
+        params, goal = spec["params"], spec["goal"]
         covered = [c for c in ordered_cases if goal_variant(c) in spec["shapes"]]
         cells = []
         for client in ordered_clients:
             found = [
-                (value[(param, case, client)], case)
+                (value[(param, case, client)], case, param)
+                for param in params
                 for case in covered
                 if (param, case, client) in value
             ]
             if not found:
                 cells.append({"client": client, "gas": None, "cls": "goal-nodata"})
                 continue
-            gas, worst_case = max(found)
+            gas, worst_case, worst_param = max(found)
             over_pct = (gas / goal - 1) * 100
             if over_pct <= 0:
                 cls = "goal-pass"
@@ -307,7 +334,8 @@ def collect_goals(new_gas_rows: list) -> dict:
                     "over_pct": over_pct,
                     "worst_case": worst_case,
                     "worst_case_label": case_label(worst_case),
-                    "n_cases": len(found),
+                    "worst_param": worst_param,
+                    "n_values": len(found),
                 }
             )
         # A goal none of the clients has a fit for carries no information.
@@ -315,11 +343,12 @@ def collect_goals(new_gas_rows: list) -> dict:
             continue
         rows.append(
             {
-                "param": param,
+                "params": list(params),
                 "goal": goal,
                 "name": spec["name"],
                 "formula": spec["formula"],
                 "cases": [{"case_id": c, "label": case_label(c)} for c in covered],
+                "cases_summary": format_goal_cases([case_label(c) for c in covered]),
                 "cells": cells,
             }
         )

@@ -155,33 +155,27 @@
           </th>
           <td class="num goal-target">15,000</td>
           
-          
           <td class="num goal-fail"
-              title="besu: 96,741 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; +545%">96,741</td>
-          
+              title="besu: 96,741 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; +545%">96,741</td>
           
           
           <td class="num goal-fail"
-              title="erigon: 30,667 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; +104%">30,667</td>
-          
+              title="erigon: 30,667 gas on EOA (worst of 2) vs goal 15,000 &mdash; +104%">30,667</td>
           
           
           <td class="num goal-fail"
-              title="geth: 206,849 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; +1279%">206,849</td>
-          
+              title="geth: 206,849 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; +1279%">206,849</td>
           
           
           <td class="num goal-pass"
-              title="nethermind: 7,541 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; -50%">7,541</td>
-          
+              title="nethermind: 7,541 gas on EOA (worst of 2) vs goal 15,000 &mdash; -50%">7,541</td>
           
           
           <td class="num goal-pass"
-              title="reth: 12,759 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; -15%">12,759</td>
+              title="reth: 12,759 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; -15%">12,759</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td>
-          <td class="goal-cases-col">Non-existent, EOA</td>
+          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
         <tr>
@@ -190,33 +184,27 @@
           </th>
           <td class="num goal-target">21,000</td>
           
-          
           <td class="num goal-fail"
-              title="besu: 237,280 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +1030%">237,280</td>
-          
+              title="besu: 237,280 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +1030%">237,280</td>
           
           
           <td class="num goal-fail"
-              title="erigon: 52,276 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +149%">52,276</td>
-          
+              title="erigon: 52,276 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +149%">52,276</td>
           
           
           <td class="num goal-fail"
-              title="geth: 220,947 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +952%">220,947</td>
-          
+              title="geth: 220,947 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +952%">220,947</td>
           
           
           <td class="num goal-pass"
-              title="nethermind: 12,532 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; -40%">12,532</td>
-          
+              title="nethermind: 12,532 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; -40%">12,532</td>
           
           
           <td class="num goal-mid"
-              title="reth: 23,158 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +10%">23,158</td>
+              title="reth: 23,158 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +10%">23,158</td>
           
           
-          <td class="goal-param"><code>VALUE_TRANSFER</code></td>
-          <td class="goal-cases-col">Non-existent, EOA</td>
+          <td class="goal-param"><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
       </tbody>
@@ -226,10 +214,11 @@
     The goals are EIP-2780's own component sums, so they differ by how many accounts
     a transfer touches: a self-transfer touches no second account, an ordinary
     receiver one (<code>COLD_ACCOUNT_ACCESS</code>) and a delegated receiver two
-    (the delegating account and the one it points at). Each
-    <code>VALUE_TRANSFER</code> goal is the matching no-transfer goal plus
-    <code>TX_VALUE_COST</code>. A client with no fit for a goal's cases shows
-    &mdash;.
+    (the delegating account and the one it points at). Away from self, a
+    <code>VALUE_TRANSFER</code> goal is the matching no-value goal plus
+    <code>TX_VALUE_COST</code>; a self-transfer moves value nowhere, so it is
+    charged the bare base cost either way and its row covers both parameters. A
+    client with no fit for a goal's cases shows &mdash;.
   </p>
   
   <div class="caveats">
@@ -1526,7 +1515,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>6aad05e</code>
+        commit <code>1e6d5c3</code>
         &middot;
         generated <code>2026-06-10T09:22:43+00:00</code>
       </p>

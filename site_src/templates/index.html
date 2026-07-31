@@ -159,12 +159,16 @@
           {% if c.gas is none %}
           <td class="num goal-nodata" title="{{ c.client }}: no fit for these cases">&mdash;</td>
           {% else %}
+          {#- The worst value's param is only worth naming on a goal that spans more
+              than one — otherwise the Parameter column already says it. -#}
           <td class="num {{ c.cls }}"
-              title="{{ c.client }}: {{ num(c.gas) }} gas on {{ c.worst_case_label }}{% if c.n_cases > 1 %} (worst of {{ c.n_cases }} cases){% endif %} vs goal {{ num(r.goal) }} &mdash; {{ "%+.0f"|format(c.over_pct) }}%">{{ num(c.gas) }}</td>
+              title="{{ c.client }}: {{ num(c.gas) }} gas on {{ c.worst_case_label }}{% if r.params | length > 1 or c.n_values > 1 %} ({% if r.params | length > 1 %}{{ c.worst_param }}{% if c.n_values > 1 %}, {% endif %}{% endif %}{% if c.n_values > 1 %}worst of {{ c.n_values }}{% endif %}){% endif %} vs goal {{ num(r.goal) }} &mdash; {{ "%+.0f"|format(c.over_pct) }}%">{{ num(c.gas) }}</td>
           {% endif %}
           {% endfor %}
-          <td class="goal-param"><code>{{ r.param }}</code></td>
-          <td class="goal-cases-col">{{ r.cases | map(attribute="label") | join(", ") }}</td>
+          <td class="goal-param">{% for p in r.params %}<code>{{ p }}</code>{% if not loop.last %} <br>{% endif %}{% endfor %}</td>
+          {#- Contract variants collapse to "Contracts" (format_goal_cases); the full
+              list is the tooltip. -#}
+          <td class="goal-cases-col" title="{{ r.cases | map(attribute='label') | join(', ') }}">{{ r.cases_summary }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -174,10 +178,11 @@
     The goals are EIP-2780's own component sums, so they differ by how many accounts
     a transfer touches: a self-transfer touches no second account, an ordinary
     receiver one (<code>COLD_ACCOUNT_ACCESS</code>) and a delegated receiver two
-    (the delegating account and the one it points at). Each
-    <code>VALUE_TRANSFER</code> goal is the matching no-transfer goal plus
-    <code>TX_VALUE_COST</code>. A client with no fit for a goal's cases shows
-    &mdash;.
+    (the delegating account and the one it points at). Away from self, a
+    <code>VALUE_TRANSFER</code> goal is the matching no-value goal plus
+    <code>TX_VALUE_COST</code>; a self-transfer moves value nowhere, so it is
+    charged the bare base cost either way and its row covers both parameters. A
+    client with no fit for a goal's cases shows &mdash;.
   </p>
   {% endif %}
 

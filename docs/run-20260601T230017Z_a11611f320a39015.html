@@ -155,28 +155,23 @@
           </th>
           <td class="num goal-target">15,000</td>
           
-          
           <td class="num goal-fail"
-              title="besu: 211,608 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; +1311%">211,608</td>
-          
+              title="besu: 211,608 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; +1311%">211,608</td>
           
           
           <td class="num goal-fail"
-              title="erigon: 54,882 gas on EOA (worst of 2 cases) vs goal 15,000 &mdash; +266%">54,882</td>
-          
-          
-          
-          <td class="num goal-pass"
-              title="nethermind: 7,951 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; -47%">7,951</td>
-          
+              title="erigon: 54,882 gas on EOA (worst of 2) vs goal 15,000 &mdash; +266%">54,882</td>
           
           
           <td class="num goal-pass"
-              title="reth: 12,809 gas on Non-existent (worst of 2 cases) vs goal 15,000 &mdash; -15%">12,809</td>
+              title="nethermind: 7,951 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; -47%">7,951</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td>
-          <td class="goal-cases-col">Non-existent, EOA</td>
+          <td class="num goal-pass"
+              title="reth: 12,809 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; -15%">12,809</td>
+          
+          
+          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
         <tr>
@@ -185,28 +180,23 @@
           </th>
           <td class="num goal-target">21,000</td>
           
-          
           <td class="num goal-fail"
-              title="besu: 533,980 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +2443%">533,980</td>
-          
+              title="besu: 533,980 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +2443%">533,980</td>
           
           
           <td class="num goal-fail"
-              title="erigon: 184,047 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +776%">184,047</td>
-          
+              title="erigon: 184,047 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +776%">184,047</td>
           
           
           <td class="num goal-pass"
-              title="nethermind: 13,003 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; -38%">13,003</td>
-          
+              title="nethermind: 13,003 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; -38%">13,003</td>
           
           
           <td class="num goal-mid"
-              title="reth: 23,177 gas on Non-existent (worst of 2 cases) vs goal 21,000 &mdash; +10%">23,177</td>
+              title="reth: 23,177 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +10%">23,177</td>
           
           
-          <td class="goal-param"><code>VALUE_TRANSFER</code></td>
-          <td class="goal-cases-col">Non-existent, EOA</td>
+          <td class="goal-param"><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
       </tbody>
@@ -216,10 +206,11 @@
     The goals are EIP-2780's own component sums, so they differ by how many accounts
     a transfer touches: a self-transfer touches no second account, an ordinary
     receiver one (<code>COLD_ACCOUNT_ACCESS</code>) and a delegated receiver two
-    (the delegating account and the one it points at). Each
-    <code>VALUE_TRANSFER</code> goal is the matching no-transfer goal plus
-    <code>TX_VALUE_COST</code>. A client with no fit for a goal's cases shows
-    &mdash;.
+    (the delegating account and the one it points at). Away from self, a
+    <code>VALUE_TRANSFER</code> goal is the matching no-value goal plus
+    <code>TX_VALUE_COST</code>; a self-transfer moves value nowhere, so it is
+    charged the bare base cost either way and its row covers both parameters. A
+    client with no fit for a goal's cases shows &mdash;.
   </p>
   
   <p class="caveats-ok">
@@ -1278,7 +1269,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>6aad05e</code>
+        commit <code>1e6d5c3</code>
         &middot;
         generated <code>2026-06-10T09:22:10+00:00</code>
       </p>

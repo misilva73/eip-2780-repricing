@@ -114,26 +114,33 @@ Requires `make`, `jq`, Python 3.11+.
   of EIP-2780's own components (`TX_BASE_COST` 12000, `COLD_ACCOUNT_ACCESS` 3000,
   `TX_VALUE_COST` 6000) that has to cover one param over a set of receiver cases.
   A spec names its cases by *shape* (`goal_variant`: `self` / `delegated` /
-  `standard`), and `GOAL_SPECS` order is the row order:
+  `standard`) and its parameters in `params`, and `GOAL_SPECS` order is the row
+  order:
 
-  | Goal (`name`) | `formula` | Target | Param | Shapes covered |
+  | Goal (`name`) | `formula` | Target | `params` | Shapes covered |
   | --- | --- | --- | --- | --- |
-  | Transfer to self | `TX_BASE_COST` | 12000 | `ZERO_VALUE_TRANSFER` | self |
+  | Transfer to self | `TX_BASE_COST` | 12000 | `ZERO_VALUE_TRANSFER` + `VALUE_TRANSFER` | self |
   | No-value transfer | `+ COLD_ACCOUNT_ACCESS` | 15000 | `ZERO_VALUE_TRANSFER` | standard |
-  | Transfer | `+ COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 21000 | `VALUE_TRANSFER` | self + standard |
+  | Transfer | `+ COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 21000 | `VALUE_TRANSFER` | standard |
   | No-value transfer to delegated account | `+ 2 × COLD_ACCOUNT_ACCESS` | 18000 | `ZERO_VALUE_TRANSFER` | delegated |
   | Transfer to delegated account | `+ 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST` | 24000 | `VALUE_TRANSFER` | delegated |
 
   The Goal column renders the short `name`; the component sum (`formula`) is the
-  cell's tooltip, so the column stays narrow.
+  cell's tooltip, so the column stays narrow. The "Cases covered" column is
+  likewise abbreviated by `format_goal_cases`: two or more contract receivers read
+  as one "Contracts" (a lone one keeps its own label), with the unabbreviated list
+  as the cell's tooltip.
 
   Columns are clients; each cell is that client's **worst (highest)**
-  `new_gas_rounded` across the goal's cases — the budget has to cover all of them —
+  `new_gas_rounded` across the goal's cases **and params** — the budget has to cover
+  all of them —
   tinted green at or under the goal, amber up to `GOAL_MID_MARGIN` (25%) over, red
   beyond, `—` where the client has no fit for any of them. The tooltip names the
-  case the worst value came from. Note `VALUE_TRANSFER` is 21000 for every
-  non-delegated receiver **including self** (per the goal spec, not re-derived from
-  the components), and `TX_VALUE_COST` gets no row — it is a component of the goals,
+  case the worst value came from (and its param, on the one multi-param goal). Note
+  a **self-transfer is 12000 whether or not it moves value** — moving value to
+  yourself touches no second account — so `diff_to_self` sits only in the
+  "Transfer to self" row, which covers both params, and is *not* one of the
+  "Transfer" goal's cases. `TX_VALUE_COST` gets no row — it is a component of the goals,
   not a target. A goal no client has data for is dropped, so older runs (which
   predate the self/delegated cases) render two rows, not five. These are targets,
   independent of `current_gas`/`analysis.py`; nothing is read from the run's
