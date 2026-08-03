@@ -1,7 +1,7 @@
 query:
   fork: amsterdam
   run_id_pattern: '.*-full.*'
-  start_date: 2026-07-29
-  end_date: 2026-07-31
+  start_date: 2026-07-31
+  end_date: 2026-08-03
   suites:
     - 3f6a0898955dff4f   # state-actor-glamsterdam-devnet-7-stateful
