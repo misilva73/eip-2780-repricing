@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <script
+  <link rel="stylesheet" href="style.css">
+  <script defer
     src="https://cdn.plot.ly/plotly-2.35.2.min.js"
     integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
     crossorigin="anonymous"
     charset="utf-8"></script>
-  <link rel="stylesheet" href="style.css">
+  
 </head>
 <body>
   <header class="site-header">
@@ -136,10 +137,9 @@
     (<code>TX_BASE_COST</code>&nbsp;=&nbsp;12,000, <code>COLD_ACCOUNT_ACCESS</code>&nbsp;=&nbsp;3,000, <code>TX_VALUE_COST</code>&nbsp;=&nbsp;6,000).
     Each cell is that client's <strong>worst</strong> proposed gas across those
     cases: green clears the goal, amber is up to 25% over,
-    red is further over. Hover a goal name for the component sum behind it, or a
-    cell for its margin and which case it came from.
+    red is further over. Hover a goal name for the component sum behind it, its
+    parameter(s), and the cases it covers.
   </p>
-  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
     <table class="data-table goal-table">
       <thead>
@@ -147,175 +147,168 @@
           <th>Goal</th>
           <th class="num">Target</th>
           <th class="num">besu</th><th class="num">erigon</th><th class="num">ethrex</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
-          <th class="goal-param">Parameter</th>
-          <th class="goal-cases-col">Cases covered</th>
         </tr>
       </thead>
       <tbody>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST = 12,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST = 12,000 &mdash; parameters: ZERO_VALUE_TRANSFER, VALUE_TRANSFER &mdash; cases: Self">
             Transfer to self
           </th>
           <td class="num goal-target">12,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 10,583 gas on Self (ZERO_VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; -12%">10,583</td>
+          
+          <td class="num goal-pass">10,583</td>
           
           
-          <td class="num goal-mid"
-              title="erigon: 13,616 gas on Self (VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; +13%">13,616</td>
+          
+          <td class="num goal-mid">13,616</td>
           
           
-          <td class="num goal-pass"
-              title="ethrex: 3,446 gas on Self (ZERO_VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; -71%">3,446</td>
+          
+          <td class="num goal-pass">3,446</td>
           
           
-          <td class="num goal-pass"
-              title="geth: 8,999 gas on Self (VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; -25%">8,999</td>
+          
+          <td class="num goal-pass">8,999</td>
           
           
-          <td class="num goal-pass"
-              title="nethermind: 11,454 gas on Self (ZERO_VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; -5%">11,454</td>
+          
+          <td class="num goal-pass">11,454</td>
           
           
-          <td class="num goal-pass"
-              title="reth: 3,207 gas on Self (VALUE_TRANSFER, worst of 2) vs goal 12,000 &mdash; -73%">3,207</td>
+          
+          <td class="num goal-pass">3,207</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code> <br><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Self">Self</td>
         </tr>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
             No-value transfer
           </th>
           <td class="num goal-target">15,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 14,326 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; -4%">14,326</td>
+          
+          <td class="num goal-pass">14,326</td>
           
           
-          <td class="num goal-fail"
-              title="erigon: 24,453 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; +63%">24,453</td>
+          
+          <td class="num goal-fail">24,453</td>
           
           
-          <td class="num goal-pass"
-              title="ethrex: 11,408 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; -24%">11,408</td>
+          
+          <td class="num goal-pass">11,408</td>
           
           
-          <td class="num goal-pass"
-              title="geth: 13,051 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; -13%">13,051</td>
+          
+          <td class="num goal-pass">13,051</td>
           
           
-          <td class="num goal-mid"
-              title="nethermind: 15,286 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; +2%">15,286</td>
+          
+          <td class="num goal-mid">15,286</td>
           
           
-          <td class="num goal-pass"
-              title="reth: 5,212 gas on Contract (24KB, unique code) (worst of 5) vs goal 15,000 &mdash; -65%">5,212</td>
+          
+          <td class="num goal-pass">5,212</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">Non-existent, EOA, and Contracts</td>
         </tr>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
             Transfer
           </th>
           <td class="num goal-target">21,000</td>
           
-          <td class="num goal-mid"
-              title="besu: 24,543 gas on Non-existent (worst of 5) vs goal 21,000 &mdash; +17%">24,543</td>
+          
+          <td class="num goal-mid">24,543</td>
           
           
-          <td class="num goal-fail"
-              title="erigon: 35,087 gas on Non-existent (worst of 5) vs goal 21,000 &mdash; +67%">35,087</td>
+          
+          <td class="num goal-fail">35,087</td>
           
           
-          <td class="num goal-pass"
-              title="ethrex: 13,433 gas on Contract (24KB, unique code) (worst of 5) vs goal 21,000 &mdash; -36%">13,433</td>
+          
+          <td class="num goal-pass">13,433</td>
           
           
-          <td class="num goal-mid"
-              title="geth: 21,817 gas on Non-existent (worst of 5) vs goal 21,000 &mdash; +4%">21,817</td>
+          
+          <td class="num goal-mid">21,817</td>
           
           
-          <td class="num goal-pass"
-              title="nethermind: 17,956 gas on Contract (24KB, unique code) (worst of 5) vs goal 21,000 &mdash; -14%">17,956</td>
+          
+          <td class="num goal-pass">17,956</td>
           
           
-          <td class="num goal-pass"
-              title="reth: 7,437 gas on Contract (24KB, unique code) (worst of 5) vs goal 21,000 &mdash; -65%">7,437</td>
+          
+          <td class="num goal-pass">7,437</td>
           
           
-          <td class="goal-param"><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">Non-existent, EOA, and Contracts</td>
         </tr>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
             No-value transfer to delegated account
           </th>
           <td class="num goal-target">18,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 14,071 gas on Delegated (24KB, unique code) vs goal 18,000 &mdash; -22%">14,071</td>
           
-          
-          <td class="num goal-fail"
-              title="erigon: 22,675 gas on Delegated (24KB, unique code) vs goal 18,000 &mdash; +26%">22,675</td>
-          
-          
-          <td class="num goal-pass"
-              title="ethrex: 11,267 gas on Delegated (24KB, unique code) vs goal 18,000 &mdash; -37%">11,267</td>
-          
-          
-          <td class="num goal-pass"
-              title="geth: 13,531 gas on Delegated (24KB, unique code) vs goal 18,000 &mdash; -25%">13,531</td>
-          
-          
-          <td class="num goal-pass"
-              title="nethermind: 15,122 gas on Delegated (24KB, unique code) vs goal 18,000 &mdash; -16%">15,122</td>
+          <td class="num goal-pass">14,071</td>
           
           
           
-          <td class="num goal-nodata" title="reth: no fit for these cases">&mdash;</td>
+          <td class="num goal-fail">22,675</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Delegated (24KB, unique code)">Delegated (24KB, unique code)</td>
+          
+          <td class="num goal-pass">11,267</td>
+          
+          
+          
+          <td class="num goal-pass">13,531</td>
+          
+          
+          
+          <td class="num goal-pass">15,122</td>
+          
+          
+          
+          <td class="num goal-nodata">&mdash;</td>
+          
+          
         </tr>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
             Transfer to delegated account
           </th>
           <td class="num goal-target">24,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 20,483 gas on Delegated (24KB, unique code) vs goal 24,000 &mdash; -15%">20,483</td>
           
-          
-          <td class="num goal-fail"
-              title="erigon: 32,582 gas on Delegated (24KB, unique code) vs goal 24,000 &mdash; +36%">32,582</td>
-          
-          
-          <td class="num goal-pass"
-              title="ethrex: 13,649 gas on Delegated (24KB, unique code) vs goal 24,000 &mdash; -43%">13,649</td>
-          
-          
-          <td class="num goal-pass"
-              title="geth: 19,217 gas on Delegated (24KB, unique code) vs goal 24,000 &mdash; -20%">19,217</td>
-          
-          
-          <td class="num goal-pass"
-              title="nethermind: 17,504 gas on Delegated (24KB, unique code) vs goal 24,000 &mdash; -27%">17,504</td>
+          <td class="num goal-pass">20,483</td>
           
           
           
-          <td class="num goal-nodata" title="reth: no fit for these cases">&mdash;</td>
+          <td class="num goal-fail">32,582</td>
           
           
-          <td class="goal-param"><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Delegated (24KB, unique code)">Delegated (24KB, unique code)</td>
+          
+          <td class="num goal-pass">13,649</td>
+          
+          
+          
+          <td class="num goal-pass">19,217</td>
+          
+          
+          
+          <td class="num goal-pass">17,504</td>
+          
+          
+          
+          <td class="num goal-nodata">&mdash;</td>
+          
+          
         </tr>
         
       </tbody>
@@ -3460,7 +3453,7 @@
         &middot;
         suite <code>3f6a0898955dff4f</code>
         &middot;
-        commit <code>614ff06</code>
+        commit <code>7635c70</code>
         &middot;
         generated <code>2026-08-03T08:13:59+00:00</code>
       </p>

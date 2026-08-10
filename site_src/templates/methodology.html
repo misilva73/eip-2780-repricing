@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Methodology &middot; EIP-2780 Repricing{% endblock %}
+{#- No charts on this page: skip the ~1.3MB Plotly download other pages need. -#}
+{% block plotly %}{% endblock %}
 
 {% block content %}
 <section class="prose">

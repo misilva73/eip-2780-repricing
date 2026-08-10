@@ -245,36 +245,13 @@ def goal_variant(case_id: str) -> str:
     return "standard"
 
 
-def format_goal_cases(labels: list) -> str:
-    """The "Cases covered" cell: several contract receivers read as one "Contracts".
-
-    Spelling out every contract variant ("Contract (minimal), Contract (24KB, same
-    code), …") takes most of the row's width to say what the detail table already
-    lists case by case, and the distinction doesn't matter here — a goal covers all
-    of them alike. Only collapses an actual plural; a lone contract keeps its own
-    label. The unabbreviated list stays on as the cell's tooltip.
-    """
-    contracts = [
-        label for label in labels if label == "Contract" or label.startswith("Contract (")
-    ]
-    parts: list = []
-    for label in labels:
-        short = "Contracts" if len(contracts) > 1 and label in contracts else label
-        if short not in parts:
-            parts.append(short)
-    if len(parts) < 3:
-        return " and ".join(parts)
-    return ", ".join(parts[:-1]) + ", and " + parts[-1]
-
-
 def collect_goals(new_gas_rows: list) -> dict:
     """Per-client measured gas against each EIP-2780 goal.
 
     One row per ``GOAL_SPECS`` entry and one column per client. Where a goal spans
     several receiver cases or several params the cell holds that client's **worst**
     (highest) measurement over that whole set, since the budget has to cover all of
-    them; the cell records which case and param it came from, and ``n_values`` how
-    many it beat. Cells are tinted against the goal: green at or under it, amber up to
+    them. Cells are tinted against the goal: green at or under it, amber up to
     ``GOAL_MID_MARGIN`` over, red beyond. Callers pass the *charted* rows (excluded
     cases already dropped), so the table covers exactly what the charts below it
     show. A client with no fit for any of a goal's cases leaves a no-data cell.
@@ -310,15 +287,15 @@ def collect_goals(new_gas_rows: list) -> dict:
         cells = []
         for client in ordered_clients:
             found = [
-                (value[(param, case, client)], case, param)
+                value[(param, case, client)]
                 for param in params
                 for case in covered
                 if (param, case, client) in value
             ]
             if not found:
-                cells.append({"client": client, "gas": None, "cls": "goal-nodata"})
+                cells.append({"gas": None, "cls": "goal-nodata"})
                 continue
-            gas, worst_case, worst_param = max(found)
+            gas = max(found)
             over_pct = (gas / goal - 1) * 100
             if over_pct <= 0:
                 cls = "goal-pass"
@@ -326,18 +303,7 @@ def collect_goals(new_gas_rows: list) -> dict:
                 cls = "goal-mid"
             else:
                 cls = "goal-fail"
-            cells.append(
-                {
-                    "client": client,
-                    "gas": gas,
-                    "cls": cls,
-                    "over_pct": over_pct,
-                    "worst_case": worst_case,
-                    "worst_case_label": case_label(worst_case),
-                    "worst_param": worst_param,
-                    "n_values": len(found),
-                }
-            )
+            cells.append({"gas": gas, "cls": cls})
         # A goal none of the clients has a fit for carries no information.
         if all(c["gas"] is None for c in cells):
             continue
@@ -348,7 +314,6 @@ def collect_goals(new_gas_rows: list) -> dict:
                 "name": spec["name"],
                 "formula": spec["formula"],
                 "cases": [{"case_id": c, "label": case_label(c)} for c in covered],
-                "cases_summary": format_goal_cases([case_label(c) for c in covered]),
                 "cells": cells,
             }
         )

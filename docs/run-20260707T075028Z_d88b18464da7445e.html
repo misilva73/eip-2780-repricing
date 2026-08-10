@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <script
+  <link rel="stylesheet" href="style.css">
+  <script defer
     src="https://cdn.plot.ly/plotly-2.35.2.min.js"
     integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
     crossorigin="anonymous"
     charset="utf-8"></script>
-  <link rel="stylesheet" href="style.css">
+  
 </head>
 <body>
   <header class="site-header">
@@ -136,10 +137,9 @@
     (<code>TX_BASE_COST</code>&nbsp;=&nbsp;12,000, <code>COLD_ACCOUNT_ACCESS</code>&nbsp;=&nbsp;3,000, <code>TX_VALUE_COST</code>&nbsp;=&nbsp;6,000).
     Each cell is that client's <strong>worst</strong> proposed gas across those
     cases: green clears the goal, amber is up to 25% over,
-    red is further over. Hover a goal name for the component sum behind it, or a
-    cell for its margin and which case it came from.
+    red is further over. Hover a goal name for the component sum behind it, its
+    parameter(s), and the cases it covers.
   </p>
-  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
     <table class="data-table goal-table">
       <thead>
@@ -147,76 +147,72 @@
           <th>Goal</th>
           <th class="num">Target</th>
           <th class="num">besu</th><th class="num">erigon</th><th class="num">ethrex</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
-          <th class="goal-param">Parameter</th>
-          <th class="goal-cases-col">Cases covered</th>
         </tr>
       </thead>
       <tbody>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA">
             No-value transfer
           </th>
           <td class="num goal-target">15,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 13,332 gas on EOA (worst of 2) vs goal 15,000 &mdash; -11%">13,332</td>
+          
+          <td class="num goal-pass">13,332</td>
           
           
-          <td class="num goal-fail"
-              title="erigon: 22,885 gas on EOA (worst of 2) vs goal 15,000 &mdash; +53%">22,885</td>
+          
+          <td class="num goal-fail">22,885</td>
           
           
-          <td class="num goal-pass"
-              title="ethrex: 2,781 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; -81%">2,781</td>
+          
+          <td class="num goal-pass">2,781</td>
           
           
-          <td class="num goal-pass"
-              title="geth: 10,037 gas on Non-existent (worst of 2) vs goal 15,000 &mdash; -33%">10,037</td>
+          
+          <td class="num goal-pass">10,037</td>
           
           
-          <td class="num goal-pass"
-              title="nethermind: 7,112 gas on EOA (worst of 2) vs goal 15,000 &mdash; -53%">7,112</td>
+          
+          <td class="num goal-pass">7,112</td>
           
           
-          <td class="num goal-pass"
-              title="reth: 4,155 gas on EOA (worst of 2) vs goal 15,000 &mdash; -72%">4,155</td>
+          
+          <td class="num goal-pass">4,155</td>
           
           
-          <td class="goal-param"><code>ZERO_VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
-        <tr>
-          <th class="goal-name" scope="row" title="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000">
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA">
             Transfer
           </th>
           <td class="num goal-target">21,000</td>
           
-          <td class="num goal-pass"
-              title="besu: 19,752 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; -6%">19,752</td>
+          
+          <td class="num goal-pass">19,752</td>
           
           
-          <td class="num goal-fail"
-              title="erigon: 44,162 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; +110%">44,162</td>
+          
+          <td class="num goal-fail">44,162</td>
           
           
-          <td class="num goal-pass"
-              title="ethrex: 4,886 gas on EOA (worst of 2) vs goal 21,000 &mdash; -77%">4,886</td>
+          
+          <td class="num goal-pass">4,886</td>
           
           
-          <td class="num goal-pass"
-              title="geth: 18,268 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; -13%">18,268</td>
+          
+          <td class="num goal-pass">18,268</td>
           
           
-          <td class="num goal-pass"
-              title="nethermind: 10,641 gas on Non-existent (worst of 2) vs goal 21,000 &mdash; -49%">10,641</td>
+          
+          <td class="num goal-pass">10,641</td>
           
           
-          <td class="num goal-pass"
-              title="reth: 6,701 gas on EOA (worst of 2) vs goal 21,000 &mdash; -68%">6,701</td>
+          
+          <td class="num goal-pass">6,701</td>
           
           
-          <td class="goal-param"><code>VALUE_TRANSFER</code></td><td class="goal-cases-col" title="Non-existent, EOA">Non-existent and EOA</td>
         </tr>
         
       </tbody>
@@ -1737,7 +1733,7 @@
         &middot;
         suite <code>d88b18464da7445e</code>
         &middot;
-        commit <code>614ff06</code>
+        commit <code>7635c70</code>
         &middot;
         generated <code>2026-07-07T12:32:18+00:00</code>
       </p>

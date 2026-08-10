@@ -274,18 +274,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   max-width: 16rem;
 }
 .goal-table .goal-target { font-weight: 700; }
-/* Parameter + cases trail the client columns — rule in front of them so the tinted
-   block reads as the table's centre of gravity. */
-.goal-table .goal-param { border-left: 1px solid var(--border); }
-.goal-table .goal-param code { background: none; padding: 0; font-size: 0.82rem; }
-/* The case list is the one wrapping column — it is long and every other cell is
-   short, so let it use the vertical space instead of widening the table. */
-.goal-table .goal-cases-col {
-  white-space: normal;
-  min-width: 14rem;
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-}
 /* pass = at or under the goal, mid = up to GOAL_MID_MARGIN over, fail = beyond,
    nodata = no fit for that client. Kept in sync with collect_goals(). */
 .goal-pass { background: rgba(15, 157, 88, 0.82); color: #fff; font-weight: 600; }
@@ -298,6 +286,30 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   .goal-mid { background: rgba(184, 134, 11, 0.68); }
   .goal-fail { background: rgba(201, 42, 42, 0.62); }
 }
+
+/* ---- Hover info (data-tip) ----
+   Native `title` tooltips don't render in every browser/embedding, so hover info
+   is drawn by charts.js's initTooltips() instead: any [data-tip] element gets a
+   single shared .js-tooltip div, positioned in fixed coordinates (immune to the
+   .table-scroll wrapper's overflow, which would otherwise clip an absolutely
+   positioned tooltip near a table's edge). */
+[data-tip] { cursor: help; }
+.js-tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: 320px;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.08s ease;
+}
+.js-tooltip.is-visible { opacity: 1; }
 
 /* ---- Summary ---- */
 .takeaway {

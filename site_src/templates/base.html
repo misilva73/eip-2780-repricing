@@ -9,12 +9,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <script
+  <link rel="stylesheet" href="style.css">
+  {% block plotly %}
+  {#- Deferred: Plotly is ~1.3MB gzipped and only ever called from a
+      DOMContentLoaded handler (charts.js/trends.js), never at parse time, so
+      deferring it is safe and keeps it from blocking first paint on every page.
+      methodology.html has no charts and overrides this block to skip the
+      download entirely. -#}
+  <script defer
     src="https://cdn.plot.ly/plotly-2.35.2.min.js"
     integrity="sha384-cCVCZkAjYNxaYKbM8lsArLznDF/SvMFr1jcZrvOpSTCa0W40ZAdLzHCEulnUa5i7"
     crossorigin="anonymous"
     charset="utf-8"></script>
-  <link rel="stylesheet" href="style.css">
+  {% endblock %}
 </head>
 <body>
   <header class="site-header">

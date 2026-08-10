@@ -133,10 +133,9 @@
     ({% for c in goals.components %}<code>{{ c.name }}</code>&nbsp;=&nbsp;{{ num(c.value) }}{% if not loop.last %}, {% endif %}{% endfor %}).
     Each cell is that client's <strong>worst</strong> proposed gas across those
     cases: green clears the goal, amber is up to {{ goals.mid_margin_pct }}% over,
-    red is further over. Hover a goal name for the component sum behind it, or a
-    cell for its margin and which case it came from.
+    red is further over. Hover a goal name for the component sum behind it, its
+    parameter(s), and the cases it covers.
   </p>
-  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
   <div class="table-scroll">
     <table class="data-table goal-table">
       <thead>
@@ -144,31 +143,27 @@
           <th>Goal</th>
           <th class="num">Target</th>
           {% for c in goals.clients %}<th class="num">{{ c }}</th>{% endfor %}
-          <th class="goal-param">Parameter</th>
-          <th class="goal-cases-col">Cases covered</th>
         </tr>
       </thead>
       <tbody>
         {% for r in goals.rows %}
         <tr>
-          <th class="goal-name" scope="row" title="{{ r.formula }} = {{ num(r.goal) }}">
+          {#- Formula, parameter(s) and covered cases all live in this one tooltip
+              now that the Parameter/Cases covered columns are gone. Rendered via
+              charts.js's initTooltips() (data-tip), not the native title attribute
+              — see the "Hover info" note in style.css. -#}
+          <th class="goal-name" scope="row"
+              data-tip="{{ r.formula }} = {{ num(r.goal) }} &mdash; parameter{% if r.params | length > 1 %}s{% endif %}: {{ r.params | join(', ') }} &mdash; cases: {{ r.cases | map(attribute='label') | join(', ') }}">
             {{ r.name }}
           </th>
           <td class="num goal-target">{{ num(r.goal) }}</td>
           {% for c in r.cells %}
           {% if c.gas is none %}
-          <td class="num goal-nodata" title="{{ c.client }}: no fit for these cases">&mdash;</td>
+          <td class="num goal-nodata">&mdash;</td>
           {% else %}
-          {#- The worst value's param is only worth naming on a goal that spans more
-              than one — otherwise the Parameter column already says it. -#}
-          <td class="num {{ c.cls }}"
-              title="{{ c.client }}: {{ num(c.gas) }} gas on {{ c.worst_case_label }}{% if r.params | length > 1 or c.n_values > 1 %} ({% if r.params | length > 1 %}{{ c.worst_param }}{% if c.n_values > 1 %}, {% endif %}{% endif %}{% if c.n_values > 1 %}worst of {{ c.n_values }}{% endif %}){% endif %} vs goal {{ num(r.goal) }} &mdash; {{ "%+.0f"|format(c.over_pct) }}%">{{ num(c.gas) }}</td>
+          <td class="num {{ c.cls }}">{{ num(c.gas) }}</td>
           {% endif %}
           {% endfor %}
-          <td class="goal-param">{% for p in r.params %}<code>{{ p }}</code>{% if not loop.last %} <br>{% endif %}{% endfor %}</td>
-          {#- Contract variants collapse to "Contracts" (format_goal_cases); the full
-              list is the tooltip. -#}
-          <td class="goal-cases-col" title="{{ r.cases | map(attribute='label') | join(', ') }}">{{ r.cases_summary }}</td>
         </tr>
         {% endfor %}
       </tbody>

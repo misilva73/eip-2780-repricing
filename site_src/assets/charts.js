@@ -303,9 +303,53 @@
       .forEach(initTableFilter);
   }
 
+  // Hover info for [data-tip] elements (the goal table's cell/row-name tooltips).
+  // Not the native `title` attribute: that relies on the browser's own tooltip
+  // layer, which doesn't render in every browser/embedding. This draws a single
+  // shared tooltip div in fixed coordinates instead, so it can't be clipped by
+  // .table-scroll's overflow and doesn't depend on native support.
+  function initTooltips() {
+    var targets = Array.prototype.slice.call(document.querySelectorAll("[data-tip]"));
+    if (!targets.length) return;
+    var tip = document.createElement("div");
+    tip.className = "js-tooltip";
+    document.body.appendChild(tip);
+    var current = null;
+
+    function position(el) {
+      var r = el.getBoundingClientRect();
+      var tr = tip.getBoundingClientRect();
+      var left = r.left + r.width / 2 - tr.width / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
+      var top = r.top - tr.height - 8;
+      if (top < 8) top = r.bottom + 8;
+      tip.style.left = left + "px";
+      tip.style.top = top + "px";
+    }
+    function show(el) {
+      tip.textContent = el.getAttribute("data-tip");
+      tip.classList.add("is-visible");
+      position(el);
+      current = el;
+    }
+    function hide() {
+      tip.classList.remove("is-visible");
+      current = null;
+    }
+
+    targets.forEach(function (el) {
+      el.addEventListener("mouseenter", function () { show(el); });
+      el.addEventListener("mouseleave", hide);
+    });
+    window.addEventListener("scroll", function () {
+      if (current) position(current);
+    }, true);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initRunDropdown();
     initTableFilters();
+    initTooltips();
     if (!window.DASHBOARD_DATA) return;
     // Both end-to-end transfer costs reference today's flat 21000.
     plotNewGas("chart-zero-value-transfer", "ZERO_VALUE_TRANSFER", 21000);
