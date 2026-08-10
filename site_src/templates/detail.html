@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Proposed gas detail &middot; EIP-2780 Repricing{% endblock %}
+{#- No charts on this page: skip the ~1.3MB Plotly download other pages need. -#}
+{% block plotly %}{% endblock %}
+
+{#- ---- formatting helpers (same as index.html) ---- -#}
+{%- macro num(v) -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "{:,}".format(v|int) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro r3(v) -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3f"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro r4(v) -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.4f"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{%- macro g3(v) -%}
+{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3g"|format(v) }}{%- endif -%}
+{%- endmacro -%}
+
+{# colored, arrowed change cell. v is the ratio (19.67 == +1967%). #}
+{%- macro chg(v) -%}
+{%- if v is none or v is undefined -%}<span class="chg chg-flat">&mdash;</span>
+{%- elif v > 0 -%}<span class="chg chg-up">&#9650; {{ "%+.1f"|format(v * 100) }}%</span>
+{%- elif v < 0 -%}<span class="chg chg-down">&#9660; {{ "%+.1f"|format(v * 100) }}%</span>
+{%- else -%}<span class="chg chg-flat">0%</span>
+{%- endif -%}
+{%- endmacro -%}
+
+{% block content %}
+
+{#- ---- run selector banner (same pattern as index.html, but paired with the
+    detail page for each run rather than its dashboard page) ---- -#}
+{% if runs %}
+{% set n = runs | length %}
+{% set current = (runs | selectattr("is_current") | first) or runs[0] %}
+<div class="run-bar{% if not is_latest %} run-bar-older{% endif %}">
+  <span class="run-bar-label">Viewing run</span>
+  {% if n > 1 %}
+  <div class="run-dropdown" data-run-dropdown>
+    <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="run-dropdown-current">{{ current.label }}</span>
+      <span class="run-dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
+      {%- for r in runs %}
+      <li role="option" aria-selected="{{ "true" if r.is_current else "false" }}">
+        <a href="{{ r.href }}" class="run-dropdown-option{% if r.is_current %} is-current{% endif %}"
+           tabindex="-1">{{ r.label }}</a>
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+  <noscript>
+    <span class="run-dropdown-noscript">
+      {%- for r in runs %}{% if not r.is_current %}<a href="{{ r.href }}">{{ r.label }}</a>{% endif %}{% endfor %}
+    </span>
+  </noscript>
+  {% else %}
+  <span class="run-bar-single">{{ runs[0].label }}</span>
+  {% endif %}
+  <span class="run-bar-meta">
+    {%- if n == 1 -%}latest run
+    {%- elif is_latest -%}latest of {{ n }}
+    {%- else -%}older run &middot; latest of {{ n }}
+    {%- endif -%}
+  </span>
+</div>
+{% endif %}
+
+<section class="hero">
+  <h1>Proposed gas detail</h1>
+  <p class="lede">
+    Every measured <code>(client, case, parameter)</code> row behind the
+    <a href="{{ dashboard_href }}">dashboard</a>'s summary and charts &mdash;
+    including the two cases held out there. The highlighted row per parameter is
+    the worst case driving that parameter's proposed value on the dashboard.
+  </p>
+</section>
+
+{% set worst_keys = [] %}
+{% for w in worst_case_overall %}
+  {% set _ = worst_keys.append((w.param, w.client_name, w.case_id)) %}
+{% endfor %}
+{% set clients = new_gas | map(attribute='client_name') | unique | sort | list %}
+{% set params = new_gas | map(attribute='param') | unique | sort | list %}
+{% set cases = new_gas | map(attribute='case_id') | unique | sort | list %}
+<section class="detail" id="detail">
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        {% for c in clients %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Param</span>
+      <select data-filter-key="param">
+        <option value="">All params</option>
+        {% for p in params %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        {% for c in cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table" data-filter-table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th>Param</th>
+          <th class="num">Runtime (ms)</th>
+          <th class="num">Proposed</th>
+          <th class="num">Change</th>
+          <th class="num">CI low</th>
+          <th class="num">CI high</th>
+          <th class="num">R&sup2;</th>
+          <th class="num">p-value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in new_gas %}
+        {% set is_worst = (row.param, row.client_name, row.case_id) in worst_keys %}
+        <tr{% if is_worst %} class="worst-case"{% endif %} data-client="{{ row.client_name }}" data-param="{{ row.param }}" data-case="{{ row.case_id }}">
+          <td>{{ row.client_name }}</td>
+          <td>{{ row.case_id | case_label }}</td>
+          <td><code>{{ row.param }}</code></td>
+          <td class="num">{{ r4(row.runtime_ms) }}</td>
+          <td class="num">{{ num(row.new_gas_rounded) }}</td>
+          <td class="num">{{ chg(row.change) }}</td>
+          <td class="num">{{ num(row.new_gas_conf_int_low) }}</td>
+          <td class="num">{{ num(row.new_gas_conf_int_high) }}</td>
+          <td class="num">{{ r3(row.rsquared) }}</td>
+          <td class="num">{{ g3(row.pvalue) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="charts.js"></script>
+{% endblock %}

@@ -17,7 +17,7 @@ GitHub Pages dashboard.
 
 - `make fetch`   — `benchmarkoor-fetch` → `data/raw/*.parquet` + `meta.json` (gitignored)
 - `make analyze` — [scripts/analysis.py](scripts/analysis.py) → `data/results.json` (latest, committed) **and** archives a copy to `data/runs/<run_id>.json` (committed history)
-- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (one page per run; latest is `index.html`) plus two run-agnostic singletons, `docs/methodology.html` and `docs/trends.html`
+- `make site`    — [scripts/build_site.py](scripts/build_site.py): `data/runs/*` + `site_src/` → `docs/` (three pages per run — a dashboard, latest at `index.html`; its sibling proposed-gas detail page, latest at `detail.html`; and its sibling model-fit detail page, latest at `model-fit.html`) plus two run-agnostic singletons, `docs/methodology.html` and `docs/trends.html`
 
 ## Run history
 
@@ -28,15 +28,30 @@ to switch to previous runs. History accumulates going forward — there is no ba
   `run_id` is `meta.run_id`, keyed on the data-window end + suite, so
   re-analyzing the same data **overwrites in place** instead of duplicating.
   `data/results.json` remains the canonical latest pointer (a copy of the newest run).
-- `make site` renders one self-contained page per archived run: latest →
+- `make site` renders one self-contained dashboard page per archived run: latest →
   `docs/index.html` + `docs/data.js`; each older run → `docs/run-<id>.html` +
-  `docs/data-<id>.js`. The selector is a custom button+listbox (server-rendered
-  in [index.html](site_src/templates/index.html); each option is a plain link, so
-  switching runs is just navigation between these pages). `charts.js`
+  `docs/data-<id>.js`. Each run also gets two sibling pages, both tables that used
+  to live on the dashboard, moved off onto their own pages and linked from the nav
+  ("Detail" and "Model Fit", between "Dashboard" and "Trends"):
+  - **Detail page** — the full proposed-gas detail table: latest → `docs/detail.html`,
+    each older run → `docs/detail-<id>.html`.
+  - **Model Fit page** — the full NNLS model-fit table: latest →
+    `docs/model-fit.html`, each older run → `docs/model-fit-<id>.html`.
+
+  Neither needs a `data-*.js` — both tables are server-rendered (from `new_gas` and
+  `results` respectively), not read from `window.DASHBOARD_DATA` — and each has its
+  own run selector (`build_run_index` in [build_site.py](scripts/build_site.py) is
+  shared by all three page families, just parameterized on basename/prefix) that
+  switches between pages of that same family, not the dashboard. All three
+  selectors are a custom button+listbox (server-rendered in
+  [index.html](site_src/templates/index.html) /
+  [detail.html](site_src/templates/detail.html) /
+  [model-fit.html](site_src/templates/model-fit.html); each option is a plain link,
+  so switching runs is just navigation between these pages). `charts.js`
   (`initRunDropdown`) only adds open/close + keyboard handling — not a native
   `<select>`, so the open list matches the page font. With a single archived run
-  it degrades to a static label. Stale `run-*.html` / `data-*.js` are cleared at
-  the start of each build.
+  it degrades to a static label. Stale `run-*.html` / `detail-*.html` /
+  `model-fit-*.html` / `data-*.js` are cleared at the start of each build.
 - **Delete a run:** `make clean-run RUN_ID=<id>` ([scripts/clean_run.py](scripts/clean_run.py))
   removes the archive file, promotes the next-newest run to `data/results.json`
   if you dropped the latest, and re-renders. Commit the deletion + regenerated `docs/`.
@@ -75,6 +90,7 @@ Requires `make`, `jq`, Python 3.11+.
 
 - **`docs/` is build output — never hand-edit it.** Edit `site_src/`, rerun `make site`.
   `docs/{*.html,*.js,style.css}` are all generated, including `run-<id>.html`,
+  `detail.html` / `detail-<id>.html`, `model-fit.html` / `model-fit-<id>.html`,
   per-run `data-<id>.js`, `methodology.html`, and `trends.html`. Templates extend a
   shared `site_src/templates/base.html`. `methodology.html` and `trends.html` are
   each rendered once from the latest run (run-agnostic, no run selector) — see
@@ -148,11 +164,12 @@ Requires `make`, `jq`, Python 3.11+.
 - **Excluded cases are a render-time filter, not an analysis one.** Two sets in
   [build_site.py](scripts/build_site.py), deliberately different:
   `EXCLUDED_CASES` = `{diff_to_unique_code_jumpdest_contract, diff_to_contract}`
-  drops those `case_id`s from the dashboard's four bar charts, its Summary section
-  (the goal-targets table) and the detail
-  table's worst-case highlight; `TRENDS_EXCLUDED_CASES` = `{diff_to_contract}` drops
+  drops those `case_id`s from the dashboard's bar charts, its Summary section
+  (the goal-targets table) and the Detail page's
+  worst-case highlight; `TRENDS_EXCLUDED_CASES` = `{diff_to_contract}` drops
   only that one from the Trends page, which **still charts the jumpdest case**.
-  `analysis.py` fits every case regardless and both detail tables list every row.
+  `analysis.py` fits every case regardless and both detail tables (the Detail
+  page's proposed-gas table and the Model Fit page's NNLS table) list every row.
   Consequences:
   - The dashboard's `summary` / `worst_case_overall` are **re-derived in
     `build_site.py`** (`rebuild_worst_cases`, `rebuild_summary`) from the
@@ -170,10 +187,14 @@ Requires `make`, `jq`, Python 3.11+.
   run page**, and emptying the sets + `make site` fully reverts them. Verified: on
   runs where no excluded case was binding, the rebuilt summary is byte-identical to
   analysis.py's.
-- **Each page's data file embeds its run verbatim** as `window.DASHBOARD_DATA` —
-  no runtime `fetch()` (avoids project-pages base-path issues). `index.html` loads
-  `data.js`; `run-<id>.html` loads `data-<id>.js`. `charts.js` reads whichever is
-  loaded. All output is flat under `docs/` so the dropdown's relative links work.
+- **Each dashboard page's data file embeds its run verbatim** as
+  `window.DASHBOARD_DATA` — no runtime `fetch()` (avoids project-pages base-path
+  issues). `index.html` loads `data.js`; `run-<id>.html` loads `data-<id>.js`.
+  `charts.js` reads whichever is loaded. The Detail and Model Fit pages have no
+  data file: their tables are rendered server-side from `new_gas` / `results` at
+  build time, and their only script is `charts.js` (for the run selector, table
+  filters and tooltips — none of which need `window.DASHBOARD_DATA`). All output
+  is flat under `docs/` so the dropdowns' relative links work.
 
 ## Deploy
 
@@ -185,19 +206,23 @@ GitHub Pages serves `/docs` on `main`. No CI. After a data/site change, commit
 
 ## Verify before commit
 
-`make site && (cd docs && python -m http.server)` — check the Dashboard,
-Methodology, and Trends pages render, Plotly charts are interactive, tables show
-worst-case highlights, footer populated (incl. `generated`). With >1 archived run,
-the **Viewing run** selector banner switches pages and the latest reads "(latest)",
-and the Trends page's since-last-run delta table + Δ% bar populate (with one run it
-shows a "only one run archived" note). On the latest run the Summary's goal table
-should show five rows (targets 12,000 / 15,000 / 21,000 / 18,000 / 24,000, in that
-order) with a green/amber/red cell per client; hovering a cell shows its margin and
-which case the worst value came from. Per the excluded-cases invariant
-above: no dashboard chart or Summary table row should mention
-`Contract (jumpdest)` or `Contract`, the Trends page should still show
-`Contract (jumpdest)` but not `Contract`, and both detail tables should list every
-case. The dashboard's worst case (the highlighted rows in the detail table) on the
-latest run currently reads erigon / `diff_to_contract_diff_max` for
-`ZERO_VALUE_TRANSFER` and erigon / `diff_to_nonexistent` for `VALUE_TRANSFER` and
-`TX_VALUE_COST` (this follows the data — re-check after a data refresh).
+`make site && (cd docs && python -m http.server)` — check the Dashboard, Detail,
+Model Fit, Methodology, and Trends pages render, Plotly charts are interactive
+(Dashboard only — Detail and Model Fit have none), tables show worst-case
+highlights, footer populated (incl. `generated`), and the nav's "Detail" / "Model
+Fit" links land on the right table. With >1 archived run, each of the Dashboard's,
+Detail's and Model Fit's own **Viewing run** selector banners switches pages and
+the latest reads "(latest)" (switching run on one page family doesn't jump you to
+the others), and the Trends page's since-last-run delta table + Δ% bar populate
+(with one run it shows a "only one run archived" note). On the latest run the
+Summary's goal table should show five rows (targets 12,000 / 15,000 / 21,000 /
+18,000 / 24,000, in that order) with a green/amber/red cell per client; hovering a
+cell shows its margin and which case the worst value came from. Per the
+excluded-cases invariant above: no dashboard chart or Summary table row should
+mention `Contract (jumpdest)` or `Contract`, the Trends page should still show
+`Contract (jumpdest)` but not `Contract`, and both detail tables (Detail page +
+Model Fit page) should list every case. The worst case (the highlighted rows on
+the Detail page) on the latest run currently reads erigon /
+`diff_to_contract_diff_max` for `ZERO_VALUE_TRANSFER` and erigon /
+`diff_to_nonexistent` for `VALUE_TRANSFER` and `TX_VALUE_COST` (this follows the
+data — re-check after a data refresh).

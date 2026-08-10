@@ -77,6 +77,42 @@
     return out;
   }
 
+  // One client -> colour map shared by every chart in the section, so a given
+  // client is always the same colour whether or not it has data for a given
+  // chart (a per-chart uniqueSorted index would shift colours when a client is
+  // missing from that chart's rows). Built once from the union of clients across
+  // both chart data sources; the legend at the top of the section is rendered
+  // from this same map.
+  var CLIENT_COLOR = null;
+  function clientColorMap() {
+    if (CLIENT_COLOR) return CLIENT_COLOR;
+    var data = window.DASHBOARD_DATA || {};
+    var clients = uniqueSorted(
+      charted(data.new_gas || []).concat(charted(data.results || [])),
+      "client_name"
+    );
+    CLIENT_COLOR = {};
+    clients.forEach(function (c, i) {
+      CLIENT_COLOR[c] = PALETTE[i % PALETTE.length];
+    });
+    return CLIENT_COLOR;
+  }
+
+  // Render the section's single legend from the shared colour map.
+  function buildChartsLegend() {
+    var host = document.getElementById("charts-legend");
+    if (!host) return;
+    var colors = clientColorMap();
+    var clients = Object.keys(colors).sort();
+    if (!clients.length) { host.hidden = true; return; }
+    host.innerHTML = clients.map(function (c) {
+      return '<span class="chart-legend-item">' +
+        '<span class="chart-legend-swatch" style="background:' + colors[c] + '"></span>' +
+        "<span>" + c + "</span></span>";
+    }).join("");
+    host.hidden = false;
+  }
+
   // Build a horizontal reference line + label across the whole x-range.
   function referenceLine(value, label) {
     return {
@@ -96,25 +132,46 @@
     };
   }
 
-  // Grouped bar chart of new_gas_rounded for one param, x = case_id, grouped by client.
-  function plotNewGas(divId, param, currentGas) {
+  // Grouped bar chart of new_gas_rounded for one Summary goal row, grouped by
+  // client, with a "Goal" line at the row's target instead of a flat "current"
+  // reference. goalRow is one entry of window.DASHBOARD_DATA.goals.rows (see
+  // collect_goals in build_site.py). The x-axis is one tick per (case, param)
+  // combination: usually one param per case, but "Transfer to self" spans both
+  // ZERO_VALUE_TRANSFER and VALUE_TRANSFER over its one case, so that row gets two
+  // ticks per case instead of collapsing to the worse of the two — both values stay
+  // visible, matching what the row covers even though its table cell shows only
+  // the worst.
+  function plotGoal(divId, goalRow) {
     var div = document.getElementById(divId);
     if (!div || !window.DASHBOARD_DATA) return;
 
+    var params = goalRow.params;
+    var cases = goalRow.cases || [];
+    var caseIds = cases.map(function (c) { return c.case_id; });
     var rows = charted(window.DASHBOARD_DATA.new_gas || []).filter(function (r) {
-      return r.param === param;
+      return params.indexOf(r.param) !== -1 && caseIds.indexOf(r.case_id) !== -1;
     });
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
 
-    var cases = uniqueSorted(rows, "case_id");
-    var caseTicks = cases.map(caseLabel);
+    var series = [];
+    cases.forEach(function (c) {
+      params.forEach(function (p) {
+        series.push({
+          case_id: c.case_id,
+          param: p,
+          tick: params.length > 1 ? c.label + " (" + p + ")" : c.label
+        });
+      });
+    });
+    var seriesTicks = series.map(function (s) { return s.tick; });
     var clients = uniqueSorted(rows, "client_name");
+    var colors = clientColorMap();
 
-    var traces = clients.map(function (client, i) {
+    var traces = clients.map(function (client) {
       var y = [], errHigh = [], errLow = [];
-      cases.forEach(function (caseId) {
+      series.forEach(function (s) {
         var row = rows.find(function (r) {
-          return r.client_name === client && r.case_id === caseId;
+          return r.client_name === client && r.case_id === s.case_id && r.param === s.param;
         });
         var val = row && row.new_gas_rounded != null ? row.new_gas_rounded : null;
         y.push(val);
@@ -127,9 +184,10 @@
       return {
         type: "bar",
         name: client,
-        x: caseTicks,
+        x: seriesTicks,
         y: y,
-        marker: { color: PALETTE[i % PALETTE.length] },
+        marker: { color: colors[client] },
+        showlegend: false,
         error_y: {
           type: "data",
           symmetric: false,
@@ -144,12 +202,11 @@
 
     var layout = theme({
       barmode: "group",
-      margin: { t: 10, r: 20, b: 70, l: 70 },
-      legend: { orientation: "h", y: -0.25 }
+      margin: { t: 10, r: 20, b: 50, l: 70 }
     });
     Object.assign(layout.xaxis, { title: "Case", automargin: true });
     Object.assign(layout.yaxis, { title: "Proposed gas (rounded)" });
-    Object.assign(layout, referenceLine(currentGas, "Current (" + currentGas.toLocaleString() + ")"));
+    Object.assign(layout, referenceLine(goalRow.goal, "Goal (" + goalRow.goal.toLocaleString() + ")"));
 
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
@@ -167,8 +224,9 @@
     var cases = uniqueSorted(rows, "case_id");
     var caseTicks = cases.map(caseLabel);
     var clients = uniqueSorted(rows, "client_name");
+    var colors = clientColorMap();
 
-    var traces = clients.map(function (client, i) {
+    var traces = clients.map(function (client) {
       var y = cases.map(function (caseId) {
         var row = rows.find(function (r) {
           return r.client_name === client && r.case_id === caseId;
@@ -184,14 +242,14 @@
         name: client,
         x: caseTicks,
         y: y,
-        marker: { color: PALETTE[i % PALETTE.length] }
+        marker: { color: colors[client] },
+        showlegend: false
       };
     });
 
     var layout = theme({
       barmode: "group",
-      margin: { t: 10, r: 20, b: 70, l: 60 },
-      legend: { orientation: "h", y: -0.25 }
+      margin: { t: 10, r: 20, b: 50, l: 60 }
     });
     Object.assign(layout.xaxis, { title: "Case", automargin: true });
     Object.assign(layout.yaxis, { title: "R²", range: [0, 1.05] });
@@ -351,11 +409,12 @@
     initTableFilters();
     initTooltips();
     if (!window.DASHBOARD_DATA) return;
-    // Both end-to-end transfer costs reference today's flat 21000.
-    plotNewGas("chart-zero-value-transfer", "ZERO_VALUE_TRANSFER", 21000);
-    plotNewGas("chart-value-transfer", "VALUE_TRANSFER", 21000);
-    // TX_VALUE_COST is the marginal value surcharge; its reference is the 9000 proxy.
-    plotNewGas("chart-tx-value-cost", "TX_VALUE_COST", 9000);
+    buildChartsLegend();
+    // One chart per Summary goal row (see collect_goals in build_site.py); div ids
+    // are chart-goal-<index>, assigned in the same order by index.html's loop.
+    (window.DASHBOARD_DATA.goals && window.DASHBOARD_DATA.goals.rows || []).forEach(
+      function (row, i) { plotGoal("chart-goal-" + i, row); }
+    );
     plotRsquared("chart-rsquared");
   });
 })();

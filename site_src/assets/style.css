@@ -478,6 +478,16 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   width: 100%;
   min-height: 380px;
 }
+.chart-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.chart-row .chart-block {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-bottom: 0;
+}
 .no-data { color: var(--ink-soft); text-align: center; padding: 2rem; }
 
 /* ---- Prose (methodology) ---- */
@@ -571,6 +581,31 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
 }
 .trend-legend-line { flex: none; }
 
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.chart-legend-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
 .poor-flag { color: var(--up); font-weight: 700; }
 .binding-tag {
   font-size: 0.72rem;
@@ -589,4 +624,6 @@ h3 { font-size: 1.05rem; margin: 0 0 0.6rem; }
   h2 { font-size: 1.15rem; }
   .data-table { font-size: 0.82rem; }
   .data-table th, .data-table td { padding: 0.4rem 0.55rem; }
+  .chart-row { flex-direction: column; gap: 0; }
+  .chart-row .chart-block { margin-bottom: 1.5rem; }
 }

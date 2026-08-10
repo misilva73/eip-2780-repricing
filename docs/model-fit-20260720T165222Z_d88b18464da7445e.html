@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Model fit detail &middot; EIP-2780 Repricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="index.html">EIP-2780 Repricing</a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="detail.html">Detail</a>
+        <a href="model-fit.html" class="active">Model Fit</a>
+        <a href="trends.html">Trends</a>
+        <a href="methodology.html">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    
+
+
+<div class="run-bar run-bar-older">
+  <span class="run-bar-label">Viewing run</span>
+  
+  <div class="run-dropdown" data-run-dropdown>
+    <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="run-dropdown-current">2026-07-20 16:52</span>
+      <span class="run-dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
+      <li role="option" aria-selected="false">
+        <a href="model-fit.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-02 23:21 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260731T053659Z_3f6a0898955dff4f.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-31 05:36</a>
+      </li>
+      <li role="option" aria-selected="true">
+        <a href="model-fit-20260720T165222Z_d88b18464da7445e.html" class="run-dropdown-option is-current"
+           tabindex="-1">2026-07-20 16:52</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260707T075028Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-07 07:50</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260701T233045Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-01 23:30</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260623T085946Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-23 08:59</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260615T034251Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-15 03:42</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260610T012820Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-10 01:28</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260607T235606Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-07 23:56</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260603T235618Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-03 23:56</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260602T234049Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-02 23:40</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260601T230017Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-01 23:00</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260529T234448Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-05-29 23:44</a>
+      </li>
+    </ul>
+  </div>
+  <noscript>
+    <span class="run-dropdown-noscript"><a href="model-fit.html">2026-08-02 23:21 (latest)</a><a href="model-fit-20260731T053659Z_3f6a0898955dff4f.html">2026-07-31 05:36</a><a href="model-fit-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="model-fit-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="model-fit-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="model-fit-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a><a href="model-fit-20260610T012820Z_d88b18464da7445e.html">2026-06-10 01:28</a><a href="model-fit-20260607T235606Z_a11611f320a39015.html">2026-06-07 23:56</a><a href="model-fit-20260603T235618Z_a11611f320a39015.html">2026-06-03 23:56</a><a href="model-fit-20260602T234049Z_a11611f320a39015.html">2026-06-02 23:40</a><a href="model-fit-20260601T230017Z_a11611f320a39015.html">2026-06-01 23:00</a><a href="model-fit-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
+    </span>
+  </noscript>
+  
+  <span class="run-bar-meta">older run &middot; latest of 13</span>
+</div>
+
+
+<section class="hero">
+  <h1>Model fit detail</h1>
+  <p class="lede">
+    The underlying NNLS fit behind every row on the
+    <a href="run-20260720T165222Z_d88b18464da7445e.html">dashboard</a> and its
+    <a href="detail-20260720T165222Z_d88b18464da7445e.html">proposed gas detail page</a>: each <code>(client, case)</code>
+    is two independent fits &mdash; one on the zero-value transfers, one on the value
+    transfers &mdash; so each regime has its own slope
+    (&rarr; <code>ZERO_VALUE_TRANSFER</code> / <code>VALUE_TRANSFER</code>).
+  </p>
+</section>
+
+
+
+<section class="detail" id="model-fit-detail">
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        <option value="besu">besu</option><option value="erigon">erigon</option><option value="ethrex">ethrex</option><option value="geth">geth</option><option value="nethermind">nethermind</option>
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table" data-filter-table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th class="num">nobs (zero / value)</th>
+          <th class="num">R&sup2; zero</th>
+          <th class="num">R&sup2; value</th>
+          <th class="num">slope zero</th>
+          <th class="num">slope CI zero</th>
+          <th class="num">p zero</th>
+          <th class="num">slope value</th>
+          <th class="num">slope CI value</th>
+          <th class="num">p value</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr data-client="besu" data-case="diff_to_contract">
+          <td>besu</td>
+          <td>Contract</td>
+          <td class="num">418 / 418</td>
+          <td class="num">0.859</td>
+          <td class="num">0.924</td>
+          <td class="num">0.124344</td>
+          <td class="num">0.119347 &ndash; 0.129194</td>
+          <td class="num">0</td>
+          <td class="num">0.221274</td>
+          <td class="num">0.214934 &ndash; 0.227516</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_existent">
+          <td>besu</td>
+          <td>EOA</td>
+          <td class="num">418 / 418</td>
+          <td class="num">0.847</td>
+          <td class="num">0.910</td>
+          <td class="num">0.118638</td>
+          <td class="num">0.1138 &ndash; 0.123614</td>
+          <td class="num">0</td>
+          <td class="num">0.211141</td>
+          <td class="num">0.20423 &ndash; 0.218203</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_nonexistent">
+          <td>besu</td>
+          <td>Non-existent</td>
+          <td class="num">418 / 418</td>
+          <td class="num">0.856</td>
+          <td class="num">0.932</td>
+          <td class="num">0.114067</td>
+          <td class="num">0.109184 &ndash; 0.119007</td>
+          <td class="num">0</td>
+          <td class="num">0.208206</td>
+          <td class="num">0.202312 &ndash; 0.213957</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>besu</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">418 / 418</td>
+          <td class="num">0.840</td>
+          <td class="num">0.885</td>
+          <td class="num">0.144728</td>
+          <td class="num">0.138908 &ndash; 0.150864</td>
+          <td class="num">0</td>
+          <td class="num">0.223875</td>
+          <td class="num">0.216765 &ndash; 0.231497</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="erigon" data-case="diff_to_contract">
+          <td>erigon</td>
+          <td>Contract</td>
+          <td class="num">198 / 198</td>
+          <td class="num">0.963</td>
+          <td class="num">0.989</td>
+          <td class="num">0.139385</td>
+          <td class="num">0.13564 &ndash; 0.143333</td>
+          <td class="num">0</td>
+          <td class="num">0.363662</td>
+          <td class="num">0.358567 &ndash; 0.368637</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="erigon" data-case="diff_to_existent">
+          <td>erigon</td>
+          <td>EOA</td>
+          <td class="num">198 / 198</td>
+          <td class="num">0.940</td>
+          <td class="num">0.975</td>
+          <td class="num">0.09979</td>
+          <td class="num">0.0961323 &ndash; 0.103471</td>
+          <td class="num">0</td>
+          <td class="num">0.183455</td>
+          <td class="num">0.179367 &ndash; 0.187524</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="erigon" data-case="diff_to_nonexistent">
+          <td>erigon</td>
+          <td>Non-existent</td>
+          <td class="num">198 / 198</td>
+          <td class="num">0.951</td>
+          <td class="num">0.986</td>
+          <td class="num">0.0965757</td>
+          <td class="num">0.0937049 &ndash; 0.0995174</td>
+          <td class="num">0</td>
+          <td class="num">0.27437</td>
+          <td class="num">0.269639 &ndash; 0.27872</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="erigon" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>erigon</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">198 / 198</td>
+          <td class="num">0.983</td>
+          <td class="num">0.985</td>
+          <td class="num">0.196889</td>
+          <td class="num">0.193496 &ndash; 0.200485</td>
+          <td class="num">0</td>
+          <td class="num">0.255209</td>
+          <td class="num">0.250838 &ndash; 0.259767</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="ethrex" data-case="diff_to_contract">
+          <td>ethrex</td>
+          <td>Contract</td>
+          <td class="num">275 / 275</td>
+          <td class="num">0.850</td>
+          <td class="num">0.991</td>
+          <td class="num">0.0218686</td>
+          <td class="num">0.0208882 &ndash; 0.0226894</td>
+          <td class="num">0</td>
+          <td class="num">0.049235</td>
+          <td class="num">0.0486658 &ndash; 0.0497643</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="ethrex" data-case="diff_to_existent">
+          <td>ethrex</td>
+          <td>EOA</td>
+          <td class="num">275 / 275</td>
+          <td class="num">0.826</td>
+          <td class="num">0.990</td>
+          <td class="num">0.0212619</td>
+          <td class="num">0.0202846 &ndash; 0.0221566</td>
+          <td class="num">0</td>
+          <td class="num">0.0490026</td>
+          <td class="num">0.0484392 &ndash; 0.0494905</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="ethrex" data-case="diff_to_nonexistent">
+          <td>ethrex</td>
+          <td>Non-existent</td>
+          <td class="num">275 / 275</td>
+          <td class="num">0.984</td>
+          <td class="num">0.990</td>
+          <td class="num">0.0275005</td>
+          <td class="num">0.0270707 &ndash; 0.0279237</td>
+          <td class="num">0</td>
+          <td class="num">0.0455361</td>
+          <td class="num">0.0449817 &ndash; 0.0460524</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="ethrex" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>ethrex</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">275 / 275</td>
+          <td class="num">0.976</td>
+          <td class="num">0.990</td>
+          <td class="num">0.101629</td>
+          <td class="num">0.0996386 &ndash; 0.103604</td>
+          <td class="num">0</td>
+          <td class="num">0.11888</td>
+          <td class="num">0.117473 &ndash; 0.1202</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_contract">
+          <td>geth</td>
+          <td>Contract</td>
+          <td class="num">264 / 264</td>
+          <td class="num">0.929</td>
+          <td class="num">0.967</td>
+          <td class="num">0.102104</td>
+          <td class="num">0.0987778 &ndash; 0.105432</td>
+          <td class="num">0</td>
+          <td class="num">0.192138</td>
+          <td class="num">0.188195 &ndash; 0.196262</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_existent">
+          <td>geth</td>
+          <td>EOA</td>
+          <td class="num">264 / 264</td>
+          <td class="num">0.929</td>
+          <td class="num">0.965</td>
+          <td class="num">0.0865866</td>
+          <td class="num">0.0835673 &ndash; 0.089723</td>
+          <td class="num">0</td>
+          <td class="num">0.147067</td>
+          <td class="num">0.143504 &ndash; 0.150633</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_nonexistent">
+          <td>geth</td>
+          <td>Non-existent</td>
+          <td class="num">264 / 264</td>
+          <td class="num">0.932</td>
+          <td class="num">0.964</td>
+          <td class="num">0.1001</td>
+          <td class="num">0.0971528 &ndash; 0.103384</td>
+          <td class="num">0</td>
+          <td class="num">0.183171</td>
+          <td class="num">0.179013 &ndash; 0.187193</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>geth</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">264 / 264</td>
+          <td class="num">0.922</td>
+          <td class="num">0.958</td>
+          <td class="num">0.0988088</td>
+          <td class="num">0.0954188 &ndash; 0.102526</td>
+          <td class="num">0</td>
+          <td class="num">0.145276</td>
+          <td class="num">0.14187 &ndash; 0.148566</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="nethermind" data-case="diff_to_contract">
+          <td>nethermind</td>
+          <td>Contract</td>
+          <td class="num">165 / 165</td>
+          <td class="num">0.959</td>
+          <td class="num">0.951</td>
+          <td class="num">0.0744954</td>
+          <td class="num">0.072124 &ndash; 0.0767105</td>
+          <td class="num">0</td>
+          <td class="num">0.122448</td>
+          <td class="num">0.118256 &ndash; 0.126622</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="nethermind" data-case="diff_to_existent">
+          <td>nethermind</td>
+          <td>EOA</td>
+          <td class="num">165 / 165</td>
+          <td class="num">0.948</td>
+          <td class="num">0.946</td>
+          <td class="num">0.0684792</td>
+          <td class="num">0.0663129 &ndash; 0.0708048</td>
+          <td class="num">0</td>
+          <td class="num">0.100045</td>
+          <td class="num">0.0968498 &ndash; 0.103133</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="nethermind" data-case="diff_to_nonexistent">
+          <td>nethermind</td>
+          <td>Non-existent</td>
+          <td class="num">165 / 165</td>
+          <td class="num">0.940</td>
+          <td class="num">0.931</td>
+          <td class="num">0.0689176</td>
+          <td class="num">0.066053 &ndash; 0.0720737</td>
+          <td class="num">0</td>
+          <td class="num">0.112061</td>
+          <td class="num">0.107538 &ndash; 0.116252</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="nethermind" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>nethermind</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">165 / 165</td>
+          <td class="num">0.981</td>
+          <td class="num">0.983</td>
+          <td class="num">0.143724</td>
+          <td class="num">0.142588 &ndash; 0.144769</td>
+          <td class="num">0</td>
+          <td class="num">0.168872</td>
+          <td class="num">0.167737 &ndash; 0.169957</td>
+          <td class="num">0</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    p-values are bootstrap boundary tests, not conventional two-sided p-values: each
+    is the fraction of resamples in which the coefficient collapses to zero, so a
+    strong, clearly non-zero driver reads <strong>0</strong>. See the
+    <a href="methodology.html#nnls">methodology</a> for details; the confidence
+    intervals are the better guide to precision.
+  </p>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="repro">
+        
+        Data window:
+        <strong>2026-07-17T00:06:19Z</strong> &rarr; <strong>2026-07-20T16:52:22Z</strong>
+        &middot;
+        benchmarkoor-fetch <code>0.2.0</code>
+        &middot;
+        suite <code>d88b18464da7445e</code>
+        &middot;
+        commit <code>53e5aa6</code>
+        &middot;
+        generated <code>2026-07-21T12:15:36+00:00</code>
+      </p>
+      <p class="repro-note">
+        Generated from <code>meta.json</code> at a
+        100 Mgas/s anchor.
+        Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
+      </p>
+    </div>
+  </footer>
+
+  
+<script src="charts.js"></script>
+
+</body>
+</html>

@@ -405,33 +405,42 @@ def load_runs() -> list:
     return runs
 
 
-def build_run_index(runs: list) -> list:
-    """One dropdown entry per run: id, label, page href and data-file name.
+def build_run_index(
+    runs: list,
+    latest_href: str,
+    older_prefix: str,
+    latest_data_file: str | None = None,
+    data_prefix: str | None = None,
+) -> list:
+    """One dropdown entry per run: id, label, page href (and data-file name, if any).
 
-    Index 0 is the latest and owns index.html / data.js; the rest get
-    run-<id>.html / data-<id>.js. All output is flat under docs/ so the hrefs are
-    plain relative links."""
+    Index 0 is the latest and owns ``latest_href`` / ``latest_data_file``; the rest
+    get ``<older_prefix><run_id>.html`` (and ``<data_prefix>-<run_id>.js`` when a data
+    prefix is given). Shared by the dashboard pages (index.html / run-<id>.html,
+    data.js / data-<id>.js) and the detail pages (detail.html / detail-<id>.html,
+    which need no data file — that table is server-rendered, not read from
+    window.DASHBOARD_DATA). All output is flat under docs/ so the hrefs are plain
+    relative links."""
     index = []
     for i, data in enumerate(runs):
         rid = run_id_for(data)
         if i == 0:
-            index.append(
-                {
-                    "run_id": rid,
-                    "label": f"{run_label(data)} (latest)",
-                    "href": "index.html",
-                    "data_file": "data.js",
-                }
-            )
+            entry = {
+                "run_id": rid,
+                "label": f"{run_label(data)} (latest)",
+                "href": latest_href,
+            }
+            if latest_data_file:
+                entry["data_file"] = latest_data_file
         else:
-            index.append(
-                {
-                    "run_id": rid,
-                    "label": run_label(data),
-                    "href": f"run-{rid}.html",
-                    "data_file": f"data-{rid}.js",
-                }
-            )
+            entry = {
+                "run_id": rid,
+                "label": run_label(data),
+                "href": f"{older_prefix}{rid}.html",
+            }
+            if data_prefix:
+                entry["data_file"] = f"{data_prefix}-{rid}.js"
+        index.append(entry)
     return index
 
 
@@ -538,15 +547,20 @@ def collect_trends(runs: list) -> dict:
 
 def clear_stale_outputs() -> None:
     """Drop previously generated per-run pages/data so a removed run leaves no
-    orphan behind. Leaves index.html/data.js and the static assets untouched."""
-    for pattern in ("run-*.html", "data-*.js"):
+    orphan behind. Leaves index.html/detail.html/model-fit.html/data.js and the
+    static assets untouched."""
+    for pattern in ("run-*.html", "detail-*.html", "model-fit-*.html", "data-*.js"):
         for path in SITE_DIR.glob(pattern):
             path.unlink()
 
 
 def main() -> None:
     runs = load_runs()
-    run_index = build_run_index(runs)
+    run_index = build_run_index(runs, "index.html", "run-", "data.js", "data")
+    # The detail and model-fit pages need no data file — their tables are
+    # server-rendered from `new_gas` / `results`, not read from window.DASHBOARD_DATA.
+    detail_index = build_run_index(runs, "detail.html", "detail-")
+    model_fit_index = build_run_index(runs, "model-fit.html", "model-fit-")
     commit = git_commit()
 
     SITE_DIR.mkdir(parents=True, exist_ok=True)
@@ -558,29 +572,33 @@ def main() -> None:
     )
     env.filters["case_label"] = case_label
     index_tpl = env.get_template("index.html")
+    detail_tpl = env.get_template("detail.html")
+    model_fit_tpl = env.get_template("model-fit.html")
 
     written = []
     # One self-contained dashboard page per run. The dropdown (server-rendered
     # from run_index) just navigates between them; charts.js reads the per-page
-    # data file's window.DASHBOARD_DATA, so no run-switching JS is needed.
-    for i, (data, entry) in enumerate(zip(runs, run_index)):
+    # data file's window.DASHBOARD_DATA, so no run-switching JS is needed. Each run
+    # also gets two sibling pages (own run selector each, same pairing by index):
+    # a proposed-gas detail page and a model-fit detail page — both used to live on
+    # this page as detail tables.
+    for i, (data, entry, detail_entry, model_fit_entry) in enumerate(
+        zip(runs, run_index, detail_index, model_fit_index)
+    ):
         runs_for_page = [
             {**r, "is_current": r["run_id"] == entry["run_id"]} for r in run_index
         ]
         # The Summary section and the worst-case highlight are re-derived from the
         # non-excluded cases (see EXCLUDED_CASES) so they agree with the charts; the
-        # detail tables below them still render every row of `new_gas` / `results`.
+        # sibling detail pages still render every row of `new_gas` / `results`.
         new_gas = data.get("new_gas", []) or []
         charted = included_rows(new_gas)
         worst_case_overall = rebuild_worst_cases(new_gas)
         context = {
             "data": data,
             "meta": data.get("meta", {}) or {},
-            "results": data.get("results", []),
-            "new_gas": new_gas,
             "summary_new_gas": charted,
             "goals": collect_goals(charted),
-            "worst_case_overall": worst_case_overall,
             "worst_case_by_case": data.get("worst_case_by_case", []),
             "summary": rebuild_summary(
                 worst_case_overall, data.get("summary", {}) or {}
@@ -589,6 +607,8 @@ def main() -> None:
             "runs": runs_for_page,
             "is_latest": i == 0,  # index 0 is the newest run
             "data_file": entry["data_file"],
+            "detail_href": detail_entry["href"],
+            "model_fit_href": model_fit_entry["href"],
             "page": "dashboard",
         }
         out_path = SITE_DIR / entry["href"]
@@ -596,12 +616,54 @@ def main() -> None:
         written.append(out_path)
 
         # Embed the run's data verbatim so charts.js can read it without a fetch().
+        # "goals" is added on top (not part of the archived run JSON) so charts.js
+        # can build one chart per goal row without recomputing collect_goals() in JS.
         data_js = SITE_DIR / entry["data_file"]
         data_js.write_text(
-            "window.DASHBOARD_DATA = " + json.dumps(data) + ";\n",
+            "window.DASHBOARD_DATA = "
+            + json.dumps({**data, "goals": context["goals"]})
+            + ";\n",
             encoding="utf-8",
         )
         written.append(data_js)
+
+        detail_runs_for_page = [
+            {**r, "is_current": r["run_id"] == detail_entry["run_id"]}
+            for r in detail_index
+        ]
+        detail_context = {
+            "meta": data.get("meta", {}) or {},
+            "new_gas": new_gas,
+            "worst_case_overall": worst_case_overall,
+            "commit": commit,
+            "runs": detail_runs_for_page,
+            "is_latest": i == 0,
+            "dashboard_href": entry["href"],
+            "page": "detail",
+        }
+        detail_out_path = SITE_DIR / detail_entry["href"]
+        detail_out_path.write_text(detail_tpl.render(**detail_context), encoding="utf-8")
+        written.append(detail_out_path)
+
+        model_fit_runs_for_page = [
+            {**r, "is_current": r["run_id"] == model_fit_entry["run_id"]}
+            for r in model_fit_index
+        ]
+        model_fit_context = {
+            "meta": data.get("meta", {}) or {},
+            "results": data.get("results", []),
+            "commit": commit,
+            "runs": model_fit_runs_for_page,
+            "is_latest": i == 0,
+            "dashboard_href": entry["href"],
+            "detail_href": detail_entry["href"],
+            "page": "model-fit",
+        }
+        model_fit_out_path = SITE_DIR / model_fit_entry["href"]
+        model_fit_out_path.write_text(
+            model_fit_tpl.render(**model_fit_context), encoding="utf-8"
+        )
+        written.append(model_fit_out_path)
 
     # Methodology is run-agnostic: render once from the latest run, no selector.
     latest = runs[0] if runs else {}

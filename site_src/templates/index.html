@@ -10,36 +10,6 @@
 {%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3f"|format(v) }}{%- endif -%}
 {%- endmacro -%}
 
-{%- macro r4(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.4f"|format(v) }}{%- endif -%}
-{%- endmacro -%}
-
-{%- macro g3(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.3g"|format(v) }}{%- endif -%}
-{%- endmacro -%}
-
-{%- macro pct(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%+.1f"|format(v) }}%{%- endif -%}
-{%- endmacro -%}
-
-{# change is stored as a ratio (e.g. 19.67 == +1967%); render it as a true percent #}
-{%- macro rpct(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%+.1f"|format(v * 100) }}%{%- endif -%}
-{%- endmacro -%}
-
-{# colored, arrowed change cell. v is the ratio (19.67 == +1967%). #}
-{%- macro chg(v) -%}
-{%- if v is none or v is undefined -%}<span class="chg chg-flat">&mdash;</span>
-{%- elif v > 0 -%}<span class="chg chg-up">&#9650; {{ "%+.1f"|format(v * 100) }}%</span>
-{%- elif v < 0 -%}<span class="chg chg-down">&#9660; {{ "%+.1f"|format(v * 100) }}%</span>
-{%- else -%}<span class="chg chg-flat">0%</span>
-{%- endif -%}
-{%- endmacro -%}
-
-{%- macro sci(v) -%}
-{%- if v is none or v is undefined -%}&mdash;{%- else -%}{{ "%.6g"|format(v) }}{%- endif -%}
-{%- endmacro -%}
-
 {% block content %}
 {% set caveats = summary.caveats or [] %}
 {% set pvalue_caveats = summary.pvalue_caveats or [] %}
@@ -108,7 +78,8 @@
   <strong>Contract (jumpdest)</strong>
   (<code>diff_to_unique_code_jumpdest_contract</code>) and
   <strong>Contract</strong> (<code>diff_to_contract</code>). Both are still fit and
-  reported in full in the <a href="#detail">detail tables</a>.
+  reported in full on the <a href="{{ detail_href }}">proposed gas detail page</a>
+  and the <a href="{{ model_fit_href }}">model fit detail page</a>.
 </p>
 
 {#- ---- 1. Headline summary (prose assembled here) ---- -#}
@@ -228,20 +199,31 @@
 <section class="charts">
   <h2>Charts</h2>
 
-  <div class="chart-block">
-    <h3><code>ZERO_VALUE_TRANSFER</code> &mdash; proposed gas per case (95% CI)</h3>
-    <div id="chart-zero-value-transfer" class="chart"></div>
-  </div>
+  {#- One shared client legend for every chart below (colour is assigned once,
+      globally, by charts.js — see buildChartsLegend) instead of a legend on each
+      individual chart. -#}
+  <div id="charts-legend" class="chart-legend" hidden></div>
 
-  <div class="chart-block">
-    <h3><code>VALUE_TRANSFER</code> &mdash; proposed gas per case (95% CI)</h3>
-    <div id="chart-value-transfer" class="chart"></div>
+  {#- One bar chart per Summary goal row: same cases/params that row's cells cover,
+      grouped by client, with a "Goal" line at that row's target (see collect_goals
+      in build_site.py) in place of a flat "current" reference. Div ids are
+      chart-goal-<index into goals.rows>, read by charts.js in that same order — so
+      the index must stay tied to the row's position in the unfiltered list even
+      though the two delegated-account rows are visually paired into one .chart-row.
+      -#}
+  {% set delegated_names = ["No-value transfer to delegated account", "Transfer to delegated account"] %}
+  {% for r in goals.rows %}
+  {% if r.name in delegated_names and not (loop.previtem and loop.previtem.name in delegated_names) %}
+  <div class="chart-row">
+  {% endif %}
+    <div class="chart-block">
+      <h3>{{ r.name }} &mdash; proposed gas per case vs. goal ({{ num(r.goal) }}) (95% CI)</h3>
+      <div id="chart-goal-{{ loop.index0 }}" class="chart"></div>
+    </div>
+  {% if r.name in delegated_names and not (loop.nextitem and loop.nextitem.name in delegated_names) %}
   </div>
-
-  <div class="chart-block">
-    <h3><code>TX_VALUE_COST</code> (<code>VALUE_TRANSFER</code>&nbsp;&minus;&nbsp;<code>ZERO_VALUE_TRANSFER</code>) vs. 9,000 (95% CI)</h3>
-    <div id="chart-tx-value-cost" class="chart"></div>
-  </div>
+  {% endif %}
+  {% endfor %}
 
   <div class="chart-block">
     <h3>Model fit quality (R&sup2;, worse of the two regime fits) per (client, case)</h3>
@@ -249,148 +231,6 @@
   </div>
 </section>
 
-{#- ---- 4a. Detail: new_gas table ---- -#}
-{% set worst_keys = [] %}
-{% for w in worst_case_overall %}
-  {% set _ = worst_keys.append((w.param, w.client_name, w.case_id)) %}
-{% endfor %}
-{% set clients = new_gas | map(attribute='client_name') | unique | sort | list %}
-{% set params = new_gas | map(attribute='param') | unique | sort | list %}
-{% set cases = new_gas | map(attribute='case_id') | unique | sort | list %}
-<section class="detail" id="detail">
-  <h2 class="h2-lg">Proposed gas detail</h2>
-  <div class="table-filters" data-table-filters>
-    <label class="table-filter">
-      <span>Client</span>
-      <select data-filter-key="client">
-        <option value="">All clients</option>
-        {% for c in clients %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
-      </select>
-    </label>
-    <label class="table-filter">
-      <span>Param</span>
-      <select data-filter-key="param">
-        <option value="">All params</option>
-        {% for p in params %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
-      </select>
-    </label>
-    <label class="table-filter">
-      <span>Case</span>
-      <select data-filter-key="case">
-        <option value="">All cases</option>
-        {% for c in cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
-      </select>
-    </label>
-    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
-  </div>
-  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
-  <div class="table-scroll">
-    <table class="data-table" data-filter-table>
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Case</th>
-          <th>Param</th>
-          <th class="num">Runtime (ms)</th>
-          <th class="num">Proposed</th>
-          <th class="num">Change</th>
-          <th class="num">CI low</th>
-          <th class="num">CI high</th>
-          <th class="num">R&sup2;</th>
-          <th class="num">p-value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in new_gas %}
-        {% set is_worst = (row.param, row.client_name, row.case_id) in worst_keys %}
-        <tr{% if is_worst %} class="worst-case"{% endif %} data-client="{{ row.client_name }}" data-param="{{ row.param }}" data-case="{{ row.case_id }}">
-          <td>{{ row.client_name }}</td>
-          <td>{{ row.case_id | case_label }}</td>
-          <td><code>{{ row.param }}</code></td>
-          <td class="num">{{ r4(row.runtime_ms) }}</td>
-          <td class="num">{{ num(row.new_gas_rounded) }}</td>
-          <td class="num">{{ chg(row.change) }}</td>
-          <td class="num">{{ num(row.new_gas_conf_int_low) }}</td>
-          <td class="num">{{ num(row.new_gas_conf_int_high) }}</td>
-          <td class="num">{{ r3(row.rsquared) }}</td>
-          <td class="num">{{ g3(row.pvalue) }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
-
-{#- ---- 4b. Detail: results (model fit) table ---- -#}
-{% set fit_clients = results | map(attribute='client_name') | unique | sort | list %}
-{% set fit_cases = results | map(attribute='case_id') | unique | sort | list %}
-<section class="detail">
-  <h2 class="h2-lg">Model fit detail</h2>
-  <div class="table-filters" data-table-filters>
-    <label class="table-filter">
-      <span>Client</span>
-      <select data-filter-key="client">
-        <option value="">All clients</option>
-        {% for c in fit_clients %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
-      </select>
-    </label>
-    <label class="table-filter">
-      <span>Case</span>
-      <select data-filter-key="case">
-        <option value="">All cases</option>
-        {% for c in fit_cases %}<option value="{{ c }}">{{ c | case_label }}</option>{% endfor %}
-      </select>
-    </label>
-    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
-  </div>
-  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
-  <div class="table-scroll">
-    <table class="data-table" data-filter-table>
-      <thead>
-        <tr>
-          <th>Client</th>
-          <th>Case</th>
-          <th class="num">nobs (zero / value)</th>
-          <th class="num">R&sup2; zero</th>
-          <th class="num">R&sup2; value</th>
-          <th class="num">slope zero</th>
-          <th class="num">slope CI zero</th>
-          <th class="num">p zero</th>
-          <th class="num">slope value</th>
-          <th class="num">slope CI value</th>
-          <th class="num">p value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in results %}
-        <tr data-client="{{ row.client_name }}" data-case="{{ row.case_id }}">
-          <td>{{ row.client_name }}</td>
-          <td>{{ row.case_id | case_label }}</td>
-          <td class="num">{{ num(row.without_nobs) }} / {{ num(row.with_nobs) }}</td>
-          <td class="num">{{ r3(row.without_rsquared) }}</td>
-          <td class="num">{{ r3(row.with_rsquared) }}</td>
-          <td class="num">{{ sci(row.without_slope) }}</td>
-          <td class="num">{{ sci(row.without_slope_conf_int_low) }} &ndash; {{ sci(row.without_slope_conf_int_high) }}</td>
-          <td class="num">{{ g3(row.without_slope_pvalue) }}</td>
-          <td class="num">{{ sci(row.with_slope) }}</td>
-          <td class="num">{{ sci(row.with_slope_conf_int_low) }} &ndash; {{ sci(row.with_slope_conf_int_high) }}</td>
-          <td class="num">{{ g3(row.with_slope_pvalue) }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <p class="table-note">
-    Each <code>(client, case)</code> is two independent fits &mdash; one on the
-    zero-value transfers, one on the value transfers &mdash; so each regime has its own
-    slope (&rarr; <code>ZERO_VALUE_TRANSFER</code> / <code>VALUE_TRANSFER</code>). p-values
-    are bootstrap boundary tests, not conventional two-sided p-values: each is the
-    fraction of resamples in which the coefficient collapses to zero, so a strong,
-    clearly non-zero driver reads <strong>0</strong>. See the
-    <a href="methodology.html#nnls">methodology</a> for details; the confidence intervals
-    are the better guide to precision.
-  </p>
-</section>
 {% endblock %}
 
 {% block scripts %}

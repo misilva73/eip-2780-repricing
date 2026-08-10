@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Proposed gas detail &middot; EIP-2780 Repricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="index.html">EIP-2780 Repricing</a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="detail.html" class="active">Detail</a>
+        <a href="model-fit.html">Model Fit</a>
+        <a href="trends.html">Trends</a>
+        <a href="methodology.html">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    
+
+
+<div class="run-bar run-bar-older">
+  <span class="run-bar-label">Viewing run</span>
+  
+  <div class="run-dropdown" data-run-dropdown>
+    <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="run-dropdown-current">2026-06-01 23:00</span>
+      <span class="run-dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
+      <li role="option" aria-selected="false">
+        <a href="detail.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-02 23:21 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260731T053659Z_3f6a0898955dff4f.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-31 05:36</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260720T165222Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-20 16:52</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260707T075028Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-07 07:50</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260701T233045Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-01 23:30</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260623T085946Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-23 08:59</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260615T034251Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-15 03:42</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260610T012820Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-10 01:28</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260607T235606Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-07 23:56</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260603T235618Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-03 23:56</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260602T234049Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-02 23:40</a>
+      </li>
+      <li role="option" aria-selected="true">
+        <a href="detail-20260601T230017Z_a11611f320a39015.html" class="run-dropdown-option is-current"
+           tabindex="-1">2026-06-01 23:00</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260529T234448Z_a11611f320a39015.html" class="run-dropdown-option"
+           tabindex="-1">2026-05-29 23:44</a>
+      </li>
+    </ul>
+  </div>
+  <noscript>
+    <span class="run-dropdown-noscript"><a href="detail.html">2026-08-02 23:21 (latest)</a><a href="detail-20260731T053659Z_3f6a0898955dff4f.html">2026-07-31 05:36</a><a href="detail-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="detail-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="detail-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="detail-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="detail-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a><a href="detail-20260610T012820Z_d88b18464da7445e.html">2026-06-10 01:28</a><a href="detail-20260607T235606Z_a11611f320a39015.html">2026-06-07 23:56</a><a href="detail-20260603T235618Z_a11611f320a39015.html">2026-06-03 23:56</a><a href="detail-20260602T234049Z_a11611f320a39015.html">2026-06-02 23:40</a><a href="detail-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
+    </span>
+  </noscript>
+  
+  <span class="run-bar-meta">older run &middot; latest of 13</span>
+</div>
+
+
+<section class="hero">
+  <h1>Proposed gas detail</h1>
+  <p class="lede">
+    Every measured <code>(client, case, parameter)</code> row behind the
+    <a href="run-20260601T230017Z_a11611f320a39015.html">dashboard</a>'s summary and charts &mdash;
+    including the two cases held out there. The highlighted row per parameter is
+    the worst case driving that parameter's proposed value on the dashboard.
+  </p>
+</section>
+
+
+
+  
+
+  
+
+  
+
+
+
+
+<section class="detail" id="detail">
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        <option value="besu">besu</option><option value="erigon">erigon</option><option value="nethermind">nethermind</option><option value="reth">reth</option>
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Param</span>
+      <select data-filter-key="param">
+        <option value="">All params</option>
+        <option value="TX_VALUE_COST">TX_VALUE_COST</option><option value="VALUE_TRANSFER">VALUE_TRANSFER</option><option value="ZERO_VALUE_TRANSFER">ZERO_VALUE_TRANSFER</option>
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table" data-filter-table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th>Param</th>
+          <th class="num">Runtime (ms)</th>
+          <th class="num">Proposed</th>
+          <th class="num">Change</th>
+          <th class="num">CI low</th>
+          <th class="num">CI high</th>
+          <th class="num">R&sup2;</th>
+          <th class="num">p-value</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        
+        <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_contract">
+          <td>besu</td>
+          <td>Contract</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">2.4384</td>
+          <td class="num">243,844</td>
+          <td class="num"><span class="chg chg-up">&#9650; +2609.0%</span></td>
+          <td class="num">224,353</td>
+          <td class="num">262,721</td>
+          <td class="num">0.755</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_existent">
+          <td>besu</td>
+          <td>EOA</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">2.8306</td>
+          <td class="num">283,064</td>
+          <td class="num"><span class="chg chg-up">&#9650; +3045.0%</span></td>
+          <td class="num">263,168</td>
+          <td class="num">303,184</td>
+          <td class="num">0.758</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr class="worst-case" data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
+          <td>besu</td>
+          <td>Non-existent</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">3.2237</td>
+          <td class="num">322,373</td>
+          <td class="num"><span class="chg chg-up">&#9650; +3482.0%</span></td>
+          <td class="num">300,034</td>
+          <td class="num">343,893</td>
+          <td class="num">0.760</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>besu</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">7.3361</td>
+          <td class="num">733,611</td>
+          <td class="num"><span class="chg chg-up">&#9650; +8051.0%</span></td>
+          <td class="num">659,732</td>
+          <td class="num">809,313</td>
+          <td class="num">0.486</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_contract">
+          <td>erigon</td>
+          <td>Contract</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">1.4440</td>
+          <td class="num">144,399</td>
+          <td class="num"><span class="chg chg-up">&#9650; +1504.0%</span></td>
+          <td class="num">133,945</td>
+          <td class="num">154,801</td>
+          <td class="num">0.854</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_existent">
+          <td>erigon</td>
+          <td>EOA</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.2905</td>
+          <td class="num">29,046</td>
+          <td class="num"><span class="chg chg-up">&#9650; +223.0%</span></td>
+          <td class="num">22,644</td>
+          <td class="num">37,043</td>
+          <td class="num">0.867</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
+          <td>erigon</td>
+          <td>Non-existent</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">1.2941</td>
+          <td class="num">129,411</td>
+          <td class="num"><span class="chg chg-up">&#9650; +1338.0%</span></td>
+          <td class="num">122,114</td>
+          <td class="num">138,829</td>
+          <td class="num">0.854</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>erigon</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.2698</td>
+          <td class="num">26,976</td>
+          <td class="num"><span class="chg chg-up">&#9650; +200.0%</span></td>
+          <td class="num">20,675</td>
+          <td class="num">35,774</td>
+          <td class="num">0.864</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_contract">
+          <td>nethermind</td>
+          <td>Contract</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.0218</td>
+          <td class="num">2,180</td>
+          <td class="num"><span class="chg chg-down">&#9660; -76.0%</span></td>
+          <td class="num">1,565</td>
+          <td class="num">3,086</td>
+          <td class="num">0.932</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_existent">
+          <td>nethermind</td>
+          <td>EOA</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.0356</td>
+          <td class="num">3,560</td>
+          <td class="num"><span class="chg chg-down">&#9660; -60.0%</span></td>
+          <td class="num">2,992</td>
+          <td class="num">4,167</td>
+          <td class="num">0.940</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
+          <td>nethermind</td>
+          <td>Non-existent</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.0505</td>
+          <td class="num">5,052</td>
+          <td class="num"><span class="chg chg-down">&#9660; -44.0%</span></td>
+          <td class="num">4,459</td>
+          <td class="num">5,690</td>
+          <td class="num">0.942</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>nethermind</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.0309</td>
+          <td class="num">3,093</td>
+          <td class="num"><span class="chg chg-down">&#9660; -66.0%</span></td>
+          <td class="num">2,436</td>
+          <td class="num">3,929</td>
+          <td class="num">0.952</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_contract">
+          <td>reth</td>
+          <td>Contract</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.1094</td>
+          <td class="num">10,942</td>
+          <td class="num"><span class="chg chg-up">&#9650; +22.0%</span></td>
+          <td class="num">10,143</td>
+          <td class="num">11,692</td>
+          <td class="num">0.902</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_existent">
+          <td>reth</td>
+          <td>EOA</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.1001</td>
+          <td class="num">10,013</td>
+          <td class="num"><span class="chg chg-up">&#9650; +11.0%</span></td>
+          <td class="num">9,313</td>
+          <td class="num">10,723</td>
+          <td class="num">0.966</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_nonexistent">
+          <td>reth</td>
+          <td>Non-existent</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.1037</td>
+          <td class="num">10,369</td>
+          <td class="num"><span class="chg chg-up">&#9650; +15.0%</span></td>
+          <td class="num">10,006</td>
+          <td class="num">10,939</td>
+          <td class="num">0.973</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>reth</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>TX_VALUE_COST</code></td>
+          <td class="num">0.0893</td>
+          <td class="num">8,933</td>
+          <td class="num"><span class="chg chg-down">&#9660; -1.0%</span></td>
+          <td class="num">8,155</td>
+          <td class="num">9,722</td>
+          <td class="num">0.922</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>besu</td>
+          <td>Contract</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">4.5974</td>
+          <td class="num">459,740</td>
+          <td class="num"><span class="chg chg-up">&#9650; +2089.0%</span></td>
+          <td class="num">445,079</td>
+          <td class="num">473,686</td>
+          <td class="num">0.755</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>besu</td>
+          <td>EOA</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">4.9310</td>
+          <td class="num">493,098</td>
+          <td class="num"><span class="chg chg-up">&#9650; +2248.0%</span></td>
+          <td class="num">478,186</td>
+          <td class="num">508,120</td>
+          <td class="num">0.758</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr class="worst-case" data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>besu</td>
+          <td>Non-existent</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">5.3398</td>
+          <td class="num">533,980</td>
+          <td class="num"><span class="chg chg-up">&#9650; +2443.0%</span></td>
+          <td class="num">516,603</td>
+          <td class="num">549,993</td>
+          <td class="num">0.760</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>besu</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">9.5624</td>
+          <td class="num">956,237</td>
+          <td class="num"><span class="chg chg-up">&#9650; +4454.0%</span></td>
+          <td class="num">887,343</td>
+          <td class="num">1,026,386</td>
+          <td class="num">0.486</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>erigon</td>
+          <td>Contract</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">1.9669</td>
+          <td class="num">196,689</td>
+          <td class="num"><span class="chg chg-up">&#9650; +837.0%</span></td>
+          <td class="num">189,512</td>
+          <td class="num">203,596</td>
+          <td class="num">0.951</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>erigon</td>
+          <td>EOA</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.8393</td>
+          <td class="num">83,928</td>
+          <td class="num"><span class="chg chg-up">&#9650; +300.0%</span></td>
+          <td class="num">78,980</td>
+          <td class="num">88,606</td>
+          <td class="num">0.881</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>erigon</td>
+          <td>Non-existent</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">1.8405</td>
+          <td class="num">184,047</td>
+          <td class="num"><span class="chg chg-up">&#9650; +776.0%</span></td>
+          <td class="num">178,319</td>
+          <td class="num">190,043</td>
+          <td class="num">0.962</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>erigon</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.8280</td>
+          <td class="num">82,805</td>
+          <td class="num"><span class="chg chg-up">&#9650; +294.0%</span></td>
+          <td class="num">78,108</td>
+          <td class="num">87,886</td>
+          <td class="num">0.879</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>nethermind</td>
+          <td>Contract</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.1434</td>
+          <td class="num">14,341</td>
+          <td class="num"><span class="chg chg-down">&#9660; -32.0%</span></td>
+          <td class="num">13,847</td>
+          <td class="num">14,860</td>
+          <td class="num">0.935</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>nethermind</td>
+          <td>EOA</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.1145</td>
+          <td class="num">11,454</td>
+          <td class="num"><span class="chg chg-down">&#9660; -45.0%</span></td>
+          <td class="num">11,114</td>
+          <td class="num">11,840</td>
+          <td class="num">0.940</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>nethermind</td>
+          <td>Non-existent</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.1300</td>
+          <td class="num">13,003</td>
+          <td class="num"><span class="chg chg-down">&#9660; -38.0%</span></td>
+          <td class="num">12,629</td>
+          <td class="num">13,421</td>
+          <td class="num">0.946</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>nethermind</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.1733</td>
+          <td class="num">17,327</td>
+          <td class="num"><span class="chg chg-down">&#9660; -17.0%</span></td>
+          <td class="num">16,821</td>
+          <td class="num">17,862</td>
+          <td class="num">0.952</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>reth</td>
+          <td>Contract</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.2400</td>
+          <td class="num">23,996</td>
+          <td class="num"><span class="chg chg-up">&#9650; +14.0%</span></td>
+          <td class="num">23,674</td>
+          <td class="num">24,318</td>
+          <td class="num">0.980</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>reth</td>
+          <td>EOA</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.2242</td>
+          <td class="num">22,424</td>
+          <td class="num"><span class="chg chg-up">&#9650; +7.0%</span></td>
+          <td class="num">22,003</td>
+          <td class="num">22,842</td>
+          <td class="num">0.974</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>reth</td>
+          <td>Non-existent</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.2318</td>
+          <td class="num">23,177</td>
+          <td class="num"><span class="chg chg-up">&#9650; +10.0%</span></td>
+          <td class="num">22,877</td>
+          <td class="num">23,485</td>
+          <td class="num">0.982</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>reth</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>VALUE_TRANSFER</code></td>
+          <td class="num">0.2516</td>
+          <td class="num">25,165</td>
+          <td class="num"><span class="chg chg-up">&#9650; +20.0%</span></td>
+          <td class="num">24,895</td>
+          <td class="num">25,452</td>
+          <td class="num">0.987</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>besu</td>
+          <td>Contract</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">2.1590</td>
+          <td class="num">215,896</td>
+          <td class="num"><span class="chg chg-up">&#9650; +928.0%</span></td>
+          <td class="num">210,965</td>
+          <td class="num">220,727</td>
+          <td class="num">0.813</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>besu</td>
+          <td>EOA</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">2.1003</td>
+          <td class="num">210,035</td>
+          <td class="num"><span class="chg chg-up">&#9650; +900.0%</span></td>
+          <td class="num">204,936</td>
+          <td class="num">215,018</td>
+          <td class="num">0.814</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr class="worst-case" data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>besu</td>
+          <td>Non-existent</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">2.1161</td>
+          <td class="num">211,608</td>
+          <td class="num"><span class="chg chg-up">&#9650; +908.0%</span></td>
+          <td class="num">206,101</td>
+          <td class="num">216,570</td>
+          <td class="num">0.807</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>besu</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">2.2263</td>
+          <td class="num">222,627</td>
+          <td class="num"><span class="chg chg-up">&#9650; +960.0%</span></td>
+          <td class="num">217,073</td>
+          <td class="num">227,611</td>
+          <td class="num">0.815</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>erigon</td>
+          <td>Contract</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.5229</td>
+          <td class="num">52,290</td>
+          <td class="num"><span class="chg chg-up">&#9650; +149.0%</span></td>
+          <td class="num">48,796</td>
+          <td class="num">55,567</td>
+          <td class="num">0.854</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>erigon</td>
+          <td>EOA</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.5488</td>
+          <td class="num">54,882</td>
+          <td class="num"><span class="chg chg-up">&#9650; +161.0%</span></td>
+          <td class="num">51,563</td>
+          <td class="num">56,336</td>
+          <td class="num">0.867</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>erigon</td>
+          <td>Non-existent</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.5464</td>
+          <td class="num">54,637</td>
+          <td class="num"><span class="chg chg-up">&#9650; +160.0%</span></td>
+          <td class="num">51,215</td>
+          <td class="num">56,205</td>
+          <td class="num">0.854</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>erigon</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.5583</td>
+          <td class="num">55,829</td>
+          <td class="num"><span class="chg chg-up">&#9650; +166.0%</span></td>
+          <td class="num">52,113</td>
+          <td class="num">57,434</td>
+          <td class="num">0.864</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>nethermind</td>
+          <td>Contract</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1216</td>
+          <td class="num">12,162</td>
+          <td class="num"><span class="chg chg-down">&#9660; -42.0%</span></td>
+          <td class="num">11,775</td>
+          <td class="num">12,282</td>
+          <td class="num">0.932</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>nethermind</td>
+          <td>EOA</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.0789</td>
+          <td class="num">7,894</td>
+          <td class="num"><span class="chg chg-down">&#9660; -62.0%</span></td>
+          <td class="num">7,673</td>
+          <td class="num">8,123</td>
+          <td class="num">0.948</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>nethermind</td>
+          <td>Non-existent</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.0795</td>
+          <td class="num">7,951</td>
+          <td class="num"><span class="chg chg-down">&#9660; -62.0%</span></td>
+          <td class="num">7,731</td>
+          <td class="num">8,170</td>
+          <td class="num">0.942</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>nethermind</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1423</td>
+          <td class="num">14,234</td>
+          <td class="num"><span class="chg chg-down">&#9660; -32.0%</span></td>
+          <td class="num">13,934</td>
+          <td class="num">14,385</td>
+          <td class="num">0.971</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract">
+          <td>reth</td>
+          <td>Contract</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1305</td>
+          <td class="num">13,054</td>
+          <td class="num"><span class="chg chg-down">&#9660; -38.0%</span></td>
+          <td class="num">12,627</td>
+          <td class="num">13,532</td>
+          <td class="num">0.902</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_existent">
+          <td>reth</td>
+          <td>EOA</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1241</td>
+          <td class="num">12,412</td>
+          <td class="num"><span class="chg chg-down">&#9660; -41.0%</span></td>
+          <td class="num">12,119</td>
+          <td class="num">12,691</td>
+          <td class="num">0.966</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_nonexistent">
+          <td>reth</td>
+          <td>Non-existent</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1281</td>
+          <td class="num">12,809</td>
+          <td class="num"><span class="chg chg-down">&#9660; -39.0%</span></td>
+          <td class="num">12,546</td>
+          <td class="num">12,872</td>
+          <td class="num">0.973</td>
+          <td class="num">0</td>
+        </tr>
+        
+        
+        <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>reth</td>
+          <td>Contract (jumpdest)</td>
+          <td><code>ZERO_VALUE_TRANSFER</code></td>
+          <td class="num">0.1623</td>
+          <td class="num">16,233</td>
+          <td class="num"><span class="chg chg-down">&#9660; -23.0%</span></td>
+          <td class="num">15,731</td>
+          <td class="num">16,741</td>
+          <td class="num">0.922</td>
+          <td class="num">0</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="repro">
+        
+        Data window:
+        <strong>2026-05-30T00:12:43Z</strong> &rarr; <strong>2026-06-01T23:00:17Z</strong>
+        &middot;
+        benchmarkoor-fetch <code>0.2.0</code>
+        &middot;
+        suite <code>a11611f320a39015</code>
+        &middot;
+        commit <code>53e5aa6</code>
+        &middot;
+        generated <code>2026-06-10T09:22:10+00:00</code>
+      </p>
+      <p class="repro-note">
+        Generated from <code>meta.json</code> at a
+        100 Mgas/s anchor.
+        Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
+      </p>
+    </div>
+  </footer>
+
+  
+<script src="charts.js"></script>
+
+</body>
+</html>
