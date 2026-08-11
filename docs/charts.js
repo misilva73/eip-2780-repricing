@@ -98,9 +98,12 @@
     return CLIENT_COLOR;
   }
 
-  // Render the section's single legend from the shared colour map.
-  function buildChartsLegend() {
-    var host = document.getElementById("charts-legend");
+  // Render a legend from the shared colour map into the given host element.
+  // Called once per legend on the page (the Charts section's shared one, plus a
+  // repeat for the Jumpdest cost section, which is far enough below it after
+  // scrolling to need its own) so every legend stays in sync with one map.
+  function buildChartsLegend(hostId) {
+    var host = document.getElementById(hostId);
     if (!host) return;
     var colors = clientColorMap();
     var clients = Object.keys(colors).sort();
@@ -258,6 +261,66 @@
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
 
+  // Grouped bar chart of the jumpdest-vs-24KB-unique-code gas diff, one tick per
+  // parameter. data is window.DASHBOARD_DATA.jumpdest_diff (see
+  // collect_jumpdest_diff in build_site.py) — diff and its CI are precomputed
+  // there (interval arithmetic across two independent fits), so this just renders
+  // them; no goal/reference line, since there's no EIP-2780 target for this
+  // comparison.
+  var JUMPDEST_DIFF_PARAMS = ["ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"];
+  function plotJumpdestDiff(divId, data) {
+    var div = document.getElementById(divId);
+    if (!div || !window.DASHBOARD_DATA) return;
+
+    var rows = (data && data.rows) || [];
+    if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
+
+    var clients = uniqueSorted(rows, "client_name");
+    var colors = clientColorMap();
+
+    var traces = clients.map(function (client) {
+      var y = [], errHigh = [], errLow = [];
+      JUMPDEST_DIFF_PARAMS.forEach(function (param) {
+        var row = rows.find(function (r) {
+          return r.client_name === client && r.param === param;
+        });
+        var val = row && row.diff != null ? row.diff : null;
+        y.push(val);
+        if (val == null) { errHigh.push(0); errLow.push(0); return; }
+        var hi = row.diff_conf_int_high;
+        var lo = row.diff_conf_int_low;
+        errHigh.push(hi != null ? Math.max(hi - val, 0) : 0);
+        errLow.push(lo != null ? Math.max(val - lo, 0) : 0);
+      });
+      return {
+        type: "bar",
+        name: client,
+        x: JUMPDEST_DIFF_PARAMS,
+        y: y,
+        marker: { color: colors[client] },
+        showlegend: false,
+        error_y: {
+          type: "data",
+          symmetric: false,
+          array: errHigh,
+          arrayminus: errLow,
+          color: "#333",
+          thickness: 1,
+          width: 3
+        }
+      };
+    });
+
+    var layout = theme({
+      barmode: "group",
+      margin: { t: 10, r: 20, b: 50, l: 70 }
+    });
+    Object.assign(layout.xaxis, { title: "Parameter", automargin: true });
+    Object.assign(layout.yaxis, { title: "Proposed gas diff (rounded)" });
+
+    Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
+  }
+
   // Run selector: a custom button + listbox so the font/colors match the page
   // open and closed (a native <select> popup uses the OS font). Each option is a
   // link, so selecting one just navigates to that run's pre-rendered page.
@@ -409,12 +472,14 @@
     initTableFilters();
     initTooltips();
     if (!window.DASHBOARD_DATA) return;
-    buildChartsLegend();
+    buildChartsLegend("charts-legend");
+    buildChartsLegend("jumpdest-legend");
     // One chart per Summary goal row (see collect_goals in build_site.py); div ids
     // are chart-goal-<index>, assigned in the same order by index.html's loop.
     (window.DASHBOARD_DATA.goals && window.DASHBOARD_DATA.goals.rows || []).forEach(
       function (row, i) { plotGoal("chart-goal-" + i, row); }
     );
     plotRsquared("chart-rsquared");
+    plotJumpdestDiff("chart-jumpdest-diff", window.DASHBOARD_DATA.jumpdest_diff);
   });
 })();

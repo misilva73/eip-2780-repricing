@@ -270,6 +270,19 @@
     <h3>Model fit quality (R&sup2;, worse of the two regime fits) per (client, case)</h3>
     <div id="chart-rsquared" class="chart"></div>
   </div>
+</section><section class="charts">
+  <h2>Jumpdest cost</h2>
+  <p class="note" role="note">
+    <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
+    still fit every run. This chart shows its proposed-gas diff against
+    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise closest
+    to in shape — for both parameters, so the cost of the extra <code>JUMP</code> is
+    visible on its own.
+  </p><div id="jumpdest-legend" class="chart-legend" hidden></div>
+  <div class="chart-block">
+    <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
+    <div id="chart-jumpdest-diff" class="chart"></div>
+  </div>
 </section>
 
 
@@ -286,7 +299,7 @@
         &middot;
         suite <code>a11611f320a39015</code>
         &middot;
-        commit <code>53e5aa6</code>
+        commit <code>8bd33cd</code>
         &middot;
         generated <code>2026-06-10T09:22:43+00:00</code>
       </p>

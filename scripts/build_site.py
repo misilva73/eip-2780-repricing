@@ -13,6 +13,7 @@ against a synthetic fixture without touching data/results.json).
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import shutil
@@ -70,12 +71,71 @@ EXCLUDED_CASES = {"diff_to_unique_code_jumpdest_contract", "diff_to_contract"}
 # server-side, so trends.js needs no filter of its own.
 TRENDS_EXCLUDED_CASES = {"diff_to_contract"}
 
+# The two cases behind the dashboard's "Jumpdest cost" chart: the jumpdest contract
+# (excluded from the main charts above, but still fit) against the 24KB-unique-code
+# contract it's otherwise closest to in shape. Both are present in every run's
+# new_gas regardless of EXCLUDED_CASES — that set is a render filter, not an
+# analysis one — so collect_jumpdest_diff() reads the raw new_gas, not `charted`.
+JUMPDEST_CASE = "diff_to_unique_code_jumpdest_contract"
+JUMPDEST_BASELINE_CASE = "diff_to_contract_diff_max"
+
 # summary key -> param name, mirroring analysis.py build_summary().
 SUMMARY_PARAMS = {
     "zero_value_transfer": "ZERO_VALUE_TRANSFER",
     "value_transfer": "VALUE_TRANSFER",
     "tx_value_cost": "TX_VALUE_COST",
 }
+
+
+def fix_tx_value_cost_ci(new_gas_rows: list) -> list:
+    """Recompute TX_VALUE_COST's CI bounds in new_gas from its own ZERO_VALUE_TRANSFER
+    / VALUE_TRANSFER rows, by proper statistical error propagation (margins combine
+    in quadrature) instead of the interval-arithmetic formula older analysis.py runs
+    stored (straight addition of the two CI widths — a worst-case bound, not the
+    statistically expected one). Point values (new_gas / new_gas_rounded) are left
+    untouched, so this only tightens the CI columns; it doesn't change any headline
+    number. Applied here rather than by re-running analyze, so already-archived runs
+    get the fix too — their raw parquet is gone, so they can't be re-analyzed, but
+    their ZERO_VALUE_TRANSFER / VALUE_TRANSFER CIs are already all TX_VALUE_COST's
+    fix needs.
+    """
+    by_key: dict = {}
+    for row in new_gas_rows:
+        if row.get("param") in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"):
+            by_key[(row.get("client_name"), row.get("case_id"), row["param"])] = row
+
+    fixed: list = []
+    for row in new_gas_rows:
+        if row.get("param") != "TX_VALUE_COST":
+            fixed.append(row)
+            continue
+        key = (row.get("client_name"), row.get("case_id"))
+        zero = by_key.get((*key, "ZERO_VALUE_TRANSFER"))
+        value = by_key.get((*key, "VALUE_TRANSFER"))
+        if (
+            not zero
+            or not value
+            or zero.get("new_gas_conf_int_low") is None
+            or value.get("new_gas_conf_int_low") is None
+        ):
+            fixed.append(row)
+            continue
+        zero_margin = (
+            zero["new_gas_conf_int_high"] - zero["new_gas_conf_int_low"]
+        ) / 2
+        value_margin = (
+            value["new_gas_conf_int_high"] - value["new_gas_conf_int_low"]
+        ) / 2
+        gas_margin = math.sqrt(zero_margin**2 + value_margin**2)
+        new_gas = row["new_gas_rounded"]
+        fixed.append(
+            {
+                **row,
+                "new_gas_conf_int_low": max(new_gas - gas_margin, 0),
+                "new_gas_conf_int_high": max(new_gas + gas_margin, 0),
+            }
+        )
+    return fixed
 
 
 def included_rows(rows: list, excluded: set = EXCLUDED_CASES) -> list:
@@ -324,6 +384,61 @@ def collect_goals(new_gas_rows: list) -> dict:
         "components": [{"name": n, "value": v} for n, v in GOAL_COMPONENTS],
         "mid_margin_pct": int(GOAL_MID_MARGIN * 100),
     }
+
+
+def collect_jumpdest_diff(new_gas_rows: list) -> dict:
+    """Per-client, per-param gas diff: jumpdest contract minus the 24KB-unique-code
+    contract, for ZERO_VALUE_TRANSFER and VALUE_TRANSFER.
+
+    The two cases are independent NNLS fits, so — as with TX_VALUE_COST in
+    analysis.py — the diff's CI is propagated by proper statistical error
+    propagation: each case's own new_gas CI is symmetric around its estimate, so
+    half its width is that case's own margin of error, and the two independent
+    margins combine in quadrature (sqrt of the sum of squares), not by straight
+    interval-arithmetic addition (which is the worst-case bound, not the
+    statistically expected one). Unlike TX_VALUE_COST this is *not* clamped at 0:
+    the sign is the point here (does the extra JUMP cost more or less than the
+    plain 24KB case), not noise to discard.
+    """
+    by_key: dict = {}
+    for row in new_gas_rows:
+        case = row.get("case_id")
+        param = row.get("param")
+        client = row.get("client_name")
+        if case not in (JUMPDEST_CASE, JUMPDEST_BASELINE_CASE):
+            continue
+        if param not in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER") or not client:
+            continue
+        by_key[(case, param, client)] = row
+
+    clients = sorted(
+        {row.get("client_name") for row in new_gas_rows if row.get("client_name")}
+    )
+    rows: list = []
+    for param in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"):
+        for client in clients:
+            jd = by_key.get((JUMPDEST_CASE, param, client))
+            base = by_key.get((JUMPDEST_BASELINE_CASE, param, client))
+            if jd is None or base is None:
+                continue
+            diff = jd["new_gas_rounded"] - base["new_gas_rounded"]
+            jd_margin = (
+                jd["new_gas_conf_int_high"] - jd["new_gas_conf_int_low"]
+            ) / 2
+            base_margin = (
+                base["new_gas_conf_int_high"] - base["new_gas_conf_int_low"]
+            ) / 2
+            diff_margin = math.sqrt(jd_margin**2 + base_margin**2)
+            rows.append(
+                {
+                    "param": param,
+                    "client_name": client,
+                    "diff": diff,
+                    "diff_conf_int_low": diff - diff_margin,
+                    "diff_conf_int_high": diff + diff_margin,
+                }
+            )
+    return {"rows": rows}
 
 
 def git_commit() -> str:
@@ -591,7 +706,7 @@ def main() -> None:
         # The Summary section and the worst-case highlight are re-derived from the
         # non-excluded cases (see EXCLUDED_CASES) so they agree with the charts; the
         # sibling detail pages still render every row of `new_gas` / `results`.
-        new_gas = data.get("new_gas", []) or []
+        new_gas = fix_tx_value_cost_ci(data.get("new_gas", []) or [])
         charted = included_rows(new_gas)
         worst_case_overall = rebuild_worst_cases(new_gas)
         context = {
@@ -599,6 +714,7 @@ def main() -> None:
             "meta": data.get("meta", {}) or {},
             "summary_new_gas": charted,
             "goals": collect_goals(charted),
+            "jumpdest_diff": collect_jumpdest_diff(new_gas),
             "worst_case_by_case": data.get("worst_case_by_case", []),
             "summary": rebuild_summary(
                 worst_case_overall, data.get("summary", {}) or {}
@@ -616,12 +732,21 @@ def main() -> None:
         written.append(out_path)
 
         # Embed the run's data verbatim so charts.js can read it without a fetch().
-        # "goals" is added on top (not part of the archived run JSON) so charts.js
-        # can build one chart per goal row without recomputing collect_goals() in JS.
+        # "new_gas" overrides the archived copy with the CI-corrected one (see
+        # fix_tx_value_cost_ci); "goals" and "jumpdest_diff" are added on top (not
+        # part of the archived run JSON) so charts.js can plot them without
+        # recomputing collect_goals() / collect_jumpdest_diff() in JS.
         data_js = SITE_DIR / entry["data_file"]
         data_js.write_text(
             "window.DASHBOARD_DATA = "
-            + json.dumps({**data, "goals": context["goals"]})
+            + json.dumps(
+                {
+                    **data,
+                    "new_gas": new_gas,
+                    "goals": context["goals"],
+                    "jumpdest_diff": context["jumpdest_diff"],
+                }
+            )
             + ";\n",
             encoding="utf-8",
         )

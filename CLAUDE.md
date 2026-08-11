@@ -121,9 +121,15 @@ Requires `make`, `jq`, Python 3.11+.
   `ZERO_VALUE_TRANSFER` and `VALUE_TRANSFER` both reference `TX_BASE` (21000 — a
   value transfer never paid a separate flat charge), and the derived
   `TX_VALUE_COST` (`VALUE_TRANSFER − ZERO_VALUE_TRANSFER`, clamped ≥0; CI via
-  interval arithmetic on the two independent fits) references `VALUE_GAS_CURRENT`
-  (9000). Note `VALUE_TRANSFER` is now fit directly (the value-subset opcount
-  slope), not summed as `TX_BASE + VALUE_GAS`.
+  proper statistical error propagation — the two independent fits' own CI margins
+  combine in quadrature (`sqrt(a² + b²)`), not by interval arithmetic, which sums
+  the two margins and overstates the diff's uncertainty) references
+  `VALUE_GAS_CURRENT` (9000). Note `VALUE_TRANSFER` is now fit directly (the
+  value-subset opcount slope), not summed as `TX_BASE + VALUE_GAS`.
+  `build_site.py`'s `fix_tx_value_cost_ci` re-derives `TX_VALUE_COST`'s CI (not its
+  point value) the same way from each run's own `ZERO_VALUE_TRANSFER` /
+  `VALUE_TRANSFER` rows, so already-archived runs get the corrected CI too even
+  though their raw parquet (and so re-analysis) is gone.
 - **The Summary section is one table: goal targets per client**
   (`collect_goals` in [build_site.py](scripts/build_site.py), modelled on the
   eip-8038 Goals page). **One row per `GOAL_SPECS` entry** — five goals, each a sum
@@ -183,6 +189,17 @@ Requires `make`, `jq`, Python 3.11+.
     which ranks over every case), so trends.js needs no filter of its own.
   - `charts.js` carries a copy of `EXCLUDED_CASES` for the client-side chart filter
     — keep it in sync with the Python set.
+  - The dashboard's **"Jumpdest cost"** section (below Charts) is specifically
+    *about* the excluded `diff_to_unique_code_jumpdest_contract` case: a bar chart
+    of its proposed-gas diff against `diff_to_contract_diff_max` (the case it's
+    otherwise closest to in shape), per param, no goal line. `collect_jumpdest_diff`
+    in build_site.py reads the **raw** (unfiltered) `new_gas`, since its one case is
+    excluded from `charted`, and propagates the diff's CI the same way
+    `TX_VALUE_COST` does (margins combine in quadrature) — but leaves it unclamped,
+    since the sign is the point (does the extra `JUMP` cost more or less). Rendered
+    by `plotJumpdestDiff` in charts.js; has its own repeated client legend
+    (`#jumpdest-legend`, via `buildChartsLegend(hostId)`) since the section sits far
+    enough below the Charts section's shared one to need a nearby copy.
   Because nothing is baked into the data, the exclusions apply to **every archived
   run page**, and emptying the sets + `make site` fully reverts them. Verified: on
   runs where no excluded case was binding, the rebuilt summary is byte-identical to

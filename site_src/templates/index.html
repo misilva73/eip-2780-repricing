@@ -231,6 +231,34 @@
   </div>
 </section>
 
+{#- ---- 3. Jumpdest cost ----
+    diff_to_unique_code_jumpdest_contract is excluded from the charts/Summary above
+    (see the scope note near the top of the page) but still fit every run. This
+    section is specifically about that case: how much the extra JUMP costs relative
+    to the 24KB-unique-code contract it's otherwise closest to in shape. Data comes
+    from collect_jumpdest_diff() in build_site.py, embedded as
+    window.DASHBOARD_DATA.jumpdest_diff; no goal line here — there's no EIP-2780
+    target for this comparison, just the measured diff with its 95% CI. -#}
+<section class="charts">
+  <h2>Jumpdest cost</h2>
+  <p class="note" role="note">
+    <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
+    still fit every run. This chart shows its proposed-gas diff against
+    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise closest
+    to in shape — for both parameters, so the cost of the extra <code>JUMP</code> is
+    visible on its own.
+  </p>
+  {#- This section sits below the Charts section's shared legend, far enough away
+      after scrolling that repeating it here is worth the duplication. Same colour
+      map (buildChartsLegend renders into every host it's given), so a client's
+      colour matches the one above. -#}
+  <div id="jumpdest-legend" class="chart-legend" hidden></div>
+  <div class="chart-block">
+    <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
+    <div id="chart-jumpdest-diff" class="chart"></div>
+  </div>
+</section>
+
 {% endblock %}
 
 {% block scripts %}

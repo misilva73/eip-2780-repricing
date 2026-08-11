@@ -719,23 +719,30 @@ def build_new_gas_df(results_df: pd.DataFrame) -> pd.DataFrame:
     # Derived param TX_VALUE_COST = VALUE_TRANSFER - ZERO_VALUE_TRANSFER, the
     # marginal cost of moving value. The two slopes now come from INDEPENDENT fits
     # (different data subsets), so — unlike the old summed VALUE_TRANSFER, which
-    # added paired-bootstrap coefficients from one fit — uncertainties add rather
-    # than partially cancel. We propagate by interval arithmetic on the difference
-    # and clamp at 0: a value transfer modeled as cheaper than a plain one is noise,
-    # not a negative gas cost. pvalue is the max of the two (insignificant if either
-    # regime is); rsquared is the min (most conservative for the caveat checks).
+    # added paired-bootstrap coefficients from one fit — uncertainties don't cancel.
+    # We propagate by proper statistical error propagation, not interval arithmetic:
+    # each fit's own CI is symmetric around its estimate (statsmodels' conf_int() is
+    # coef +/- t*SE), so half its width is that fit's own margin of error, and two
+    # independent margins combine in quadrature (sqrt of the sum of squares) rather
+    # than adding linearly — straight addition is the worst-case bound, which
+    # overstates the diff's uncertainty when the two errors aren't perfectly
+    # correlated. The point estimate and final bounds are clamped at 0: a value
+    # transfer modeled as cheaper than a plain one is noise, not a negative gas cost.
+    # pvalue is the max of the two (insignificant if either regime is); rsquared is
+    # the min (most conservative for the caveat checks).
     vc = results_df[["client_name", "case_id"]].copy()
-    vc["runtime_ms"] = (results_df["with_slope"] - results_df["without_slope"]).clip(
-        lower=0
-    )
-    vc["conf_int_low"] = (
-        results_df["with_slope_conf_int_low"]
-        - results_df["without_slope_conf_int_high"]
-    ).clip(lower=0)
-    vc["conf_int_high"] = (
-        results_df["with_slope_conf_int_high"]
+    diff = results_df["with_slope"] - results_df["without_slope"]
+    without_margin = (
+        results_df["without_slope_conf_int_high"]
         - results_df["without_slope_conf_int_low"]
-    ).clip(lower=0)
+    ) / 2
+    with_margin = (
+        results_df["with_slope_conf_int_high"] - results_df["with_slope_conf_int_low"]
+    ) / 2
+    diff_margin = np.sqrt(with_margin**2 + without_margin**2)
+    vc["runtime_ms"] = diff.clip(lower=0)
+    vc["conf_int_low"] = (diff - diff_margin).clip(lower=0)
+    vc["conf_int_high"] = (diff + diff_margin).clip(lower=0)
     vc["pvalue"] = results_df[["without_slope_pvalue", "with_slope_pvalue"]].max(axis=1)
     vc["rsquared"] = results_df[["without_rsquared", "with_rsquared"]].min(axis=1)
     vc["param"] = "TX_VALUE_COST"
