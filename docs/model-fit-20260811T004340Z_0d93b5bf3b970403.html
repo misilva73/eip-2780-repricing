@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Model fit detail &middot; EIP-2780 Repricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-title" href="index.html">EIP-2780 Repricing</a>
+      <nav class="site-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="detail.html">Detail</a>
+        <a href="model-fit.html" class="active">Model Fit</a>
+        <a href="trends.html">Trends</a>
+        <a href="methodology.html">Methodology</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    
+
+
+<div class="run-bar run-bar-older">
+  <span class="run-bar-label">Viewing run</span>
+  
+  <div class="run-dropdown" data-run-dropdown>
+    <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+      <span class="run-dropdown-current">2026-08-11 00:43</span>
+      <span class="run-dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
+      <li role="option" aria-selected="false">
+        <a href="model-fit.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-12 00:03 (latest)</a>
+      </li>
+      <li role="option" aria-selected="true">
+        <a href="model-fit-20260811T004340Z_0d93b5bf3b970403.html" class="run-dropdown-option is-current"
+           tabindex="-1">2026-08-11 00:43</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260720T165222Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-20 16:52</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260707T075028Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-07 07:50</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260701T233045Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-07-01 23:30</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260623T085946Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-23 08:59</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="model-fit-20260615T034251Z_d88b18464da7445e.html" class="run-dropdown-option"
+           tabindex="-1">2026-06-15 03:42</a>
+      </li>
+    </ul>
+  </div>
+  <noscript>
+    <span class="run-dropdown-noscript"><a href="model-fit.html">2026-08-12 00:03 (latest)</a><a href="model-fit-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="model-fit-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="model-fit-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="model-fit-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="model-fit-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
+    </span>
+  </noscript>
+  
+  <span class="run-bar-meta">older run &middot; latest of 7</span>
+</div>
+
+
+<section class="hero">
+  <h1>Model fit detail</h1>
+  <p class="lede">
+    The underlying NNLS fit behind every row on the
+    <a href="run-20260811T004340Z_0d93b5bf3b970403.html">dashboard</a> and its
+    <a href="detail-20260811T004340Z_0d93b5bf3b970403.html">proposed gas detail page</a>: each <code>(client, case)</code>
+    is two independent fits &mdash; one on the zero-value transfers, one on the value
+    transfers &mdash; so each regime has its own slope
+    (&rarr; <code>ZERO_VALUE_TRANSFER</code> / <code>VALUE_TRANSFER</code>).
+  </p>
+</section>
+
+
+
+<section class="detail" id="model-fit-detail">
+  <div class="table-filters" data-table-filters>
+    <label class="table-filter">
+      <span>Client</span>
+      <select data-filter-key="client">
+        <option value="">All clients</option>
+        <option value="besu">besu</option><option value="geth">geth</option><option value="reth">reth</option>
+      </select>
+    </label>
+    <label class="table-filter">
+      <span>Case</span>
+      <select data-filter-key="case">
+        <option value="">All cases</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_contract_diff_max">Contract (24KB, unique code)</option><option value="diff_to_contract_minimal">Contract (minimal)</option><option value="diff_to_contract_same_max">Contract (24KB, same code)</option><option value="diff_to_delegated_contract_diff">Delegated (24KB, unique code)</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_self">Self</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
+      </select>
+    </label>
+    <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
+  </div>
+  <p class="table-scroll-hint" role="note">&harr; Scroll horizontally to see all columns.</p>
+  <div class="table-scroll">
+    <table class="data-table" data-filter-table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Case</th>
+          <th class="num">nobs (zero / value)</th>
+          <th class="num">R&sup2; zero</th>
+          <th class="num">R&sup2; value</th>
+          <th class="num">slope zero</th>
+          <th class="num">slope CI zero</th>
+          <th class="num">p zero</th>
+          <th class="num">slope value</th>
+          <th class="num">slope CI value</th>
+          <th class="num">p value</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr data-client="besu" data-case="diff_to_contract">
+          <td>besu</td>
+          <td>Contract</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.994</td>
+          <td class="num">0.987</td>
+          <td class="num">0.122031</td>
+          <td class="num">0.11875 &ndash; 0.125584</td>
+          <td class="num">0</td>
+          <td class="num">0.202962</td>
+          <td class="num">0.194723 &ndash; 0.211934</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_contract_diff_max">
+          <td>besu</td>
+          <td>Contract (24KB, unique code)</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.992</td>
+          <td class="num">0.987</td>
+          <td class="num">0.125371</td>
+          <td class="num">0.121625 &ndash; 0.128603</td>
+          <td class="num">0</td>
+          <td class="num">0.16092</td>
+          <td class="num">0.155841 &ndash; 0.166839</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_contract_minimal">
+          <td>besu</td>
+          <td>Contract (minimal)</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.990</td>
+          <td class="num">0.974</td>
+          <td class="num">0.11353</td>
+          <td class="num">0.109297 &ndash; 0.117243</td>
+          <td class="num">0</td>
+          <td class="num">0.155925</td>
+          <td class="num">0.148043 &ndash; 0.165457</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_contract_same_max">
+          <td>besu</td>
+          <td>Contract (24KB, same code)</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.992</td>
+          <td class="num">0.982</td>
+          <td class="num">0.113212</td>
+          <td class="num">0.109553 &ndash; 0.116633</td>
+          <td class="num">0</td>
+          <td class="num">0.161719</td>
+          <td class="num">0.154066 &ndash; 0.169527</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_delegated_contract_diff">
+          <td>besu</td>
+          <td>Delegated (24KB, unique code)</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.994</td>
+          <td class="num">0.990</td>
+          <td class="num">0.121371</td>
+          <td class="num">0.118075 &ndash; 0.124565</td>
+          <td class="num">0</td>
+          <td class="num">0.153831</td>
+          <td class="num">0.149083 &ndash; 0.157706</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_existent">
+          <td>besu</td>
+          <td>EOA</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.987</td>
+          <td class="num">0.981</td>
+          <td class="num">0.11957</td>
+          <td class="num">0.11518 &ndash; 0.124237</td>
+          <td class="num">0</td>
+          <td class="num">0.178879</td>
+          <td class="num">0.170322 &ndash; 0.186797</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_nonexistent">
+          <td>besu</td>
+          <td>Non-existent</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.987</td>
+          <td class="num">0.987</td>
+          <td class="num">0.120181</td>
+          <td class="num">0.116302 &ndash; 0.124732</td>
+          <td class="num">0</td>
+          <td class="num">0.304313</td>
+          <td class="num">0.294092 &ndash; 0.316822</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_self">
+          <td>besu</td>
+          <td>Self</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.986</td>
+          <td class="num">0.985</td>
+          <td class="num">0.0974901</td>
+          <td class="num">0.0926374 &ndash; 0.102108</td>
+          <td class="num">0</td>
+          <td class="num">0.100606</td>
+          <td class="num">0.0963724 &ndash; 0.104515</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="besu" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>besu</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">33 / 33</td>
+          <td class="num">0.993</td>
+          <td class="num">0.987</td>
+          <td class="num">0.13228</td>
+          <td class="num">0.128048 &ndash; 0.136524</td>
+          <td class="num">0</td>
+          <td class="num">0.165495</td>
+          <td class="num">0.158183 &ndash; 0.17278</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_contract">
+          <td>geth</td>
+          <td>Contract</td>
+          <td class="num">43 / 43</td>
+          <td class="num">0.979</td>
+          <td class="num">0.995</td>
+          <td class="num">0.0986542</td>
+          <td class="num">0.0949604 &ndash; 0.102758</td>
+          <td class="num">0</td>
+          <td class="num">0.18713</td>
+          <td class="num">0.183671 &ndash; 0.19031</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_contract_diff_max">
+          <td>geth</td>
+          <td>Contract (24KB, unique code)</td>
+          <td class="num">44 / 44</td>
+          <td class="num">0.991</td>
+          <td class="num">0.987</td>
+          <td class="num">0.0980087</td>
+          <td class="num">0.0946246 &ndash; 0.101069</td>
+          <td class="num">0</td>
+          <td class="num">0.12513</td>
+          <td class="num">0.12068 &ndash; 0.129697</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_contract_minimal">
+          <td>geth</td>
+          <td>Contract (minimal)</td>
+          <td class="num">42 / 44</td>
+          <td class="num">0.981</td>
+          <td class="num">0.988</td>
+          <td class="num">0.0803265</td>
+          <td class="num">0.0761179 &ndash; 0.0842062</td>
+          <td class="num">0</td>
+          <td class="num">0.126181</td>
+          <td class="num">0.122044 &ndash; 0.130458</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_contract_same_max">
+          <td>geth</td>
+          <td>Contract (24KB, same code)</td>
+          <td class="num">43 / 44</td>
+          <td class="num">0.978</td>
+          <td class="num">0.989</td>
+          <td class="num">0.0793893</td>
+          <td class="num">0.0755716 &ndash; 0.0833442</td>
+          <td class="num">0</td>
+          <td class="num">0.126523</td>
+          <td class="num">0.12209 &ndash; 0.130493</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_delegated_contract_diff">
+          <td>geth</td>
+          <td>Delegated (24KB, unique code)</td>
+          <td class="num">43 / 43</td>
+          <td class="num">0.968</td>
+          <td class="num">0.966</td>
+          <td class="num">0.0921562</td>
+          <td class="num">0.0869899 &ndash; 0.0974609</td>
+          <td class="num">0</td>
+          <td class="num">0.120276</td>
+          <td class="num">0.113202 &ndash; 0.126976</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_existent">
+          <td>geth</td>
+          <td>EOA</td>
+          <td class="num">44 / 43</td>
+          <td class="num">0.988</td>
+          <td class="num">0.988</td>
+          <td class="num">0.0871185</td>
+          <td class="num">0.0838724 &ndash; 0.090023</td>
+          <td class="num">0</td>
+          <td class="num">0.143074</td>
+          <td class="num">0.138178 &ndash; 0.147249</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_nonexistent">
+          <td>geth</td>
+          <td>Non-existent</td>
+          <td class="num">44 / 44</td>
+          <td class="num">0.987</td>
+          <td class="num">0.902</td>
+          <td class="num">0.0992061</td>
+          <td class="num">0.0952299 &ndash; 0.102957</td>
+          <td class="num">0</td>
+          <td class="num">0.192955</td>
+          <td class="num">0.18131 &ndash; 0.206741</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_self">
+          <td>geth</td>
+          <td>Self</td>
+          <td class="num">44 / 41</td>
+          <td class="num">0.984</td>
+          <td class="num">0.987</td>
+          <td class="num">0.0724706</td>
+          <td class="num">0.0701089 &ndash; 0.0746952</td>
+          <td class="num">0</td>
+          <td class="num">0.071185</td>
+          <td class="num">0.0683454 &ndash; 0.0735497</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="geth" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>geth</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">43 / 43</td>
+          <td class="num">0.992</td>
+          <td class="num">0.992</td>
+          <td class="num">0.103396</td>
+          <td class="num">0.0998869 &ndash; 0.106139</td>
+          <td class="num">0</td>
+          <td class="num">0.154849</td>
+          <td class="num">0.149637 &ndash; 0.159145</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_contract">
+          <td>reth</td>
+          <td>Contract</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.972</td>
+          <td class="num">0.953</td>
+          <td class="num">0.0442727</td>
+          <td class="num">0.0425372 &ndash; 0.0463788</td>
+          <td class="num">0</td>
+          <td class="num">0.0688089</td>
+          <td class="num">0.0649102 &ndash; 0.072451</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_contract_diff_max">
+          <td>reth</td>
+          <td>Contract (24KB, unique code)</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.988</td>
+          <td class="num">0.990</td>
+          <td class="num">0.068199</td>
+          <td class="num">0.066418 &ndash; 0.0701756</td>
+          <td class="num">0</td>
+          <td class="num">0.0971595</td>
+          <td class="num">0.0942793 &ndash; 0.0999202</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_contract_minimal">
+          <td>reth</td>
+          <td>Contract (minimal)</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.963</td>
+          <td class="num">0.961</td>
+          <td class="num">0.0461157</td>
+          <td class="num">0.0437172 &ndash; 0.0487463</td>
+          <td class="num">0</td>
+          <td class="num">0.0768885</td>
+          <td class="num">0.0728846 &ndash; 0.0809493</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_contract_same_max">
+          <td>reth</td>
+          <td>Contract (24KB, same code)</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.965</td>
+          <td class="num">0.967</td>
+          <td class="num">0.0465246</td>
+          <td class="num">0.0440885 &ndash; 0.049135</td>
+          <td class="num">0</td>
+          <td class="num">0.0718976</td>
+          <td class="num">0.0677766 &ndash; 0.075752</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_delegated_contract_diff">
+          <td>reth</td>
+          <td>Delegated (24KB, unique code)</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.993</td>
+          <td class="num">0.991</td>
+          <td class="num">0.0628053</td>
+          <td class="num">0.0613746 &ndash; 0.0642022</td>
+          <td class="num">0</td>
+          <td class="num">0.0886417</td>
+          <td class="num">0.0861202 &ndash; 0.0913383</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_existent">
+          <td>reth</td>
+          <td>EOA</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.951</td>
+          <td class="num">0.973</td>
+          <td class="num">0.0406961</td>
+          <td class="num">0.0382542 &ndash; 0.0432139</td>
+          <td class="num">0</td>
+          <td class="num">0.0725025</td>
+          <td class="num">0.0697586 &ndash; 0.0757309</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_nonexistent">
+          <td>reth</td>
+          <td>Non-existent</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.974</td>
+          <td class="num">0.864</td>
+          <td class="num">0.0422103</td>
+          <td class="num">0.0403934 &ndash; 0.0438622</td>
+          <td class="num">0</td>
+          <td class="num">0.0933175</td>
+          <td class="num">0.0826659 &ndash; 0.104897</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_self">
+          <td>reth</td>
+          <td>Self</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.945</td>
+          <td class="num">0.938</td>
+          <td class="num">0.0413152</td>
+          <td class="num">0.038225 &ndash; 0.0440428</td>
+          <td class="num">0</td>
+          <td class="num">0.0400637</td>
+          <td class="num">0.0371682 &ndash; 0.0432479</td>
+          <td class="num">0</td>
+        </tr>
+        
+        <tr data-client="reth" data-case="diff_to_unique_code_jumpdest_contract">
+          <td>reth</td>
+          <td>Contract (jumpdest)</td>
+          <td class="num">55 / 55</td>
+          <td class="num">0.991</td>
+          <td class="num">0.994</td>
+          <td class="num">0.0683556</td>
+          <td class="num">0.0668537 &ndash; 0.0699862</td>
+          <td class="num">0</td>
+          <td class="num">0.0955581</td>
+          <td class="num">0.0933852 &ndash; 0.0976737</td>
+          <td class="num">0</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    p-values are bootstrap boundary tests, not conventional two-sided p-values: each
+    is the fraction of resamples in which the coefficient collapses to zero, so a
+    strong, clearly non-zero driver reads <strong>0</strong>. See the
+    <a href="methodology.html#nnls">methodology</a> for details; the confidence
+    intervals are the better guide to precision.
+  </p>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="repro">
+        
+        Data window:
+        <strong>2026-08-09T06:11:24Z</strong> &rarr; <strong>2026-08-11T00:43:40Z</strong>
+        &middot;
+        benchmarkoor-fetch <code>0.2.0</code>
+        &middot;
+        suite <code>0d93b5bf3b970403</code>
+        &middot;
+        commit <code>ceadc5d</code>
+        &middot;
+        generated <code>2026-08-11T15:58:36+00:00</code>
+      </p>
+      <p class="repro-note">
+        Generated from <code>meta.json</code> at a
+        100 Mgas/s anchor.
+        Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
+      </p>
+    </div>
+  </footer>
+
+  
+<script src="charts.js"></script>
+
+</body>
+</html>

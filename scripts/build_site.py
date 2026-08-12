@@ -60,10 +60,23 @@ def case_label(case_id: str) -> str:
 # Cases kept out of the dashboard's charts, its Summary section and the worst-case
 # highlight — but still fit by analysis.py and still listed in full in both detail
 # tables. This is a presentation filter only: results.json / data/runs/*.json are
-# untouched, so the exclusion applies uniformly to every archived run page (older
-# runs included) and can be reverted by emptying this set and re-running `make site`.
-# charts.js carries the same set for the client-side chart filtering — keep in sync.
+# untouched, so the exclusion can be reverted by emptying this set and re-running
+# `make site`. diff_to_contract is only actually dropped on runs that also have the
+# size/uniqueness contract variants below — see excluded_cases_for(). charts.js
+# reads the per-run result via DASHBOARD_DATA.excluded_cases rather than carrying
+# its own copy.
 EXCLUDED_CASES = {"diff_to_unique_code_jumpdest_contract", "diff_to_contract"}
+
+# The three size/uniqueness contract variants (added in suite 0d93b5bf3b970403).
+# Once a run has these, plain diff_to_contract is redundant with
+# diff_to_contract_diff_max and is dropped like the rest of EXCLUDED_CASES. Older
+# runs (d88b18464da7445e and earlier) predate these variants, so diff_to_contract
+# is their only contract-shaped case — see excluded_cases_for().
+CONTRACT_VARIANT_CASES = {
+    "diff_to_contract_minimal",
+    "diff_to_contract_same_max",
+    "diff_to_contract_diff_max",
+}
 
 # The Trends page has its own, smaller exclusion set: it drops diff_to_contract but
 # still charts the jumpdest case, so the two surfaces differ on purpose. Applied in
@@ -72,12 +85,16 @@ EXCLUDED_CASES = {"diff_to_unique_code_jumpdest_contract", "diff_to_contract"}
 TRENDS_EXCLUDED_CASES = {"diff_to_contract"}
 
 # The two cases behind the dashboard's "Jumpdest cost" chart: the jumpdest contract
-# (excluded from the main charts above, but still fit) against the 24KB-unique-code
-# contract it's otherwise closest to in shape. Both are present in every run's
-# new_gas regardless of EXCLUDED_CASES — that set is a render filter, not an
-# analysis one — so collect_jumpdest_diff() reads the raw new_gas, not `charted`.
+# (excluded from the main charts above, but still fit) against the contract case
+# it's otherwise closest to in shape. Both are present in every run's new_gas
+# regardless of EXCLUDED_CASES — that set is a render filter, not an analysis one —
+# so collect_jumpdest_diff() reads the raw new_gas, not `charted`. Older archived
+# runs (suite d88b18464da7445e and earlier) predate the 24KB-variant cases, so
+# JUMPDEST_BASELINE_CASE falls back to the plain contract case — see
+# collect_jumpdest_diff().
 JUMPDEST_CASE = "diff_to_unique_code_jumpdest_contract"
 JUMPDEST_BASELINE_CASE = "diff_to_contract_diff_max"
+JUMPDEST_BASELINE_FALLBACK = "diff_to_contract"
 
 # summary key -> param name, mirroring analysis.py build_summary().
 SUMMARY_PARAMS = {
@@ -136,6 +153,18 @@ def fix_tx_value_cost_ci(new_gas_rows: list) -> list:
             }
         )
     return fixed
+
+
+def excluded_cases_for(new_gas_rows: list) -> set:
+    """EXCLUDED_CASES, minus diff_to_contract on runs that predate the
+    size/uniqueness contract variants (see CONTRACT_VARIANT_CASES) — those runs
+    have no other contract-shaped case, so dropping diff_to_contract there would
+    leave the Contract shape with no data at all instead of just the
+    now-redundant plain case."""
+    available = {row.get("case_id") for row in new_gas_rows}
+    if available & CONTRACT_VARIANT_CASES:
+        return EXCLUDED_CASES
+    return EXCLUDED_CASES - {"diff_to_contract"}
 
 
 def included_rows(rows: list, excluded: set = EXCLUDED_CASES) -> list:
@@ -387,8 +416,13 @@ def collect_goals(new_gas_rows: list) -> dict:
 
 
 def collect_jumpdest_diff(new_gas_rows: list) -> dict:
-    """Per-client, per-param gas diff: jumpdest contract minus the 24KB-unique-code
-    contract, for ZERO_VALUE_TRANSFER and VALUE_TRANSFER.
+    """Per-client, per-param gas diff: jumpdest contract minus its closest-in-shape
+    contract case, for ZERO_VALUE_TRANSFER and VALUE_TRANSFER.
+
+    The baseline is JUMPDEST_BASELINE_CASE (the 24KB-unique-code contract) when
+    the run has it, else JUMPDEST_BASELINE_FALLBACK (the plain contract case) —
+    runs on older suites (d88b18464da7445e and earlier) predate the 24KB-variant
+    cases, so JUMPDEST_BASELINE_CASE is simply absent from their new_gas.
 
     The two cases are independent NNLS fits, so — as with TX_VALUE_COST in
     analysis.py — the diff's CI is propagated by proper statistical error
@@ -398,14 +432,21 @@ def collect_jumpdest_diff(new_gas_rows: list) -> dict:
     interval-arithmetic addition (which is the worst-case bound, not the
     statistically expected one). Unlike TX_VALUE_COST this is *not* clamped at 0:
     the sign is the point here (does the extra JUMP cost more or less than the
-    plain 24KB case), not noise to discard.
+    baseline case), not noise to discard.
     """
+    available_cases = {row.get("case_id") for row in new_gas_rows}
+    baseline_case = (
+        JUMPDEST_BASELINE_CASE
+        if JUMPDEST_BASELINE_CASE in available_cases
+        else JUMPDEST_BASELINE_FALLBACK
+    )
+
     by_key: dict = {}
     for row in new_gas_rows:
         case = row.get("case_id")
         param = row.get("param")
         client = row.get("client_name")
-        if case not in (JUMPDEST_CASE, JUMPDEST_BASELINE_CASE):
+        if case not in (JUMPDEST_CASE, baseline_case):
             continue
         if param not in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER") or not client:
             continue
@@ -418,7 +459,7 @@ def collect_jumpdest_diff(new_gas_rows: list) -> dict:
     for param in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"):
         for client in clients:
             jd = by_key.get((JUMPDEST_CASE, param, client))
-            base = by_key.get((JUMPDEST_BASELINE_CASE, param, client))
+            base = by_key.get((baseline_case, param, client))
             if jd is None or base is None:
                 continue
             diff = jd["new_gas_rounded"] - base["new_gas_rounded"]
@@ -438,7 +479,11 @@ def collect_jumpdest_diff(new_gas_rows: list) -> dict:
                     "diff_conf_int_high": diff + diff_margin,
                 }
             )
-    return {"rows": rows}
+    return {
+        "rows": rows,
+        "baseline_case": baseline_case,
+        "baseline_label": case_label(baseline_case),
+    }
 
 
 def git_commit() -> str:
@@ -707,8 +752,9 @@ def main() -> None:
         # non-excluded cases (see EXCLUDED_CASES) so they agree with the charts; the
         # sibling detail pages still render every row of `new_gas` / `results`.
         new_gas = fix_tx_value_cost_ci(data.get("new_gas", []) or [])
-        charted = included_rows(new_gas)
-        worst_case_overall = rebuild_worst_cases(new_gas)
+        excluded = excluded_cases_for(new_gas)
+        charted = included_rows(new_gas, excluded)
+        worst_case_overall = rebuild_worst_cases(new_gas, excluded)
         context = {
             "data": data,
             "meta": data.get("meta", {}) or {},
@@ -735,7 +781,10 @@ def main() -> None:
         # "new_gas" overrides the archived copy with the CI-corrected one (see
         # fix_tx_value_cost_ci); "goals" and "jumpdest_diff" are added on top (not
         # part of the archived run JSON) so charts.js can plot them without
-        # recomputing collect_goals() / collect_jumpdest_diff() in JS.
+        # recomputing collect_goals() / collect_jumpdest_diff() in JS. "excluded_cases"
+        # is this run's resolved excluded_cases_for() result, so charts.js's own
+        # client-side filter matches the server-rendered summary/goals without
+        # having to re-derive the CONTRACT_VARIANT_CASES condition in JS.
         data_js = SITE_DIR / entry["data_file"]
         data_js.write_text(
             "window.DASHBOARD_DATA = "
@@ -745,6 +794,7 @@ def main() -> None:
                     "new_gas": new_gas,
                     "goals": context["goals"],
                     "jumpdest_diff": context["jumpdest_diff"],
+                    "excluded_cases": sorted(excluded),
                 }
             )
             + ";\n",

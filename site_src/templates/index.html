@@ -58,7 +58,7 @@
 {% endif %}
 
 <section class="hero">
-  <h1>EIP-2780 repricing: <code>ZERO_VALUE_TRANSFER</code> &amp; <code>VALUE_TRANSFER</code></h1>
+  <h1>EIP-2780 repricing: updating the cost of ETH transfers</h1>
   <p class="lede">
     Today every transfer pays a flat <strong>21,000</strong> gas, value or not.
     We measure the end-to-end cost of each: <code>ZERO_VALUE_TRANSFER</code> for a
@@ -71,16 +71,6 @@
     parameter's worst case is the most expensive driver across all clients and cases.
   </p>
 </section>
-
-{#- Scope note for everything that follows, so it is read before the summary. -#}
-<p class="note" role="note">
-  Two cases are excluded from the summary and charts below:
-  <strong>Contract (jumpdest)</strong>
-  (<code>diff_to_unique_code_jumpdest_contract</code>) and
-  <strong>Contract</strong> (<code>diff_to_contract</code>). Both are still fit and
-  reported in full on the <a href="{{ detail_href }}">proposed gas detail page</a>
-  and the <a href="{{ model_fit_href }}">model fit detail page</a>.
-</p>
 
 {#- ---- 1. Headline summary (prose assembled here) ---- -#}
 <section class="summary">
@@ -235,18 +225,20 @@
     diff_to_unique_code_jumpdest_contract is excluded from the charts/Summary above
     (see the scope note near the top of the page) but still fit every run. This
     section is specifically about that case: how much the extra JUMP costs relative
-    to the 24KB-unique-code contract it's otherwise closest to in shape. Data comes
-    from collect_jumpdest_diff() in build_site.py, embedded as
-    window.DASHBOARD_DATA.jumpdest_diff; no goal line here — there's no EIP-2780
-    target for this comparison, just the measured diff with its 95% CI. -#}
+    to the contract case it's otherwise closest to in shape — the 24KB-unique-code
+    contract where the run has it, else the plain contract case (older archived
+    runs predate the 24KB variants). Data comes from collect_jumpdest_diff() in
+    build_site.py, embedded as window.DASHBOARD_DATA.jumpdest_diff; no goal line
+    here — there's no EIP-2780 target for this comparison, just the measured diff
+    with its 95% CI. -#}
 <section class="charts">
   <h2>Jumpdest cost</h2>
   <p class="note" role="note">
     <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
     still fit every run. This chart shows its proposed-gas diff against
-    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise closest
-    to in shape — for both parameters, so the cost of the extra <code>JUMP</code> is
-    visible on its own.
+    <strong>{{ jumpdest_diff.baseline_label }}</strong> — the case it's otherwise
+    closest to in shape — for both parameters, so the cost of the extra
+    <code>JUMP</code> is visible on its own.
   </p>
   {#- This section sits below the Charts section's shared legend, far enough away
       after scrolling that repeating it here is worth the duplication. Same colour
@@ -254,7 +246,7 @@
       colour matches the one above. -#}
   <div id="jumpdest-legend" class="chart-legend" hidden></div>
   <div class="chart-block">
-    <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
+    <h3>Contract (jumpdest) &minus; {{ jumpdest_diff.baseline_label }} &mdash; proposed gas diff per parameter (95% CI)</h3>
     <div id="chart-jumpdest-diff" class="chart"></div>
   </div>
 </section>

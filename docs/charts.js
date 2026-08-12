@@ -25,16 +25,20 @@
 
   // Cases kept out of the charts. Presentation-only: the embedded run data still
   // carries them and both detail tables still list them; the summary cards and the
-  // worst-case highlight drop them server-side. Keep in sync with EXCLUDED_CASES
-  // in scripts/build_site.py (the Trends page has its own, smaller set — see
-  // TRENDS_EXCLUDED_CASES there).
-  var EXCLUDED_CASES = {
-    diff_to_unique_code_jumpdest_contract: true,
-    diff_to_contract: true
-  };
+  // worst-case highlight drop them server-side. The excluded set is per-run —
+  // diff_to_contract is only actually dropped once a run also has the
+  // size/uniqueness contract variants (see excluded_cases_for() in
+  // scripts/build_site.py) — so it's read from DASHBOARD_DATA.excluded_cases
+  // rather than hardcoded here. The Trends page has its own, smaller,
+  // run-independent set — see TRENDS_EXCLUDED_CASES in build_site.py.
   function charted(rows) {
+    var excluded = (window.DASHBOARD_DATA && window.DASHBOARD_DATA.excluded_cases) || [];
+    var excludedSet = {};
+    excluded.forEach(function (c) {
+      excludedSet[c] = true;
+    });
     return rows.filter(function (r) {
-      return !EXCLUDED_CASES[r.case_id];
+      return !excludedSet[r.case_id];
     });
   }
   var PALETTE = [

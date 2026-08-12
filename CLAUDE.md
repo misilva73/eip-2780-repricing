@@ -7,7 +7,7 @@ the derived `TX_VALUE_COST` (`VALUE_TRANSFER − ZERO_VALUE_TRANSFER`, the margi
 cost of moving value, referenced against 9000). For each `(client, case_id)` it
 fits **two independent NNLS models** — one on the `transfer_amount=0` runs, one on
 the `transfer_amount=1` runs, each `[const, opcount]` — converts the opcount slopes
-to gas at a fixed throughput anchor (`ANCHOR_RATE`, currently 75 Mgas/s), picks the
+to gas at a fixed throughput anchor (`ANCHOR_RATE`, currently 100 Mgas/s), picks the
 worst case per param, and renders a static
 GitHub Pages dashboard.
 
@@ -176,7 +176,14 @@ Requires `make`, `jq`, Python 3.11+.
   only that one from the Trends page, which **still charts the jumpdest case**.
   `analysis.py` fits every case regardless and both detail tables (the Detail
   page's proposed-gas table and the Model Fit page's NNLS table) list every row.
-  Consequences:
+  `diff_to_contract`'s drop from `EXCLUDED_CASES` is **conditional per run**, via
+  `excluded_cases_for()`: it's only actually excluded once a run also has the
+  three size/uniqueness contract variants (`diff_to_contract_minimal`,
+  `_same_max`, `_diff_max` — added in suite `0d93b5bf3b970403`), since those make
+  the plain case redundant. Runs from suite `d88b18464da7445e` and earlier predate
+  those variants, so `diff_to_contract` is their only contract-shaped case and
+  stays charted there. `TRENDS_EXCLUDED_CASES` is **not** conditional — it drops
+  `diff_to_contract` from every run's Trends series regardless. Consequences:
   - The dashboard's `summary` / `worst_case_overall` are **re-derived in
     `build_site.py`** (`rebuild_worst_cases`, `rebuild_summary`) from the
     non-excluded `new_gas` rows, not read from the run JSON; templates get the
@@ -187,8 +194,9 @@ Requires `make`, `jq`, Python 3.11+.
   - `collect_trends` filters its rows with `TRENDS_EXCLUDED_CASES` and re-derives
     its `binding` series from them (not from the run's stored `worst_case_overall`,
     which ranks over every case), so trends.js needs no filter of its own.
-  - `charts.js` carries a copy of `EXCLUDED_CASES` for the client-side chart filter
-    — keep it in sync with the Python set.
+  - `charts.js` has no hardcoded copy of `EXCLUDED_CASES` — each run's data file
+    embeds that run's resolved `excluded_cases_for()` result as
+    `DASHBOARD_DATA.excluded_cases`, and `charted()` filters against that.
   - The dashboard's **"Jumpdest cost"** section (below Charts) is specifically
     *about* the excluded `diff_to_unique_code_jumpdest_contract` case: a bar chart
     of its proposed-gas diff against `diff_to_contract_diff_max` (the case it's

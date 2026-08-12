@@ -41,17 +41,17 @@
   <span class="run-bar-label">Viewing run</span>
   <div class="run-dropdown" data-run-dropdown>
     <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
-      <span class="run-dropdown-current">2026-08-02 23:21 (latest)</span>
+      <span class="run-dropdown-current">2026-08-12 00:03 (latest)</span>
       <span class="run-dropdown-chevron" aria-hidden="true"></span>
     </button>
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
       <li role="option" aria-selected="true">
         <a href="index.html" class="run-dropdown-option is-current"
-           tabindex="-1">2026-08-02 23:21 (latest)</a>
+           tabindex="-1">2026-08-12 00:03 (latest)</a>
       </li>
       <li role="option" aria-selected="false">
-        <a href="run-20260731T053659Z_3f6a0898955dff4f.html" class="run-dropdown-option"
-           tabindex="-1">2026-07-31 05:36</a>
+        <a href="run-20260811T004340Z_0d93b5bf3b970403.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-11 00:43</a>
       </li>
       <li role="option" aria-selected="false">
         <a href="run-20260720T165222Z_d88b18464da7445e.html" class="run-dropdown-option"
@@ -73,42 +73,18 @@
         <a href="run-20260615T034251Z_d88b18464da7445e.html" class="run-dropdown-option"
            tabindex="-1">2026-06-15 03:42</a>
       </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260610T012820Z_d88b18464da7445e.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-10 01:28</a>
-      </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260607T235606Z_a11611f320a39015.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-07 23:56</a>
-      </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260603T235618Z_a11611f320a39015.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-03 23:56</a>
-      </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260602T234049Z_a11611f320a39015.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-02 23:40</a>
-      </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260601T230017Z_a11611f320a39015.html" class="run-dropdown-option"
-           tabindex="-1">2026-06-01 23:00</a>
-      </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260529T234448Z_a11611f320a39015.html" class="run-dropdown-option"
-           tabindex="-1">2026-05-29 23:44</a>
-      </li>
     </ul>
   </div>
-  <noscript><span class="run-dropdown-noscript"><a href="run-20260731T053659Z_3f6a0898955dff4f.html">2026-07-31 05:36</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a><a href="run-20260610T012820Z_d88b18464da7445e.html">2026-06-10 01:28</a><a href="run-20260607T235606Z_a11611f320a39015.html">2026-06-07 23:56</a><a href="run-20260603T235618Z_a11611f320a39015.html">2026-06-03 23:56</a><a href="run-20260602T234049Z_a11611f320a39015.html">2026-06-02 23:40</a><a href="run-20260601T230017Z_a11611f320a39015.html">2026-06-01 23:00</a><a href="run-20260529T234448Z_a11611f320a39015.html">2026-05-29 23:44</a>
+  <noscript><span class="run-dropdown-noscript"><a href="run-20260811T004340Z_0d93b5bf3b970403.html">2026-08-11 00:43</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
     </span>
   </noscript>
   
-  <span class="run-bar-meta">latest of 13</span>
+  <span class="run-bar-meta">latest of 7</span>
 </div>
 
 
 <section class="hero">
-  <h1>EIP-2780 repricing: <code>ZERO_VALUE_TRANSFER</code> &amp; <code>VALUE_TRANSFER</code></h1>
+  <h1>EIP-2780 repricing: updating the cost of ETH transfers</h1>
   <p class="lede">
     Today every transfer pays a flat <strong>21,000</strong> gas, value or not.
     We measure the end-to-end cost of each: <code>ZERO_VALUE_TRANSFER</code> for a
@@ -117,17 +93,10 @@
     per-case non-negative least squares fit on the runtime of
     <code>test_ether_transfers_onchain_receivers</code>,
     converted to proposed gas at the
-    75&nbsp;Mgas/s anchor. Each
+    100&nbsp;Mgas/s anchor. Each
     parameter's worst case is the most expensive driver across all clients and cases.
   </p>
-</section><p class="note" role="note">
-  Two cases are excluded from the summary and charts below:
-  <strong>Contract (jumpdest)</strong>
-  (<code>diff_to_unique_code_jumpdest_contract</code>) and
-  <strong>Contract</strong> (<code>diff_to_contract</code>). Both are still fit and
-  reported in full on the <a href="detail.html">proposed gas detail page</a>
-  and the <a href="model-fit.html">model fit detail page</a>.
-</p><section class="summary">
+</section><section class="summary">
   <p class="preliminary-warning" role="note">
     <strong>Preliminary results.</strong> Clients are still working on their
     block-access-list (BAL) optimizations, so these gas values are expected to
@@ -149,7 +118,7 @@
         <tr>
           <th>Goal</th>
           <th class="num">Target</th>
-          <th class="num">besu</th><th class="num">erigon</th><th class="num">ethrex</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
+          <th class="num">besu</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
         </tr>
       </thead>
       <tbody>
@@ -161,27 +130,19 @@
           <td class="num goal-target">12,000</td>
           
           
-          <td class="num goal-pass">10,583</td>
+          <td class="num goal-pass">9,917</td>
           
           
           
-          <td class="num goal-mid">13,616</td>
+          <td class="num goal-pass">7,236</td>
           
           
           
-          <td class="num goal-pass">3,446</td>
+          <td class="num goal-mid">14,142</td>
           
           
           
-          <td class="num goal-pass">8,999</td>
-          
-          
-          
-          <td class="num goal-pass">11,454</td>
-          
-          
-          
-          <td class="num goal-pass">3,207</td>
+          <td class="num goal-pass">4,186</td>
           
           
         </tr>
@@ -193,27 +154,19 @@
           <td class="num goal-target">15,000</td>
           
           
-          <td class="num goal-pass">14,326</td>
+          <td class="num goal-pass">12,561</td>
           
           
           
-          <td class="num goal-fail">24,453</td>
+          <td class="num goal-pass">9,973</td>
           
           
           
-          <td class="num goal-pass">11,408</td>
+          <td class="num goal-mid">17,485</td>
           
           
           
-          <td class="num goal-pass">13,051</td>
-          
-          
-          
-          <td class="num goal-mid">15,286</td>
-          
-          
-          
-          <td class="num goal-pass">5,212</td>
+          <td class="num goal-pass">6,803</td>
           
           
         </tr>
@@ -225,27 +178,19 @@
           <td class="num goal-target">21,000</td>
           
           
-          <td class="num goal-mid">24,543</td>
+          <td class="num goal-fail">30,411</td>
           
           
           
-          <td class="num goal-fail">35,087</td>
+          <td class="num goal-pass">19,129</td>
           
           
           
-          <td class="num goal-pass">13,433</td>
+          <td class="num goal-pass">16,272</td>
           
           
           
-          <td class="num goal-mid">21,817</td>
-          
-          
-          
-          <td class="num goal-pass">17,956</td>
-          
-          
-          
-          <td class="num goal-pass">7,437</td>
+          <td class="num goal-pass">9,656</td>
           
           
         </tr>
@@ -257,27 +202,19 @@
           <td class="num goal-target">18,000</td>
           
           
-          <td class="num goal-pass">14,071</td>
+          <td class="num goal-pass">12,074</td>
           
           
           
-          <td class="num goal-fail">22,675</td>
+          <td class="num goal-pass">9,306</td>
           
           
           
-          <td class="num goal-pass">11,267</td>
+          <td class="num goal-pass">16,829</td>
           
           
           
-          <td class="num goal-pass">13,531</td>
-          
-          
-          
-          <td class="num goal-pass">15,122</td>
-          
-          
-          
-          <td class="num goal-nodata">&mdash;</td>
+          <td class="num goal-pass">6,237</td>
           
           
         </tr>
@@ -289,27 +226,19 @@
           <td class="num goal-target">24,000</td>
           
           
-          <td class="num goal-pass">20,483</td>
+          <td class="num goal-pass">15,255</td>
           
           
           
-          <td class="num goal-fail">32,582</td>
+          <td class="num goal-pass">11,905</td>
           
           
           
-          <td class="num goal-pass">13,649</td>
+          <td class="num goal-pass">15,616</td>
           
           
           
-          <td class="num goal-pass">19,217</td>
-          
-          
-          
-          <td class="num goal-pass">17,504</td>
-          
-          
-          
-          <td class="num goal-nodata">&mdash;</td>
+          <td class="num goal-pass">8,931</td>
           
           
         </tr>
@@ -390,9 +319,9 @@
   <p class="note" role="note">
     <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
     still fit every run. This chart shows its proposed-gas diff against
-    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise closest
-    to in shape — for both parameters, so the cost of the extra <code>JUMP</code> is
-    visible on its own.
+    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise
+    closest to in shape — for both parameters, so the cost of the extra
+    <code>JUMP</code> is visible on its own.
   </p><div id="jumpdest-legend" class="chart-legend" hidden></div>
   <div class="chart-block">
     <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
@@ -408,19 +337,19 @@
       <p class="repro">
         
         Data window:
-        <strong>2026-07-31T00:18:14Z</strong> &rarr; <strong>2026-08-02T23:21:04Z</strong>
+        <strong>2026-08-09T06:11:24Z</strong> &rarr; <strong>2026-08-12T00:03:53Z</strong>
         &middot;
         benchmarkoor-fetch <code>0.2.0</code>
         &middot;
-        suite <code>3f6a0898955dff4f</code>
+        suite <code>0d93b5bf3b970403</code>
         &middot;
-        commit <code>8bd33cd</code>
+        commit <code>ceadc5d</code>
         &middot;
-        generated <code>2026-08-03T08:13:59+00:00</code>
+        generated <code>2026-08-12T09:36:25+00:00</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a
-        75 Mgas/s anchor.
+        100 Mgas/s anchor.
         Reproduce with <code>make fetch &amp;&amp; make analyze &amp;&amp; make site</code>.
       </p>
     </div>
