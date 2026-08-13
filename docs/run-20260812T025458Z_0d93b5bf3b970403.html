@@ -41,7 +41,7 @@
   <span class="run-bar-label">Viewing run</span>
   <div class="run-dropdown" data-run-dropdown>
     <button type="button" class="run-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
-      <span class="run-dropdown-current">2026-07-01 23:30</span>
+      <span class="run-dropdown-current">2026-08-12 02:54</span>
       <span class="run-dropdown-chevron" aria-hidden="true"></span>
     </button>
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
@@ -49,8 +49,8 @@
         <a href="index.html" class="run-dropdown-option"
            tabindex="-1">2026-08-12 21:28 (latest)</a>
       </li>
-      <li role="option" aria-selected="false">
-        <a href="run-20260812T025458Z_0d93b5bf3b970403.html" class="run-dropdown-option"
+      <li role="option" aria-selected="true">
+        <a href="run-20260812T025458Z_0d93b5bf3b970403.html" class="run-dropdown-option is-current"
            tabindex="-1">2026-08-12 02:54</a>
       </li>
       <li role="option" aria-selected="false">
@@ -69,8 +69,8 @@
         <a href="run-20260707T075028Z_d88b18464da7445e.html" class="run-dropdown-option"
            tabindex="-1">2026-07-07 07:50</a>
       </li>
-      <li role="option" aria-selected="true">
-        <a href="run-20260701T233045Z_d88b18464da7445e.html" class="run-dropdown-option is-current"
+      <li role="option" aria-selected="false">
+        <a href="run-20260701T233045Z_d88b18464da7445e.html" class="run-dropdown-option"
            tabindex="-1">2026-07-01 23:30</a>
       </li>
       <li role="option" aria-selected="false">
@@ -83,7 +83,7 @@
       </li>
     </ul>
   </div>
-  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-08-12 21:28 (latest)</a><a href="run-20260812T025458Z_0d93b5bf3b970403.html">2026-08-12 02:54</a><a href="run-20260812T000353Z_0d93b5bf3b970403.html">2026-08-12 00:03</a><a href="run-20260811T004340Z_0d93b5bf3b970403.html">2026-08-11 00:43</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
+  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-08-12 21:28 (latest)</a><a href="run-20260812T000353Z_0d93b5bf3b970403.html">2026-08-12 00:03</a><a href="run-20260811T004340Z_0d93b5bf3b970403.html">2026-08-11 00:43</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
     </span>
   </noscript>
   
@@ -126,71 +126,147 @@
         <tr>
           <th>Goal</th>
           <th class="num">Target</th>
-          <th class="num">besu</th><th class="num">erigon</th><th class="num">ethrex</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
+          <th class="num">besu</th><th class="num">erigon</th><th class="num">geth</th><th class="num">nethermind</th><th class="num">reth</th>
         </tr>
       </thead>
       <tbody>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract">
-            No-value transfer
+              data-tip="TX_BASE_COST = 12,000 &mdash; parameters: ZERO_VALUE_TRANSFER, VALUE_TRANSFER &mdash; cases: Self">
+            Transfer to self
           </th>
-          <td class="num goal-target">15,000</td>
+          <td class="num goal-target">12,000</td>
           
           
-          <td class="num goal-pass">12,877</td>
-          
-          
-          
-          <td class="num goal-fail">27,295</td>
+          <td class="num goal-pass">9,917</td>
           
           
           
-          <td class="num goal-pass">2,908</td>
+          <td class="num goal-pass">9,788</td>
           
           
           
-          <td class="num goal-pass">10,147</td>
+          <td class="num goal-pass">7,213</td>
           
           
           
-          <td class="num goal-pass">7,906</td>
+          <td class="num goal-mid">14,142</td>
           
           
           
-          <td class="num goal-pass">4,476</td>
+          <td class="num goal-pass">4,186</td>
           
           
         </tr>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract">
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
+            No-value transfer
+          </th>
+          <td class="num goal-target">15,000</td>
+          
+          
+          <td class="num goal-pass">12,561</td>
+          
+          
+          
+          <td class="num goal-fail">22,686</td>
+          
+          
+          
+          <td class="num goal-pass">9,991</td>
+          
+          
+          
+          <td class="num goal-mid">17,485</td>
+          
+          
+          
+          <td class="num goal-pass">6,803</td>
+          
+          
+        </tr>
+        
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
             Transfer
           </th>
           <td class="num goal-target">21,000</td>
           
           
-          <td class="num goal-pass">18,227</td>
+          <td class="num goal-fail">30,411</td>
           
           
           
-          <td class="num goal-fail">65,052</td>
+          <td class="num goal-fail">39,912</td>
           
           
           
-          <td class="num goal-pass">5,126</td>
+          <td class="num goal-pass">19,400</td>
           
           
           
-          <td class="num goal-pass">19,171</td>
+          <td class="num goal-pass">16,272</td>
           
           
           
-          <td class="num goal-pass">12,058</td>
+          <td class="num goal-pass">9,656</td>
+          
+          
+        </tr>
+        
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
+            No-value transfer to delegated account
+          </th>
+          <td class="num goal-target">18,000</td>
+          
+          
+          <td class="num goal-pass">12,074</td>
           
           
           
-          <td class="num goal-pass">7,083</td>
+          <td class="num goal-mid">20,786</td>
+          
+          
+          
+          <td class="num goal-pass">9,335</td>
+          
+          
+          
+          <td class="num goal-pass">16,829</td>
+          
+          
+          
+          <td class="num goal-pass">6,237</td>
+          
+          
+        </tr>
+        
+        <tr><th class="goal-name" scope="row"
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
+            Transfer to delegated account
+          </th>
+          <td class="num goal-target">24,000</td>
+          
+          
+          <td class="num goal-pass">15,255</td>
+          
+          
+          
+          <td class="num goal-mid">25,505</td>
+          
+          
+          
+          <td class="num goal-pass">11,924</td>
+          
+          
+          
+          <td class="num goal-pass">15,616</td>
+          
+          
+          
+          <td class="num goal-pass">8,931</td>
           
           
         </tr>
@@ -224,16 +300,41 @@
   
   
     <div class="chart-block">
-      <h3>No-value transfer &mdash; proposed gas per case vs. goal (15,000) (95% CI)</h3>
+      <h3>Transfer to self &mdash; proposed gas per case vs. goal (12,000) (95% CI)</h3>
       <div id="chart-goal-0" class="chart"></div>
     </div>
   
   
   
     <div class="chart-block">
-      <h3>Transfer &mdash; proposed gas per case vs. goal (21,000) (95% CI)</h3>
+      <h3>No-value transfer &mdash; proposed gas per case vs. goal (15,000) (95% CI)</h3>
       <div id="chart-goal-1" class="chart"></div>
     </div>
+  
+  
+  
+    <div class="chart-block">
+      <h3>Transfer &mdash; proposed gas per case vs. goal (21,000) (95% CI)</h3>
+      <div id="chart-goal-2" class="chart"></div>
+    </div>
+  
+  
+  
+  <div class="chart-row">
+  
+    <div class="chart-block">
+      <h3>No-value transfer to delegated account &mdash; proposed gas per case vs. goal (18,000) (95% CI)</h3>
+      <div id="chart-goal-3" class="chart"></div>
+    </div>
+  
+  
+  
+    <div class="chart-block">
+      <h3>Transfer to delegated account &mdash; proposed gas per case vs. goal (24,000) (95% CI)</h3>
+      <div id="chart-goal-4" class="chart"></div>
+    </div>
+  
+  </div>
   
   
 
@@ -246,12 +347,12 @@
   <p class="note" role="note">
     <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
     still fit every run. This chart shows its proposed-gas diff against
-    <strong>Contract</strong> — the case it's otherwise
+    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise
     closest to in shape — for both parameters, so the cost of the extra
     <code>JUMP</code> is visible on its own.
   </p><div id="jumpdest-legend" class="chart-legend" hidden></div>
   <div class="chart-block">
-    <h3>Contract (jumpdest) &minus; Contract &mdash; proposed gas diff per parameter (95% CI)</h3>
+    <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
     <div id="chart-jumpdest-diff" class="chart"></div>
   </div>
 </section>
@@ -264,15 +365,15 @@
       <p class="repro">
         
         Data window:
-        <strong>2026-06-26T00:56:59Z</strong> &rarr; <strong>2026-07-01T23:30:45Z</strong>
+        <strong>2026-08-09T06:11:24Z</strong> &rarr; <strong>2026-08-12T02:54:58Z</strong>
         &middot;
         benchmarkoor-fetch <code>0.2.0</code>
         &middot;
-        suite <code>d88b18464da7445e</code>
+        suite <code>0d93b5bf3b970403</code>
         &middot;
         commit <code>c92900f</code>
         &middot;
-        generated <code>2026-07-03T13:37:27+00:00</code>
+        generated <code>2026-08-12T15:12:06+00:00</code>
       </p>
       <p class="repro-note">
         Generated from <code>meta.json</code> at a
@@ -283,7 +384,7 @@
   </footer>
 
   
-<script src="data-20260701T233045Z_d88b18464da7445e.js"></script>
+<script src="data-20260812T025458Z_0d93b5bf3b970403.js"></script>
 <script src="charts.js"></script>
 
 </body>
