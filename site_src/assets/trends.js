@@ -30,11 +30,20 @@
     diff_to_self: "Self",
     diff_to_unique_code_jumpdest_contract: "Contract (jumpdest)",
     diff_to_contract_minimal: "Contract (minimal)",
-    diff_to_contract_same_max: "Contract (24KB, same code)",
-    diff_to_contract_diff_max: "Contract (24KB, unique code)",
-    diff_to_delegated_contract_diff: "Delegated (24KB, unique code)"
+    diff_to_contract_same_max: "Contract (max code, same)",
+    diff_to_contract_diff_max: "Contract (max code, unique)",
+    diff_to_delegated_contract_diff: "Delegated (max code, unique)"
   };
-  function caseLabel(c) { return CASE_LABELS[c] || c; }
+  // Contract cases carry a trailing code-size token (_24kib / _64kib) — see
+  // case_label() in build_site.py. Runs archived before the split have none.
+  var CASE_SIZE_RE = /_(\d+)kib$/;
+  function caseLabel(c) {
+    var id = c || "";
+    var m = CASE_SIZE_RE.exec(id);
+    var base = m ? id.slice(0, m.index) : id;
+    var label = CASE_LABELS[base] || base;
+    return m ? label + " · " + m[1] + "KiB" : label;
+  }
 
   // Stable colour per client and dash per case (order-independent of filters).
   var COLOR = {};

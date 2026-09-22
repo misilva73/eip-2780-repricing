@@ -46,15 +46,42 @@ CASE_LABELS = {
     "diff_to_self": "Self",
     "diff_to_unique_code_jumpdest_contract": "Contract (jumpdest)",
     "diff_to_contract_minimal": "Contract (minimal)",
-    "diff_to_contract_same_max": "Contract (24KB, same code)",
-    "diff_to_contract_diff_max": "Contract (24KB, unique code)",
-    "diff_to_delegated_contract_diff": "Delegated (24KB, unique code)",
+    "diff_to_contract_same_max": "Contract (max code, same)",
+    "diff_to_contract_diff_max": "Contract (max code, unique)",
+    "diff_to_delegated_contract_diff": "Delegated (max code, unique)",
 }
+
+# Contract-receiver case_ids carry a trailing code-size token (``_24kib`` /
+# ``_64kib``) that analysis.py folds into the group key, so each size is its own
+# NNLS fit — see _extract_case_id there. Everything in this module that keys on a
+# case_id therefore matches on the *base* id and treats the size as a separate
+# dimension. Runs archived before the split have no suffix and so are unaffected;
+# their labels carry no size claim, since the suite metadata that would say which
+# size they measured is no longer recoverable.
+CASE_SIZE_RE = re.compile(r"_(\d+)kib$")
+
+
+def base_case(case_id: str) -> str:
+    """The case_id with any trailing code-size token removed."""
+    return CASE_SIZE_RE.sub("", case_id or "")
+
+
+def case_size_label(case_id: str) -> str:
+    """The code size a case_id names ("64KiB"), or "" when it carries none."""
+    m = CASE_SIZE_RE.search(case_id or "")
+    return f"{m.group(1)}KiB" if m else ""
 
 
 def case_label(case_id: str) -> str:
-    """Map a raw case_id to its readable label, falling back to the id itself."""
-    return CASE_LABELS.get(case_id, case_id)
+    """Map a raw case_id to its readable label, falling back to the id itself.
+
+    A code-size token renders as a trailing size, so the two fits of one receiver
+    shape read as siblings ("Contract (max code, unique) · 64KiB").
+    """
+    base = base_case(case_id)
+    label = CASE_LABELS.get(base, base)
+    size = case_size_label(case_id)
+    return f"{label} · {size}" if size else label
 
 
 # Cases kept out of the dashboard's charts, its Summary section and the worst-case
@@ -64,7 +91,9 @@ def case_label(case_id: str) -> str:
 # `make site`. diff_to_contract is only actually dropped on runs that also have the
 # size/uniqueness contract variants below — see excluded_cases_for(). charts.js
 # reads the per-run result via DASHBOARD_DATA.excluded_cases rather than carrying
-# its own copy.
+# its own copy. Entries are *base* case_ids (no code-size token), so each covers
+# every size variant of that case; excluded_cases_for() resolves them to the
+# concrete ids a given run actually has.
 EXCLUDED_CASES = {"diff_to_unique_code_jumpdest_contract", "diff_to_contract"}
 
 # The three size/uniqueness contract variants (added in suite 0d93b5bf3b970403).
@@ -89,7 +118,7 @@ TRENDS_EXCLUDED_CASES = {"diff_to_contract"}
 # it's otherwise closest to in shape. Both are present in every run's new_gas
 # regardless of EXCLUDED_CASES — that set is a render filter, not an analysis one —
 # so collect_jumpdest_diff() reads the raw new_gas, not `charted`. Older archived
-# runs (suite d88b18464da7445e and earlier) predate the 24KB-variant cases, so
+# runs (suite d88b18464da7445e and earlier) predate the max-code variant cases, so
 # JUMPDEST_BASELINE_CASE falls back to the plain contract case — see
 # collect_jumpdest_diff().
 JUMPDEST_CASE = "diff_to_unique_code_jumpdest_contract"
@@ -160,16 +189,33 @@ def excluded_cases_for(new_gas_rows: list) -> set:
     size/uniqueness contract variants (see CONTRACT_VARIANT_CASES) — those runs
     have no other contract-shaped case, so dropping diff_to_contract there would
     leave the Contract shape with no data at all instead of just the
-    now-redundant plain case."""
-    available = {row.get("case_id") for row in new_gas_rows}
-    if available & CONTRACT_VARIANT_CASES:
-        return EXCLUDED_CASES
-    return EXCLUDED_CASES - {"diff_to_contract"}
+    now-redundant plain case.
+
+    Returns the concrete case_ids present in this run, code-size token and all, so
+    charts.js can keep matching DASHBOARD_DATA.excluded_cases exactly rather than
+    having to know about the suffix.
+    """
+    available = {row.get("case_id") for row in new_gas_rows if row.get("case_id")}
+    bases = {base_case(c) for c in available}
+    excluded_bases = EXCLUDED_CASES
+    if not (bases & CONTRACT_VARIANT_CASES):
+        excluded_bases = EXCLUDED_CASES - {"diff_to_contract"}
+    return {c for c in available if base_case(c) in excluded_bases}
 
 
 def included_rows(rows: list, excluded: set = EXCLUDED_CASES) -> list:
-    """Drop excluded-case rows from a new_gas-shaped list."""
-    return [r for r in rows if r.get("case_id") not in excluded]
+    """Drop excluded-case rows from a new_gas-shaped list.
+
+    Matches on the base case_id so a set of base names (EXCLUDED_CASES,
+    TRENDS_EXCLUDED_CASES) covers every code-size variant of that case, while a set
+    of already-resolved ids (from excluded_cases_for) still matches exactly.
+    """
+    return [
+        r
+        for r in rows
+        if r.get("case_id") not in excluded
+        and base_case(r.get("case_id")) not in excluded
+    ]
 
 
 def rebuild_worst_cases(new_gas_rows: list, excluded: set = EXCLUDED_CASES) -> list:
@@ -360,14 +406,20 @@ def collect_goals(new_gas_rows: list) -> dict:
         cases.add(case)
 
     ordered_clients = sorted(clients)
-    ordered_cases = sorted(
-        cases,
-        key=lambda c: (
-            (GOAL_CASE_ORDER.index(c), "")
-            if c in GOAL_CASE_ORDER
-            else (len(GOAL_CASE_ORDER), c)
-        ),
-    )
+
+    def case_sort_key(case_id: str):
+        # Order by receiver shape first, then by code size, so the two size
+        # variants of one shape sit next to each other (24KiB before 64KiB).
+        base = base_case(case_id)
+        size = CASE_SIZE_RE.search(case_id)
+        rank = (
+            GOAL_CASE_ORDER.index(base)
+            if base in GOAL_CASE_ORDER
+            else len(GOAL_CASE_ORDER)
+        )
+        return (rank, base, int(size.group(1)) if size else 0)
+
+    ordered_cases = sorted(cases, key=case_sort_key)
 
     rows: list = []
     for spec in GOAL_SPECS:
@@ -419,10 +471,15 @@ def collect_jumpdest_diff(new_gas_rows: list) -> dict:
     """Per-client, per-param gas diff: jumpdest contract minus its closest-in-shape
     contract case, for ZERO_VALUE_TRANSFER and VALUE_TRANSFER.
 
-    The baseline is JUMPDEST_BASELINE_CASE (the 24KB-unique-code contract) when
-    the run has it, else JUMPDEST_BASELINE_FALLBACK (the plain contract case) —
-    runs on older suites (d88b18464da7445e and earlier) predate the 24KB-variant
-    cases, so JUMPDEST_BASELINE_CASE is simply absent from their new_gas.
+    The baseline is JUMPDEST_BASELINE_CASE (the unique-code contract) when the run
+    has it, else JUMPDEST_BASELINE_FALLBACK (the plain contract case) — runs on
+    older suites (d88b18464da7445e and earlier) predate the max-code variant cases,
+    so JUMPDEST_BASELINE_CASE is simply absent from their new_gas.
+
+    Where the run splits contract cases by code size, each jumpdest fit is paired
+    with the baseline fit **of its own size** and the two sizes are reported as
+    separate ticks. Pairing across sizes would fold the code-size effect into what
+    is meant to isolate the cost of the extra JUMP.
 
     The two cases are independent NNLS fits, so — as with TX_VALUE_COST in
     analysis.py — the diff's CI is propagated by proper statistical error
@@ -434,55 +491,83 @@ def collect_jumpdest_diff(new_gas_rows: list) -> dict:
     the sign is the point here (does the extra JUMP cost more or less than the
     baseline case), not noise to discard.
     """
-    available_cases = {row.get("case_id") for row in new_gas_rows}
-    baseline_case = (
-        JUMPDEST_BASELINE_CASE
-        if JUMPDEST_BASELINE_CASE in available_cases
-        else JUMPDEST_BASELINE_FALLBACK
+    available_cases = {
+        row.get("case_id") for row in new_gas_rows if row.get("case_id")
+    }
+
+    def code_size(case_id: str) -> int:
+        m = CASE_SIZE_RE.search(case_id)
+        return int(m.group(1)) if m else 0
+
+    jumpdest_cases = sorted(
+        (c for c in available_cases if base_case(c) == JUMPDEST_CASE),
+        key=code_size,
     )
+
+    def baseline_for(jumpdest_case: str):
+        """The contract case to compare against, at the same code size."""
+        size = CASE_SIZE_RE.search(jumpdest_case)
+        suffix = size.group(0) if size else ""
+        for base in (JUMPDEST_BASELINE_CASE, JUMPDEST_BASELINE_FALLBACK):
+            for candidate in (f"{base}{suffix}", base):
+                if candidate in available_cases:
+                    return candidate
+        return None
 
     by_key: dict = {}
     for row in new_gas_rows:
-        case = row.get("case_id")
         param = row.get("param")
         client = row.get("client_name")
-        if case not in (JUMPDEST_CASE, baseline_case):
-            continue
         if param not in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER") or not client:
             continue
-        by_key[(case, param, client)] = row
+        by_key[(row.get("case_id"), param, client)] = row
 
     clients = sorted(
         {row.get("client_name") for row in new_gas_rows if row.get("client_name")}
     )
     rows: list = []
+    ticks: list = []
+    baselines: list = []
     for param in ("ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"):
-        for client in clients:
-            jd = by_key.get((JUMPDEST_CASE, param, client))
-            base = by_key.get((baseline_case, param, client))
-            if jd is None or base is None:
+        for jumpdest_case in jumpdest_cases:
+            baseline_case = baseline_for(jumpdest_case)
+            if baseline_case is None:
                 continue
-            diff = jd["new_gas_rounded"] - base["new_gas_rounded"]
-            jd_margin = (
-                jd["new_gas_conf_int_high"] - jd["new_gas_conf_int_low"]
-            ) / 2
-            base_margin = (
-                base["new_gas_conf_int_high"] - base["new_gas_conf_int_low"]
-            ) / 2
-            diff_margin = math.sqrt(jd_margin**2 + base_margin**2)
-            rows.append(
-                {
-                    "param": param,
-                    "client_name": client,
-                    "diff": diff,
-                    "diff_conf_int_low": diff - diff_margin,
-                    "diff_conf_int_high": diff + diff_margin,
-                }
-            )
+            size = case_size_label(jumpdest_case)
+            tick = f"{param} · {size}" if size else param
+            if tick not in ticks:
+                ticks.append(tick)
+            if baseline_case not in baselines:
+                baselines.append(baseline_case)
+            for client in clients:
+                jd = by_key.get((jumpdest_case, param, client))
+                base = by_key.get((baseline_case, param, client))
+                if jd is None or base is None:
+                    continue
+                diff = jd["new_gas_rounded"] - base["new_gas_rounded"]
+                jd_margin = (
+                    jd["new_gas_conf_int_high"] - jd["new_gas_conf_int_low"]
+                ) / 2
+                base_margin = (
+                    base["new_gas_conf_int_high"] - base["new_gas_conf_int_low"]
+                ) / 2
+                diff_margin = math.sqrt(jd_margin**2 + base_margin**2)
+                rows.append(
+                    {
+                        "param": param,
+                        "size": size,
+                        "tick": tick,
+                        "client_name": client,
+                        "diff": diff,
+                        "diff_conf_int_low": diff - diff_margin,
+                        "diff_conf_int_high": diff + diff_margin,
+                    }
+                )
     return {
         "rows": rows,
-        "baseline_case": baseline_case,
-        "baseline_label": case_label(baseline_case),
+        "ticks": ticks,
+        "baseline_case": baselines[0] if baselines else JUMPDEST_BASELINE_CASE,
+        "baseline_label": case_label(base_case(baselines[0])) if baselines else "",
     }
 
 

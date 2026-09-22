@@ -1,7 +1,7 @@
 query:
   fork: amsterdam
   run_id_pattern: '.*-bal-full-aot|(?!.*besu-bal-full$).*-bal-full'
-  start_date: 2026-08-18
-  end_date: 2026-08-24
+  start_date: 2026-09-17
+  end_date: 2026-09-22
   suites:
-    - c49a162ae5cee8cd # jochemnet-glamsterdam-devnet-7-stateful
+    - 22c2404b9ce3f47c # jochemnet-glamsterdam-devnet-8-stateful-repricing

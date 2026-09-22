@@ -41,7 +41,15 @@
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
       <li role="option" aria-selected="false">
         <a href="detail.html" class="run-dropdown-option"
-           tabindex="-1">2026-08-24 01:34 (latest)</a>
+           tabindex="-1">2026-09-21 08:08 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260830T085704Z_c49a162ae5cee8cd.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-30 08:57</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="detail-20260824T013428Z_c49a162ae5cee8cd.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-24 01:34</a>
       </li>
       <li role="option" aria-selected="false">
         <a href="detail-20260817T164844Z_c49a162ae5cee8cd.html" class="run-dropdown-option"
@@ -74,11 +82,11 @@
     </ul>
   </div>
   <noscript>
-    <span class="run-dropdown-noscript"><a href="detail.html">2026-08-24 01:34 (latest)</a><a href="detail-20260817T164844Z_c49a162ae5cee8cd.html">2026-08-17 16:48</a><a href="detail-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="detail-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="detail-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="detail-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="detail-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
+    <span class="run-dropdown-noscript"><a href="detail.html">2026-09-21 08:08 (latest)</a><a href="detail-20260830T085704Z_c49a162ae5cee8cd.html">2026-08-30 08:57</a><a href="detail-20260824T013428Z_c49a162ae5cee8cd.html">2026-08-24 01:34</a><a href="detail-20260817T164844Z_c49a162ae5cee8cd.html">2026-08-17 16:48</a><a href="detail-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="detail-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="detail-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="detail-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="detail-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
     </span>
   </noscript>
   
-  <span class="run-bar-meta">older run &middot; latest of 8</span>
+  <span class="run-bar-meta">older run &middot; latest of 10</span>
 </div>
 
 
@@ -123,7 +131,7 @@
       <span>Case</span>
       <select data-filter-key="case">
         <option value="">All cases</option>
-        <option value="diff_to_contract">Contract</option><option value="diff_to_contract_diff_max">Contract (24KB, unique code)</option><option value="diff_to_contract_minimal">Contract (minimal)</option><option value="diff_to_contract_same_max">Contract (24KB, same code)</option><option value="diff_to_delegated_contract_diff">Delegated (24KB, unique code)</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_self">Self</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
+        <option value="diff_to_contract">Contract</option><option value="diff_to_contract_diff_max">Contract (max code, unique)</option><option value="diff_to_contract_minimal">Contract (minimal)</option><option value="diff_to_contract_same_max">Contract (max code, same)</option><option value="diff_to_delegated_contract_diff">Delegated (max code, unique)</option><option value="diff_to_existent">EOA</option><option value="diff_to_nonexistent">Non-existent</option><option value="diff_to_self">Self</option><option value="diff_to_unique_code_jumpdest_contract">Contract (jumpdest)</option>
       </select>
     </label>
     <p class="table-filter-empty" data-filter-empty hidden>No rows match this filter.</p>
@@ -164,7 +172,7 @@
         
         <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_contract_diff_max">
           <td>besu</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0335</td>
           <td class="num">3,355</td>
@@ -192,7 +200,7 @@
         
         <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_contract_same_max">
           <td>besu</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0471</td>
           <td class="num">4,715</td>
@@ -206,7 +214,7 @@
         
         <tr data-client="besu" data-param="TX_VALUE_COST" data-case="diff_to_delegated_contract_diff">
           <td>besu</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0312</td>
           <td class="num">3,122</td>
@@ -290,7 +298,7 @@
         
         <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_contract_diff_max">
           <td>erigon</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0467</td>
           <td class="num">4,675</td>
@@ -318,7 +326,7 @@
         
         <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_contract_same_max">
           <td>erigon</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0474</td>
           <td class="num">4,738</td>
@@ -332,7 +340,7 @@
         
         <tr data-client="erigon" data-param="TX_VALUE_COST" data-case="diff_to_delegated_contract_diff">
           <td>erigon</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0472</td>
           <td class="num">4,720</td>
@@ -416,7 +424,7 @@
         
         <tr data-client="geth" data-param="TX_VALUE_COST" data-case="diff_to_contract_diff_max">
           <td>geth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0269</td>
           <td class="num">2,691</td>
@@ -444,7 +452,7 @@
         
         <tr data-client="geth" data-param="TX_VALUE_COST" data-case="diff_to_contract_same_max">
           <td>geth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0476</td>
           <td class="num">4,762</td>
@@ -458,7 +466,7 @@
         
         <tr data-client="geth" data-param="TX_VALUE_COST" data-case="diff_to_delegated_contract_diff">
           <td>geth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0263</td>
           <td class="num">2,630</td>
@@ -542,7 +550,7 @@
         
         <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_contract_diff_max">
           <td>nethermind</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0000</td>
           <td class="num">0</td>
@@ -570,7 +578,7 @@
         
         <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_contract_same_max">
           <td>nethermind</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0014</td>
           <td class="num">136</td>
@@ -584,7 +592,7 @@
         
         <tr data-client="nethermind" data-param="TX_VALUE_COST" data-case="diff_to_delegated_contract_diff">
           <td>nethermind</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0021</td>
           <td class="num">214</td>
@@ -668,7 +676,7 @@
         
         <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_contract_diff_max">
           <td>reth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0289</td>
           <td class="num">2,893</td>
@@ -696,7 +704,7 @@
         
         <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_contract_same_max">
           <td>reth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0274</td>
           <td class="num">2,741</td>
@@ -710,7 +718,7 @@
         
         <tr data-client="reth" data-param="TX_VALUE_COST" data-case="diff_to_delegated_contract_diff">
           <td>reth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>TX_VALUE_COST</code></td>
           <td class="num">0.0274</td>
           <td class="num">2,745</td>
@@ -794,7 +802,7 @@
         
         <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>besu</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1603</td>
           <td class="num">16,028</td>
@@ -822,7 +830,7 @@
         
         <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>besu</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1606</td>
           <td class="num">16,056</td>
@@ -836,7 +844,7 @@
         
         <tr data-client="besu" data-param="VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>besu</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1517</td>
           <td class="num">15,171</td>
@@ -920,7 +928,7 @@
         
         <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>erigon</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.2736</td>
           <td class="num">27,361</td>
@@ -948,7 +956,7 @@
         
         <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>erigon</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.2619</td>
           <td class="num">26,190</td>
@@ -962,7 +970,7 @@
         
         <tr data-client="erigon" data-param="VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>erigon</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.2550</td>
           <td class="num">25,505</td>
@@ -1046,7 +1054,7 @@
         
         <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>geth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1269</td>
           <td class="num">12,688</td>
@@ -1074,7 +1082,7 @@
         
         <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>geth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1266</td>
           <td class="num">12,665</td>
@@ -1088,7 +1096,7 @@
         
         <tr data-client="geth" data-param="VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>geth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1206</td>
           <td class="num">12,062</td>
@@ -1172,7 +1180,7 @@
         
         <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>nethermind</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1649</td>
           <td class="num">16,495</td>
@@ -1200,7 +1208,7 @@
         
         <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>nethermind</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1451</td>
           <td class="num">14,512</td>
@@ -1214,7 +1222,7 @@
         
         <tr data-client="nethermind" data-param="VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>nethermind</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.1663</td>
           <td class="num">16,627</td>
@@ -1298,7 +1306,7 @@
         
         <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>reth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.0968</td>
           <td class="num">9,684</td>
@@ -1326,7 +1334,7 @@
         
         <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>reth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.0739</td>
           <td class="num">7,387</td>
@@ -1340,7 +1348,7 @@
         
         <tr data-client="reth" data-param="VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>reth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>VALUE_TRANSFER</code></td>
           <td class="num">0.0894</td>
           <td class="num">8,942</td>
@@ -1424,7 +1432,7 @@
         
         <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>besu</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1267</td>
           <td class="num">12,673</td>
@@ -1452,7 +1460,7 @@
         
         <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>besu</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1134</td>
           <td class="num">11,341</td>
@@ -1466,7 +1474,7 @@
         
         <tr data-client="besu" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>besu</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1205</td>
           <td class="num">12,049</td>
@@ -1550,7 +1558,7 @@
         
         <tr class="worst-case" data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>erigon</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.2269</td>
           <td class="num">22,686</td>
@@ -1578,7 +1586,7 @@
         
         <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>erigon</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.2145</td>
           <td class="num">21,453</td>
@@ -1592,7 +1600,7 @@
         
         <tr data-client="erigon" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>erigon</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.2079</td>
           <td class="num">20,786</td>
@@ -1676,7 +1684,7 @@
         
         <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>geth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1000</td>
           <td class="num">9,998</td>
@@ -1704,7 +1712,7 @@
         
         <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>geth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.0790</td>
           <td class="num">7,904</td>
@@ -1718,7 +1726,7 @@
         
         <tr data-client="geth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>geth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.0943</td>
           <td class="num">9,432</td>
@@ -1802,7 +1810,7 @@
         
         <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>nethermind</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1692</td>
           <td class="num">16,925</td>
@@ -1830,7 +1838,7 @@
         
         <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>nethermind</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1438</td>
           <td class="num">14,376</td>
@@ -1844,7 +1852,7 @@
         
         <tr data-client="nethermind" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>nethermind</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.1641</td>
           <td class="num">16,413</td>
@@ -1928,7 +1936,7 @@
         
         <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_diff_max">
           <td>reth</td>
-          <td>Contract (24KB, unique code)</td>
+          <td>Contract (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.0679</td>
           <td class="num">6,792</td>
@@ -1956,7 +1964,7 @@
         
         <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_contract_same_max">
           <td>reth</td>
-          <td>Contract (24KB, same code)</td>
+          <td>Contract (max code, same)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.0465</td>
           <td class="num">4,646</td>
@@ -1970,7 +1978,7 @@
         
         <tr data-client="reth" data-param="ZERO_VALUE_TRANSFER" data-case="diff_to_delegated_contract_diff">
           <td>reth</td>
-          <td>Delegated (24KB, unique code)</td>
+          <td>Delegated (max code, unique)</td>
           <td><code>ZERO_VALUE_TRANSFER</code></td>
           <td class="num">0.0620</td>
           <td class="num">6,198</td>
@@ -2055,7 +2063,7 @@
         &middot;
         suite <code>0d93b5bf3b970403, c49a162ae5cee8cd</code>
         &middot;
-        commit <code>0a64f67</code>
+        commit <code>d9c72e0</code>
         &middot;
         generated <code>2026-08-13T07:59:39+00:00</code>
       </p>

@@ -111,6 +111,7 @@ Requires `make`, `jq`, Python 3.11+.
   mis-count the cheaper/dearer EOA cases and mis-scale their gas.
 - **Column rename:** `test_runtime_ms → run_duration_ms` right after load — the
   ported NNLS code expects the latter.
+- **Contract cases are split by receiver code size.** The suite runs every contract receiver at two code sizes (`code_size_24576`, the EIP-170 limit, and `code_size_65536`, the raised one). `_extract_case_id` in analysis.py folds that size into the `case_id` as a trailing `_24kib` / `_64kib` token, so each size is its own NNLS fit. Without it both populations pool into one fit and the result is their average — on `diff_to_contract_diff_max` (unique code per receiver, so the code is actually read) the 64KiB runs are 10–30% slower than the 24KiB ones depending on client, and pooling hid the dearer size. Only contract receivers are split (`CODE_SIZE_SPLIT_SUBSTRING = "contract"`): `diff_to_self` / `diff_to_existent` / `diff_to_nonexistent` hold no code, so `code_size` is inert there and splitting them would just halve each fit's sample over identical populations. In build_site.py `base_case()` strips the token and **everything that keys on a `case_id` matches on the base**, so `EXCLUDED_CASES`, `CONTRACT_VARIANT_CASES` and `TRENDS_EXCLUDED_CASES` stay base names covering every size variant; `excluded_cases_for()` resolves them to the concrete ids a run has before embedding them for charts.js. `case_label()` (and its twins in charts.js / trends.js) renders the size as a trailing `· 64KiB`. `collect_jumpdest_diff` pairs each jumpdest fit with the baseline **of its own size** and emits one tick per (param, size) — pairing across sizes would fold the code-size effect into what is meant to isolate the extra `JUMP`. Runs archived before the split keep unsuffixed ids and render without a size claim (the suite metadata that would say which size they measured is gone), so their Trends series end where the split begins and the two suffixed series start fresh.
 - **Two fits per `(client, case_id)`** (Part B `build_results_df`): the group is
   split on `transfer_amount` and each subset fit as its own `[const, opcount]`
   NNLS model (`without_*` = zero-value, `with_*` = value). The interaction-term
@@ -246,8 +247,11 @@ cell shows its margin and which case the worst value came from. Per the
 excluded-cases invariant above: no dashboard chart or Summary table row should
 mention `Contract (jumpdest)` or `Contract`, the Trends page should still show
 `Contract (jumpdest)` but not `Contract`, and both detail tables (Detail page +
-Model Fit page) should list every case. The worst case (the highlighted rows on
-the Detail page) on the latest run currently reads erigon /
-`diff_to_contract_diff_max` for `ZERO_VALUE_TRANSFER` and erigon /
+Model Fit page) should list every case. Since the code-size split, contract cases
+appear twice, once per size (`· 24KiB` / `· 64KiB`), on every surface — the latest
+run's detail tables list 15 cases, and the Jumpdest cost chart has four ticks (two
+params × two sizes) rather than two. The worst case (the highlighted rows on the
+Detail page) on the latest run currently reads geth /
+`diff_to_contract_diff_max_64kib` for `ZERO_VALUE_TRANSFER` and besu /
 `diff_to_nonexistent` for `VALUE_TRANSFER` and `TX_VALUE_COST` (this follows the
 data — re-check after a data refresh).

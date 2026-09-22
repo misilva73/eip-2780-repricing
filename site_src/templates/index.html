@@ -225,9 +225,9 @@
     diff_to_unique_code_jumpdest_contract is excluded from the charts/Summary above
     (see the scope note near the top of the page) but still fit every run. This
     section is specifically about that case: how much the extra JUMP costs relative
-    to the contract case it's otherwise closest to in shape — the 24KB-unique-code
-    contract where the run has it, else the plain contract case (older archived
-    runs predate the 24KB variants). Data comes from collect_jumpdest_diff() in
+    to the contract case it's otherwise closest to in shape — the unique-code
+    contract at the same code size where the run has it, else the plain contract
+    case (older archived runs predate the max-code variants and the size split). Data comes from collect_jumpdest_diff() in
     build_site.py, embedded as window.DASHBOARD_DATA.jumpdest_diff; no goal line
     here — there's no EIP-2780 target for this comparison, just the measured diff
     with its 95% CI. -#}

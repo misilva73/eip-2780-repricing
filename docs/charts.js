@@ -15,12 +15,21 @@
     diff_to_self: "Self",
     diff_to_unique_code_jumpdest_contract: "Contract (jumpdest)",
     diff_to_contract_minimal: "Contract (minimal)",
-    diff_to_contract_same_max: "Contract (24KB, same code)",
-    diff_to_contract_diff_max: "Contract (24KB, unique code)",
-    diff_to_delegated_contract_diff: "Delegated (24KB, unique code)"
+    diff_to_contract_same_max: "Contract (max code, same)",
+    diff_to_contract_diff_max: "Contract (max code, unique)",
+    diff_to_delegated_contract_diff: "Delegated (max code, unique)"
   };
+  // Contract cases carry a trailing code-size token (_24kib / _64kib) that
+  // analysis.py folds into the group key, so each size is its own fit. Strip it
+  // for the label lookup and render it as a trailing size. Keep in sync with
+  // case_label() in build_site.py.
+  var CASE_SIZE_RE = /_(\d+)kib$/;
   function caseLabel(caseId) {
-    return CASE_LABELS[caseId] || caseId;
+    var id = caseId || "";
+    var m = CASE_SIZE_RE.exec(id);
+    var base = m ? id.slice(0, m.index) : id;
+    var label = CASE_LABELS[base] || base;
+    return m ? label + " · " + m[1] + "KiB" : label;
   }
 
   // Cases kept out of the charts. Presentation-only: the embedded run data still
@@ -265,13 +274,12 @@
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);
   }
 
-  // Grouped bar chart of the jumpdest-vs-24KB-unique-code gas diff, one tick per
-  // parameter. data is window.DASHBOARD_DATA.jumpdest_diff (see
+  // Grouped bar chart of the jumpdest-vs-unique-code-contract gas diff, one tick
+  // per parameter and code size. data is window.DASHBOARD_DATA.jumpdest_diff (see
   // collect_jumpdest_diff in build_site.py) — diff and its CI are precomputed
   // there (interval arithmetic across two independent fits), so this just renders
   // them; no goal/reference line, since there's no EIP-2780 target for this
   // comparison.
-  var JUMPDEST_DIFF_PARAMS = ["ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"];
   function plotJumpdestDiff(divId, data) {
     var div = document.getElementById(divId);
     if (!div || !window.DASHBOARD_DATA) return;
@@ -279,14 +287,20 @@
     var rows = (data && data.rows) || [];
     if (!rows.length) { div.innerHTML = "<p class='no-data'>No data.</p>"; return; }
 
+    // One tick per (param, code size) pair — build_site.py pairs each jumpdest
+    // fit with the baseline of its own size, so the sizes are separate bars.
+    // Older runs, fit before the code-size split, emit one tick per param.
+    var ticks = (data && data.ticks && data.ticks.length)
+      ? data.ticks
+      : ["ZERO_VALUE_TRANSFER", "VALUE_TRANSFER"];
     var clients = uniqueSorted(rows, "client_name");
     var colors = clientColorMap();
 
     var traces = clients.map(function (client) {
       var y = [], errHigh = [], errLow = [];
-      JUMPDEST_DIFF_PARAMS.forEach(function (param) {
+      ticks.forEach(function (tick) {
         var row = rows.find(function (r) {
-          return r.client_name === client && r.param === param;
+          return r.client_name === client && (r.tick || r.param) === tick;
         });
         var val = row && row.diff != null ? row.diff : null;
         y.push(val);
@@ -299,7 +313,7 @@
       return {
         type: "bar",
         name: client,
-        x: JUMPDEST_DIFF_PARAMS,
+        x: ticks,
         y: y,
         marker: { color: colors[client] },
         showlegend: false,
@@ -319,7 +333,7 @@
       barmode: "group",
       margin: { t: 10, r: 20, b: 50, l: 70 }
     });
-    Object.assign(layout.xaxis, { title: "Parameter", automargin: true });
+    Object.assign(layout.xaxis, { title: "Parameter · code size", automargin: true });
     Object.assign(layout.yaxis, { title: "Proposed gas diff (rounded)" });
 
     Plotly.newPlot(div, traces, layout, PLOT_CONFIG);

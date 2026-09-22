@@ -564,6 +564,27 @@ def _extract_test_name(test_title: str):
     return m.group(1) if m is not None else np.nan
 
 
+# Contract-receiver fixtures are parameterised by the receiver's deployed code
+# size (``code_size_24576`` / ``code_size_65536`` in suite 22c2404b9ce3f47c — the
+# EIP-170 limit and the raised one). Both sizes ship in the same suite under the
+# same case_id, so unless the size is folded into the group key the two populations
+# pool into a single NNLS fit and the result is an average of the two. That matters:
+# on diff_to_contract_diff_max (unique code per receiver, so the code is actually
+# read) the 64KiB runs are 10-30% slower than the 24KiB ones depending on client.
+# Only contract receivers are split — self/EOA/non-existent receivers have no code
+# at all, so code_size is an inert parameter there and splitting them would just
+# halve each fit's sample for identical populations.
+CODE_SIZE_SPLIT_SUBSTRING = "contract"
+
+
+def _extract_code_size(test_id: str):
+    """Receiver code size in bytes from the ``code_size_<N>`` token, or None."""
+    if not isinstance(test_id, str):
+        return None
+    m = re.search(r"code_size_(\d+)", test_id)
+    return int(m.group(1)) if m is not None else None
+
+
 def _extract_case_id(test_id: str):
     """Extract the case_id, stripping the trailing block-size token.
 
@@ -576,14 +597,24 @@ def _extract_case_id(test_id: str):
     ``-benchmark`` token, which strips either suffix form. The notebook's CSV had no
     ``-benchmark`` suffix, so we fall back to end-of-string there (faithful to the
     notebook on its own data).
+
+    Contract-receiver cases additionally carry a ``_<N>kib`` suffix naming the
+    receiver's code size (see CODE_SIZE_SPLIT_SUBSTRING), which *is* part of the
+    group key. Suites that don't parameterise code size yield the bare case_id, so
+    archived runs keep the ids they were analysed under.
     """
     if not isinstance(test_id, str):
         return np.nan
     m = re.search(r"case_id_(.+?)-benchmark", test_id)
-    if m is not None:
-        return m.group(1)
-    m = re.search(r"case_id_(.+)$", test_id)
-    return m.group(1) if m is not None else np.nan
+    if m is None:
+        m = re.search(r"case_id_(.+)$", test_id)
+    if m is None:
+        return np.nan
+    case_id = m.group(1)
+    code_size = _extract_code_size(test_id)
+    if code_size is not None and CODE_SIZE_SPLIT_SUBSTRING in case_id:
+        case_id = f"{case_id}_{code_size // 1024}kib"
+    return case_id
 
 
 def _extract_block_limit(test_id: str):

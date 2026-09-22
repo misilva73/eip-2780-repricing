@@ -47,7 +47,15 @@
     <ul class="run-dropdown-list" role="listbox" aria-label="Runs" hidden>
       <li role="option" aria-selected="false">
         <a href="index.html" class="run-dropdown-option"
-           tabindex="-1">2026-08-24 01:34 (latest)</a>
+           tabindex="-1">2026-09-21 08:08 (latest)</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="run-20260830T085704Z_c49a162ae5cee8cd.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-30 08:57</a>
+      </li>
+      <li role="option" aria-selected="false">
+        <a href="run-20260824T013428Z_c49a162ae5cee8cd.html" class="run-dropdown-option"
+           tabindex="-1">2026-08-24 01:34</a>
       </li>
       <li role="option" aria-selected="true">
         <a href="run-20260817T164844Z_c49a162ae5cee8cd.html" class="run-dropdown-option is-current"
@@ -79,11 +87,11 @@
       </li>
     </ul>
   </div>
-  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-08-24 01:34 (latest)</a><a href="run-20260812T212800Z_0d93b5bf3b970403.html">2026-08-12 21:28</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
+  <noscript><span class="run-dropdown-noscript"><a href="index.html">2026-09-21 08:08 (latest)</a><a href="run-20260830T085704Z_c49a162ae5cee8cd.html">2026-08-30 08:57</a><a href="run-20260824T013428Z_c49a162ae5cee8cd.html">2026-08-24 01:34</a><a href="run-20260812T212800Z_0d93b5bf3b970403.html">2026-08-12 21:28</a><a href="run-20260720T165222Z_d88b18464da7445e.html">2026-07-20 16:52</a><a href="run-20260707T075028Z_d88b18464da7445e.html">2026-07-07 07:50</a><a href="run-20260701T233045Z_d88b18464da7445e.html">2026-07-01 23:30</a><a href="run-20260623T085946Z_d88b18464da7445e.html">2026-06-23 08:59</a><a href="run-20260615T034251Z_d88b18464da7445e.html">2026-06-15 03:42</a>
     </span>
   </noscript>
   
-  <span class="run-bar-meta">older run &middot; latest of 8</span>
+  <span class="run-bar-meta">older run &middot; latest of 10</span>
 </div>
 
 
@@ -156,7 +164,7 @@
         </tr>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS = 15,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (max code, same), Contract (max code, unique)">
             No-value transfer
           </th>
           <td class="num goal-target">15,000</td>
@@ -184,7 +192,7 @@
         </tr>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (24KB, same code), Contract (24KB, unique code)">
+              data-tip="TX_BASE_COST + COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 21,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Non-existent, EOA, Contract (minimal), Contract (max code, same), Contract (max code, unique)">
             Transfer
           </th>
           <td class="num goal-target">21,000</td>
@@ -212,7 +220,7 @@
         </tr>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS = 18,000 &mdash; parameter: ZERO_VALUE_TRANSFER &mdash; cases: Delegated (max code, unique)">
             No-value transfer to delegated account
           </th>
           <td class="num goal-target">18,000</td>
@@ -240,7 +248,7 @@
         </tr>
         
         <tr><th class="goal-name" scope="row"
-              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Delegated (24KB, unique code)">
+              data-tip="TX_BASE_COST + 2 × COLD_ACCOUNT_ACCESS + TX_VALUE_COST = 24,000 &mdash; parameter: VALUE_TRANSFER &mdash; cases: Delegated (max code, unique)">
             Transfer to delegated account
           </th>
           <td class="num goal-target">24,000</td>
@@ -343,12 +351,12 @@
   <p class="note" role="note">
     <strong>Contract (jumpdest)</strong> is excluded from the charts above, but
     still fit every run. This chart shows its proposed-gas diff against
-    <strong>Contract (24KB, unique code)</strong> — the case it's otherwise
+    <strong>Contract (max code, unique)</strong> — the case it's otherwise
     closest to in shape — for both parameters, so the cost of the extra
     <code>JUMP</code> is visible on its own.
   </p><div id="jumpdest-legend" class="chart-legend" hidden></div>
   <div class="chart-block">
-    <h3>Contract (jumpdest) &minus; Contract (24KB, unique code) &mdash; proposed gas diff per parameter (95% CI)</h3>
+    <h3>Contract (jumpdest) &minus; Contract (max code, unique) &mdash; proposed gas diff per parameter (95% CI)</h3>
     <div id="chart-jumpdest-diff" class="chart"></div>
   </div>
 </section>
@@ -367,7 +375,7 @@
         &middot;
         suite <code>c49a162ae5cee8cd</code>
         &middot;
-        commit <code>0a64f67</code>
+        commit <code>d9c72e0</code>
         &middot;
         generated <code>2026-08-18T11:14:51+00:00</code>
       </p>

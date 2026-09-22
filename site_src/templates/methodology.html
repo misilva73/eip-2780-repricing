@@ -53,8 +53,19 @@
     work differs by receiver type. The dashboard shows a short readable label for each;
     the raw <code>case_id</code> below stays the canonical key in
     <code>data/results.json</code>. Contract receivers (all but the last three) execute
-    on-chain code; the 24&nbsp;KiB variants pad the account to the code-size limit used for
-    this repricing benchmark.
+    on-chain code; the max-code variants pad the account to the code-size limit.
+  </p>
+  <p class="note" role="note">
+    <strong>Code size is part of the case.</strong> The suite runs every contract receiver
+    at two code sizes &mdash; 24&nbsp;KiB (the EIP-170 limit) and 64&nbsp;KiB (the raised
+    one) &mdash; so each contract case is fit separately per size and shown as its own
+    series, labelled with a trailing size (&ldquo;Contract (max code, unique)
+    &middot; 64&nbsp;KiB&rdquo;). Pooling the two into one fit would average two
+    populations that differ by as much as 30% on the unique-code case, where the receiver's
+    code actually has to be read, and would hide the more expensive size. Self, EOA and
+    non-existent receivers hold no code, so code size is inert for them and they stay a
+    single case. Runs archived before this split carry unsuffixed case ids and are shown
+    without a size.
   </p>
   <ul>
     <li>
@@ -67,26 +78,27 @@
       transfers to a minimal contract whose code is a single <code>STOP</code>.
     </li>
     <li>
-      <strong>Contract (24KB, same code)</strong>
-      (<code>diff_to_contract_same_max</code>) &mdash; transfers to contracts padded to
-      24&nbsp;KiB whose copies are byte-identical, so clients can cache the code lookup.
+      <strong>Contract (max code, same)</strong>
+      (<code>diff_to_contract_same_max</code>) &mdash; transfers to contracts padded to the
+      maximum code size whose copies are byte-identical, so clients can cache the code
+      lookup.
     </li>
     <li>
-      <strong>Contract (24KB, unique code)</strong>
-      (<code>diff_to_contract_diff_max</code>) &mdash; transfers to 24&nbsp;KiB contracts
+      <strong>Contract (max code, unique)</strong>
+      (<code>diff_to_contract_diff_max</code>) &mdash; transfers to maximum-size contracts
       whose copies are each unique (their own address embedded), forcing a fresh code read
       per transaction.
     </li>
     <li>
       <strong>Contract (jumpdest)</strong>
       (<code>diff_to_unique_code_jumpdest_contract</code>) &mdash; transfers to contracts
-      with unique code that <code>JUMP</code> to the 24&nbsp;KiB code-size limit, forcing a
-      fresh code read plus a JUMPDEST analysis on every transaction.
+      with unique code that <code>JUMP</code> to the end of the code, forcing a fresh code
+      read plus a JUMPDEST analysis on every transaction.
     </li>
     <li>
-      <strong>Delegated (24KB, unique code)</strong>
+      <strong>Delegated (max code, unique)</strong>
       (<code>diff_to_delegated_contract_diff</code>) &mdash; transfers to a delegated EOA
-      (EIP-7702) that delegates to a unique 24&nbsp;KiB contract.
+      (EIP-7702) that delegates to a unique maximum-size contract.
     </li>
     <li>
       <strong>EOA</strong> (<code>diff_to_existent</code>) &mdash; transfers to externally
